@@ -62,7 +62,11 @@ User.cs
 ### ExcecutionResult.cs
 - ExecutionResultId
 - CodeSubmission (either code submission task id, nested class or both)
-- 
+- ExecutionPassedSuccessfully
+- ExecutionResults
+- ExecutionTime
+- ExitCode
+- Timestamps
     
 ### AIEvaluationPlan.cs
 - EvaluationPlanId
@@ -74,8 +78,33 @@ User.cs
 - ModelUsed
 - Timestamps (CreatedAt/InitiatedAt/TimeToPlan)
 
+### AIFeedback
+- AIFeedbackId
+- SubmissionId (this could potentially be a nested object)
+- OutcomeStatus (Correct, Partial, Incorrect)
+- HintMessage
+- Explanation
+- ModelUsed
+- Timestamps (CreatedAt,Time etc.)
+
+
+### AIHallucinationCheck.cs
+- HallucinationCheckId
+- AIFeedbackId
+- IsFeedbackConsistent
+- Severity (Low, Medium, High)
+- IssuesFound
+- WarningMessage (what was found/if any)
+- Timestamps (CreatedAt, InitiatedAt, CheckTime)
+
 ### GameProgress.cs
-- 
+- ProgressId
+- UserId / User (nested object)
+- Points/Currency
+- Level
+- CompletedTasks (array)
+- Achievements
+- LastUpdated
 
 ### Data:
 - GamAILabDbContext.cs 
@@ -89,3 +118,5 @@ Pages:
 - Code task UI ()
 - Achievements / Rewards
 - Onboarding (if time)
+
+TODO: Persona models, and Engagement events
