@@ -1,0 +1,7 @@
+﻿services:
+  gamai-lab-webapi:
+    image: gamai-lab-webapi
+    build:
+      context: .
+      dockerfile: gamai-lab-webapi/Dockerfile
+

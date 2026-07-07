@@ -1,0 +1,6 @@
+@gamai_lab_webapi_HostAddress = http://localhost:5270
+
+GET {{gamai_lab_webapi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
