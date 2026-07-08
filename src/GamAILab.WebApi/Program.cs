@@ -1,4 +1,7 @@
 using Scalar.AspNetCore;
+using GamAILab.WebApi;
+using GamAILab.WebApi.Endpoints;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,4 +18,9 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference();
 }
 
+// Map endpoints (TODO move this into g
+app.MapCodeSubmissionEndpoint();
+
 app.UseHttpsRedirection();
+
+app.Run();

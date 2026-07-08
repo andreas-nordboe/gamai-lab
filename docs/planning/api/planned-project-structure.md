@@ -5,7 +5,7 @@
 - CodeSubmissionEndpoint.cs (learner submits code and evalute using AI)
 - ProgressEndpoint.cs (this could also be called GameEndpoint, but it might be better to introduce separation early, even for gamification elements)
 - PersonaSimulationEndpoint.cs
-- Monitoring
+- EducatorMonitoringEndpoint.cs
 
 Later deliverables (rough ideas):
 POST /api/persona-simulation-runs
