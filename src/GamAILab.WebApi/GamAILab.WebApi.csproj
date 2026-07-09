@@ -6,10 +6,23 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <RootNamespace>GamAILab.WebApi</RootNamespace>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+        <UserSecretsId>65f7511d-4a44-445f-96be-7b8a92d216c2</UserSecretsId>
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.9" />
+        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.9" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.9" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.9" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.9">
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+          <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.9" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.9">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
         <PackageReference Include="Scalar.AspNetCore" Version="2.16.10" />
     </ItemGroup>
 
