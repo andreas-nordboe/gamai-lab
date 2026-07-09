@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using JwtRegisteredClaimNames = System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames;
+using LoginRequest = GamAILab.Shared.Models.Authentication.LoginRequest;
 
 namespace GamAILab.WebApi.Endpoints;
 
@@ -87,7 +88,8 @@ public static class AuthenticationEndpoints
 
     private static async Task<IResult> RegisterAsync(
         RegisterRequest request,
-        UserManager<ApplicationUser> userManager)
+        UserManager<ApplicationUser> userManager,
+        ILogger logger)
     {
         var user = new ApplicationUser
         {
@@ -100,6 +102,17 @@ public static class AuthenticationEndpoints
         if (!identityResult.Succeeded)
         {
             return Results.BadRequest(identityResult.Errors);
+        }
+        
+        // Allocate learner role by default (can be changed by admin)
+        if (!await userManager.IsInRoleAsync(user, UserRole.Learner))
+        {
+            var roleResult = await userManager.AddToRoleAsync(user, UserRole.Learner);
+
+            if (!roleResult.Succeeded)
+            {
+                logger.Log(LogLevel.Error, $"Failed to create role for user: {user.Email}");
+            }
         }
             
         return Results.Created($"/users/{user.Id}", new
