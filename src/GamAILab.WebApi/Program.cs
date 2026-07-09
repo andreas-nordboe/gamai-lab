@@ -5,11 +5,12 @@ using Scalar.AspNetCore;
 using GamAILab.WebApi;
 using GamAILab.WebApi.Data;
 using GamAILab.WebApi.Endpoints;
+using GamAILab.WebApi.Services;
+using GamAILab.WebApi.Services.CodeTasks;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +24,10 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddApiEndpoints();
+
+// Feature services
+builder.Services.AddScoped<ICodeTaskService, CodeTaskService>();
+builder.Services.AddScoped<ICodeSubmissionService,  CodeSubmissionService>();
 
 builder.Services.AddAuthentication(options =>
 {
@@ -106,6 +111,9 @@ using (var scope = app.Services.CreateScope())
         }
     }
     
+    // Seed tasks
+    var codeTaskService = services.GetRequiredService<ICodeTaskService>();
+    await codeTaskService.SeedCodeTasks();
 }
 
 // Map endpoints (TODO refactor this into using a separate endpoint handler later)

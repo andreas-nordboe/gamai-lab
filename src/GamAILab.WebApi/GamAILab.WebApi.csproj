@@ -38,4 +38,11 @@
       <ProjectReference Include="..\GamAILab.Shared\GamAILab.Shared.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Services\Analytics\" />
+      <Folder Include="Services\AIFeedback\" />
+      <Folder Include="Services\Game\" />
+      <Folder Include="Services\HallucinationChecker\" />
+    </ItemGroup>
+
 </Project>

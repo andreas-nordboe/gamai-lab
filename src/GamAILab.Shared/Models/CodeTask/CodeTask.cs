@@ -1,8 +1,11 @@
-﻿namespace GamAILab.Shared.Models;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace GamAILab.Shared.Models;
 
 public class CodeTask
 {
-    public int CodeTaskId { get; set; }
+    [Key]
+    public int Id { get; set; }
     public string Title { get; set; }
     public string Description { get; set; }
     public string DefaultCode { get; set; }
@@ -10,5 +13,5 @@ public class CodeTask
     public List<string> Constraints { get; set; } // TODO possibly make this a list of objects/classes that have constraint types
     public CodeTaskDifficulty Difficulty { get; set; }
     public DateTime CreatedAt { get; set; }
-    public DateTime UpdatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
 }
