@@ -1,14 +1,13 @@
 ﻿using System.Security.Claims;
 using System.Text;
 using GamAILab.Shared.Models;
+using GamAILab.Shared.Models.Authentication;
 using GamAILab.WebApi.Data;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using JwtRegisteredClaimNames = System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames;
-using LoginRequest = GamAILab.Shared.Models.Authentication.LoginRequest;
 
 namespace GamAILab.WebApi.Endpoints;
 
@@ -89,8 +88,10 @@ public static class AuthenticationEndpoints
     private static async Task<IResult> RegisterAsync(
         RegisterRequest request,
         UserManager<ApplicationUser> userManager,
-        ILogger logger)
+        ILoggerFactory loggerFactory)
     {
+        var logger = loggerFactory.CreateLogger(typeof(AuthenticationEndpoints));
+        
         var user = new ApplicationUser
         {
             UserName = request.Email,
