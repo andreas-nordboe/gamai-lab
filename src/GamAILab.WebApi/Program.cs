@@ -119,6 +119,7 @@ using (var scope = app.Services.CreateScope())
 // Map endpoints (TODO refactor this into using a separate endpoint handler later)
 app.MapCodeSubmissionEndpoint();
 app.MapAuthenticationEndpoints();
+app.MapCodeTaskEndpoints();
 
 app.UseHttpsRedirection();
 
