@@ -29,6 +29,7 @@ public static class AuthenticationEndpoints
         return app;
     }
     
+    // Login User
     private static async Task<IResult> LoginAsync(
         LoginRequest request,
         UserManager<ApplicationUser> userManager,
@@ -85,6 +86,7 @@ public static class AuthenticationEndpoints
         });
     }
 
+    // Register User
     private static async Task<IResult> RegisterAsync(
         RegisterRequest request,
         UserManager<ApplicationUser> userManager,

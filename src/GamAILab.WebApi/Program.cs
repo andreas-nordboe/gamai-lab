@@ -7,6 +7,7 @@ using GamAILab.WebApi.Data;
 using GamAILab.WebApi.Endpoints;
 using GamAILab.WebApi.Services;
 using GamAILab.WebApi.Services.CodeTasks;
+using GamAILab.WebApi.Services.LLMService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -28,6 +29,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
 // Feature services
 builder.Services.AddScoped<ICodeTaskService, CodeTaskService>();
 builder.Services.AddScoped<ICodeSubmissionService,  CodeSubmissionService>();
+builder.Services.AddScoped<IAICodeEvaluationService, AICodeEvaluationService>();
 
 builder.Services.AddAuthentication(options =>
 {
@@ -42,6 +44,17 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddAuthorization();
+builder.Services.AddHttpClient<ILLMService, LLMService>((provider, client) =>
+{
+    var configuration = provider.GetRequiredService<IConfiguration>();
+    var baseUrl = configuration["Ollama:BaseUrl"] ?? throw new Exception("Ollama:BaseUrl may be missing in appsettings.json");
+    
+    client.BaseAddress = new Uri(baseUrl);
+    
+    // .NET HTTPClient timeout is usually 100 seconds
+    // I might adjust this later
+    client.Timeout = TimeSpan.FromMinutes(5);
+});
 
 var app = builder.Build();
 

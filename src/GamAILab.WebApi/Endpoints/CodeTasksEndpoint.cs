@@ -11,10 +11,12 @@ public static class CodeTasksEndpoint
         var group = app.MapGroup("/api/code-tasks")
             .WithTags("CodeTasks");
 
-        //group.MapPost("get-code-task", GetCodeTaskAsync)
+        //group.MapPost("get-code-task", GetC3odeTaskAsync)
         //.RequireAuthorization();
 
-        group.MapGet("task",
+        // TODO Make sure this is internally callable (or via admin/tokenised server communication)
+        
+        group.MapGet("/{codeTaskId:int}",
             async Task<Results<Ok<CodeTask>, NotFound>> (int codeTaskId, ICodeTaskService codeTaskService) =>
             {
                 var codeTask = await codeTaskService.GetCodeTaskById(codeTaskId);
@@ -23,7 +25,7 @@ public static class CodeTasksEndpoint
             }).WithName("GetCodeTaskById")
         .Produces<CodeTask>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
-            
+        
         return app;
     }
     
