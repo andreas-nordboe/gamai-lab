@@ -1,10 +1,10 @@
-using System.Text;
+using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using GamAILab.Shared.Models;
 using GamAILab.Shared.Models.AICodeEvaluation;
 using GamAILab.WebApi.Services.LLMService;
-using System.Text.Json.Schema;
+using System.Text.Json.Serialization;
 using OllamaSharp.Models.Chat;
 using System.Text.Json.Serialization.Metadata;
 
@@ -18,10 +18,75 @@ public class AICodeEvaluationService : IAICodeEvaluationService
     // https://learn.microsoft.com/en-us/dotnet/api/system.text.json.schema.jsonschemaexporter.getjsonschemaasnode?view=net-11.0-pp
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
     {
-        TypeInfoResolver = new DefaultJsonTypeInfoResolver()
+        TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
+        UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
+        RespectNullableAnnotations = true,
+        RespectRequiredConstructorParameters =  true,
+        //WriteIndented = true
     };
-    private static readonly JsonNode EvaluationPlanSchema = JsonOptions.GetJsonSchemaAsNode(typeof(AICodeEvaluationPlan));
-
+    
+    // TODO saving this automated schema generation for later
+    //private static readonly JsonNode EvaluationPlanSchema = JsonOptions.GetJsonSchemaAsNode(typeof(AICodeEvaluationPlan), SchemaOptions);
+    
+    // This manual schema mapping seems to generate more reliable responses, although the model may change over time and would therefore need to be updated   
+    private static readonly JsonNode EvaluationPlanSchema = JsonNode.Parse(
+        """
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "criteria": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "commonMistakes": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "feedbackInstructions": {
+                "type": "string"
+              },
+              "language": {
+                "type": "string"
+              },
+              "tests": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "input": {
+                      "type": "string"
+                    },
+                    "expectedOutput": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "input",
+                    "expectedOutput"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "criteria",
+              "commonMistakes",
+              "feedbackInstructions",
+              "language",
+              "tests"
+            ]
+          }
+        """)!;
+    
     public AICodeEvaluationService(ILLMService llmService, ILogger<AICodeEvaluationService> logger)
     {
         _llmService = llmService;
@@ -30,11 +95,15 @@ public class AICodeEvaluationService : IAICodeEvaluationService
 
     public async Task<AICodeEvaluationPlan> GenerateEvaluationPlanAsync(CodeTask codeTaskContext, CancellationToken cancellationToken = default)
     {
-        var codeTaskJson = JsonSerializer.Serialize(codeTaskContext);
-        var schemaJson = EvaluationPlanSchema.ToJsonString();
-
         // TODO Hard-coded for now, this will be moved into CodeTask later (as I want the platform to be fully extensible) 
         var codeLanguage = "Python";
+        
+        // Timers
+        var initiatedAt = DateTimeOffset.UtcNow;
+        var startTime = Stopwatch.GetTimestamp();
+        
+        var codeTaskJson = JsonSerializer.Serialize(codeTaskContext, JsonOptions);
+        var schemaJson = EvaluationPlanSchema.ToJsonString(JsonOptions);
 
         // TODO I might need to be more specific about code fences as it could potentially break output later (as LLMs tend to prefer .md responses)
         var prompt = $$"""
@@ -51,13 +120,13 @@ public class AICodeEvaluationService : IAICodeEvaluationService
             Programming task:
             
             {{codeTaskJson}}
-                        
         """;
 
         var promptRequest = new ChatRequest
         {
             Model = "gemma4",
-            Format = "json", // TODO use my own JSON schema instead
+            //Format = "json", // TODO use my own JSON schema instead
+            Format = EvaluationPlanSchema,
             Stream = false, // I don't think there is a need for streaming here
             Think =  false, // I need to experiment with this one
             KeepAlive = "30m", // prevent reloading model when requests are happening concurrently
@@ -80,8 +149,7 @@ public class AICodeEvaluationService : IAICodeEvaluationService
             } 
         };
 
-        var responseBuilder = new StringBuilder();
-
+        // Send request to LLM
         var evaluationResponse = await _llmService.ChatAsync(promptRequest, cancellationToken);
 
         if (string.IsNullOrWhiteSpace(evaluationResponse))
@@ -89,15 +157,91 @@ public class AICodeEvaluationService : IAICodeEvaluationService
             throw new InvalidOperationException("LLM returned an empty evaluation plan.");
         }
 
+        AICodeEvaluationPlanOutput evaluationPlanOutput;
+
+        // Deserialise LLM response
         try
         {
-            var evaluationPlan = JsonSerializer.Deserialize<AICodeEvaluationPlan>(evaluationResponse, JsonOptions);
-            return evaluationPlan ?? throw new InvalidOperationException("The LLM code evaluation plan was deserialised as null.");
+            evaluationPlanOutput = JsonSerializer.Deserialize<AICodeEvaluationPlanOutput>(evaluationResponse, JsonOptions)
+                ?? throw new JsonException("The LLM code evaluation plan was deserialised as null.");
+            
+            
         }
-        catch (Exception e)
+        catch (JsonException e)
         {
-            _logger.LogError(e, $"Could not deserialise LLM code evaluation plan. Response: {evaluationResponse}");
-            throw new InvalidOperationException("LLM returned an empty invalid code evaluation plan.");
+            _logger.LogError(e, "Could not deserialise LLM code evaluation plan. Response: {evaluationResponse}", evaluationResponse);
+            throw new InvalidOperationException("LLM returned an invalid JSON evaluation plan", e);
         }
+        
+        // Validate and throw errors if there are any
+        ValidateAICodeEvaluationOutput(evaluationPlanOutput, codeLanguage);
+        
+        // Map the plan to internal class/database entity
+        return new AICodeEvaluationPlan
+        {
+            Id = Guid.NewGuid().ToString("N"),
+            CodeTask = codeTaskContext,
+            Criteria = evaluationPlanOutput.Criteria,
+            CommonMistakes = evaluationPlanOutput.CommonMistakes,
+            FeedbackInstructions = evaluationPlanOutput.FeedbackInstructions,
+            Language = codeLanguage,
+            Tests = evaluationPlanOutput.Tests,
+            ModelUsed = "gemma4", // TODO get from appsettings (eventually move to options)
+            InitiatedAt = initiatedAt,
+            PlanningDuration = Stopwatch.GetElapsedTime(startTime)
+        };
+    }
+
+    // TODO This logic could potentially be written into a 
+    private static void ValidateAICodeEvaluationOutput(AICodeEvaluationPlanOutput output, string codeLanguage)
+    {
+        if(output.Criteria.Count == 0 || output.Criteria.Any(string.IsNullOrWhiteSpace))
+        {
+            throw new InvalidOperationException("No evaluation criteria was provided");
+        }
+        
+        if(output.CommonMistakes.Count == 0 || output.CommonMistakes.Any(string.IsNullOrWhiteSpace))
+        {
+            throw new InvalidOperationException("The output criteria contains an empty common mistake");
+        }
+        
+        if (string.IsNullOrWhiteSpace(output.FeedbackInstructions))
+        {
+            throw new InvalidOperationException("The evaluation does not have any feedback instructions");
+        }
+
+        if (string.IsNullOrWhiteSpace(output.Language))
+        {
+            throw new InvalidOperationException("The evaluation does not have a programming language");
+        }
+
+        if (!string.Equals(output.Language, codeLanguage, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException($"The evaluation plan returned {output.Language} but expected {codeLanguage}");
+        }
+        
+        if(output.Tests.Count == 0)
+        {
+            throw new InvalidOperationException("No code evaluation plan tests were provided");
+        }
+
+        foreach (var test in output.Tests)
+        {
+            if (string.IsNullOrWhiteSpace(test.Name))
+            {
+                throw new InvalidOperationException("A code evaluation test has no name");
+            }
+            
+            if (test.Input is null)
+            {
+                throw new InvalidOperationException($"Test '{test.Name}' has no input");
+            }
+
+            if (test.ExpectedOutput is null)
+            {
+                throw new InvalidOperationException($"Test '{test.Name}' has no expected output");
+            }
+        }
+        
     }
 }

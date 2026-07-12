@@ -2,16 +2,17 @@ using System.ComponentModel.DataAnnotations;
 
 namespace GamAILab.Shared.Models.AICodeEvaluation;
 
-public class AICodeEvaluationPlan
+public sealed class AICodeEvaluationPlan
 {
     [Key]
-    public string Id { get; set; }
-    public CodeTask CodeTask { get; set; }
-    public List<string> Criteria { get; set; }
-    public List<string> CommonMistakes { get; set; }
-    public List<string> GeneratedTests { get; set; } // JSON would probably work here
-    public string FeedbackInstructions { get; set; }
-    public string ModelUsed { get; set; }
-    public DateTime InitiatedAt { get; set; }
-    public DateTime PlanningDuration { get; set; }
+    public string Id { get; set; } = null!;
+    public required CodeTask CodeTask { get; set; }
+    public required List<string> Criteria { get; set; }
+    public required List<string> CommonMistakes { get; set; }
+    public required string FeedbackInstructions { get; set; }
+    public required string ModelUsed { get; set; }
+    public required string Language { get; set; }
+    public required IReadOnlyList<AICodeEvaluationTest> Tests { get; set; }
+    public DateTimeOffset InitiatedAt { get; set; }
+    public required TimeSpan PlanningDuration { get; set; }
 }

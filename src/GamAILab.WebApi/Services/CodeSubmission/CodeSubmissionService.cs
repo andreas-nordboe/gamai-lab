@@ -47,7 +47,7 @@ public class CodeSubmissionService : ICodeSubmissionService
         var codeTask = await _codeTaskService.GetCodeTaskById(codeSubmission.CodeTaskId);
 
         // 3. Generate an evaluation plan that includes task information (id, description, constraints..)
-        var evaluationPlan = _aiCodeEvaluationService.GenerateEvaluationPlanAsync(codeTask);
+        var evaluationPlan = await _aiCodeEvaluationService.GenerateEvaluationPlanAsync(codeTask);
 
         Console.WriteLine(JsonSerializer.Serialize(evaluationPlan));
         
