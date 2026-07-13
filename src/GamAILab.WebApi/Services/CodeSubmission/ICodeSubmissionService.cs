@@ -6,5 +6,5 @@ namespace GamAILab.WebApi.Services;
 
 public interface ICodeSubmissionService
 {
-    public Task<CodeSubmissionResult> SubmitCodeAsync(CodeSubmissionRequest codeSubmission, string? userId);
+    public Task<CodeSubmissionResult> SubmitCodeAsync(CodeSubmissionRequest codeSubmission, string? userId, CancellationToken cancellationToken = default);
 }

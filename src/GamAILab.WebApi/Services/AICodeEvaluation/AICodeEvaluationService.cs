@@ -62,16 +62,23 @@ public class AICodeEvaluationService : IAICodeEvaluationService
                     "name": {
                       "type": "string"
                     },
-                    "input": {
+                    "functionName": {
                       "type": "string"
                     },
+                    "arguments": {
+                     "type": "array",
+                     "items": {
+                        "type": "integer"
+                     }
+                   },
                     "expectedOutput": {
                       "type": "string"
                     }
                   },
                   "required": [
                     "name",
-                    "input",
+                    "functionName",
+                    "arguments",
                     "expectedOutput"
                   ]
                 }
@@ -232,7 +239,7 @@ public class AICodeEvaluationService : IAICodeEvaluationService
                 throw new InvalidOperationException("A code evaluation test has no name");
             }
             
-            if (test.Input is null)
+            if (test.FunctionName is null)
             {
                 throw new InvalidOperationException($"Test '{test.Name}' has no input");
             }

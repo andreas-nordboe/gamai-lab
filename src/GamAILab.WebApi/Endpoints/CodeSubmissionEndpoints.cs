@@ -18,7 +18,8 @@ public static class CodeSubmissionEndpoints
         CodeSubmissionRequest codeSubmission, 
         ICodeSubmissionService codeSubmissionService,
         ClaimsPrincipal user,
-        ILoggerFactory loggerFactory)
+        ILoggerFactory loggerFactory,
+        CancellationToken cancellationToken)
     {
         // TODO check user.Identity?.IsAuthenticated is not true and return unauthorised or use a different method
 

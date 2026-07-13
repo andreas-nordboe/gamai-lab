@@ -21,7 +21,7 @@ public class CodeSubmissionService : ICodeSubmissionService
         _aiCodeEvaluationService = aiCodeEvaluationService;
     }
 
-    public async Task<CodeSubmissionResult> SubmitCodeAsync(CodeSubmissionRequest codeSubmission, string? userId)
+    public async Task<CodeSubmissionResult> SubmitCodeAsync(CodeSubmissionRequest codeSubmission, string? userId, CancellationToken cancellationToken = default)
     {
         // 1. Store attempted code submission and request task to database
         
