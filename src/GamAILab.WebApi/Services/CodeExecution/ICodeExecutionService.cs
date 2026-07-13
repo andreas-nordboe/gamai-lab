@@ -5,5 +5,5 @@ namespace GamAILab.WebApi.Services.CodeExecution;
 
 public interface ICodeExecutionService
 {
-    Task<CodeTestResult> ExecuteCodeAsync(string learnerCode, AICodeEvaluationPlan codeEvaluationPlan, CancellationToken cancellationToken = default);
+    Task<CodeExecutionResult> ExecuteCodeAsync(string learnerCode, AICodeEvaluationPlan codeEvaluationPlan, CancellationToken cancellationToken = default);
 }

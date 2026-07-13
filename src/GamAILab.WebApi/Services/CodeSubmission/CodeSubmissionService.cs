@@ -1,6 +1,7 @@
 using System.Text.Json;
 using GamAILab.Shared.Models.CodeSubmission;
 using GamAILab.WebApi.Data;
+using GamAILab.WebApi.Services.CodeExecution;
 using GamAILab.WebApi.Services.CodeTasks;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
@@ -12,13 +13,15 @@ public class CodeSubmissionService : ICodeSubmissionService
     private readonly ApplicationDbContext _dbContext;
     private readonly ICodeTaskService _codeTaskService;
     private readonly IAICodeEvaluationService _aiCodeEvaluationService;
+    private readonly ICodeExecutionService _codeExecutionService;
 
 
-    public CodeSubmissionService(ApplicationDbContext dbContext, ICodeTaskService codeTaskService, IAICodeEvaluationService aiCodeEvaluationService)
+    public CodeSubmissionService(ApplicationDbContext dbContext, ICodeTaskService codeTaskService, IAICodeEvaluationService aiCodeEvaluationService, ICodeExecutionService codeExecutionService)
     {
         _dbContext = dbContext;
         _codeTaskService = codeTaskService;
         _aiCodeEvaluationService = aiCodeEvaluationService;
+        _codeExecutionService = codeExecutionService;
     }
 
     public async Task<CodeSubmissionResult> SubmitCodeAsync(CodeSubmissionRequest codeSubmission, string? userId, CancellationToken cancellationToken = default)
@@ -47,13 +50,18 @@ public class CodeSubmissionService : ICodeSubmissionService
         var codeTask = await _codeTaskService.GetCodeTaskById(codeSubmission.CodeTaskId);
 
         // 3. Generate an evaluation plan that includes task information (id, description, constraints..)
-        var evaluationPlan = await _aiCodeEvaluationService.GenerateEvaluationPlanAsync(codeTask);
+        if (codeTask != null)
+        {
+            var evaluationPlan = await _aiCodeEvaluationService.GenerateEvaluationPlanAsync(codeTask, cancellationToken);
 
-        Console.WriteLine(JsonSerializer.Serialize(evaluationPlan));
+            Console.WriteLine(JsonSerializer.Serialize(evaluationPlan));
         
-        // 4. Execute code in isolated docker container (Docker code runner)
-        
+            // 4. Execute code in isolated docker container (Docker code runner)
+            var codeExecution = await _codeExecutionService.ExecuteCodeAsync(codeSubmission.Code, evaluationPlan, cancellationToken);
+        } // TODO Handle null (maybe just exception too)
+
         // 5. Send code to AIFeedbackService (I need to look into latency here and possibly feed back partial information or notify the learner)
+        
         
         // 6. Verify feedback using AI Hallucination service (TODO I dedicated week 5 to this)
         
