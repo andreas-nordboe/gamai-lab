@@ -5,3 +5,9 @@
       context: .
       dockerfile: gamai-lab-webapi/Dockerfile
 
+  gamailab.frontend:
+    image: gamailab.frontend
+    build:
+      context: .
+      dockerfile: GamAILab.Frontend/Dockerfile
+
