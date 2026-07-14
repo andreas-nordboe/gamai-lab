@@ -14,14 +14,16 @@ public class CodeSubmissionService : ICodeSubmissionService
     private readonly ICodeTaskService _codeTaskService;
     private readonly IAICodeEvaluationService _aiCodeEvaluationService;
     private readonly ICodeExecutionService _codeExecutionService;
+    private readonly ILogger<CodeSubmissionService> _logger;
 
 
-    public CodeSubmissionService(ApplicationDbContext dbContext, ICodeTaskService codeTaskService, IAICodeEvaluationService aiCodeEvaluationService, ICodeExecutionService codeExecutionService)
+    public CodeSubmissionService(ApplicationDbContext dbContext, ICodeTaskService codeTaskService, IAICodeEvaluationService aiCodeEvaluationService, ICodeExecutionService codeExecutionService, ILogger<CodeSubmissionService> logger)
     {
         _dbContext = dbContext;
         _codeTaskService = codeTaskService;
         _aiCodeEvaluationService = aiCodeEvaluationService;
         _codeExecutionService = codeExecutionService;
+        _logger = logger;
     }
 
     public async Task<CodeSubmissionResult> SubmitCodeAsync(CodeSubmissionRequest codeSubmission, string? userId, CancellationToken cancellationToken = default)
@@ -57,7 +59,10 @@ public class CodeSubmissionService : ICodeSubmissionService
             Console.WriteLine(JsonSerializer.Serialize(evaluationPlan));
         
             // 4. Execute code in isolated docker container (Docker code runner)
-            var codeExecution = await _codeExecutionService.ExecuteCodeAsync(codeSubmission.Code, evaluationPlan, cancellationToken);
+            var codeExecution = await _codeExecutionService.ExecuteCodeAsync("1=2", evaluationPlan, cancellationToken);
+            
+            _logger.LogInformation(JsonSerializer.Serialize(codeExecution));
+            
         } // TODO Handle null (maybe just exception too)
 
         // 5. Send code to AIFeedbackService (I need to look into latency here and possibly feed back partial information or notify the learner)
