@@ -1,23 +1,25 @@
 ﻿@inherits LayoutComponentBase
 
-<div class="page">
-    <div class="sidebar">
-        @*<NavMenu/>*@
-    </div>
+<MudThemeProvider Theme="_theme" />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
 
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-        </div>
-
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
-</div>
-
-<div id="blazor-error-ui" data-nosnippet>
-    An unhandled error has occurred.
-    <a href="." class="reload">Reload</a>
-    <span class="dismiss">🗙</span>
-</div>
+<MudLayout>
+    <MudAppBar Color="Color.Primary" Elevation="1">
+        <MudText Typo="Typo.h5" Class="ml-2" Style="font-weight: 900">GamAI Lab</MudText>
+        <MudSpacer/>
+        
+        <MudButton Class="mx-2" IconClass="@Icons.Material.Rounded.Home" Href="/" Color="Color.Inherit">Home</MudButton>
+        <MudButton Class="mx-2" IconClass="@Icons.Material.Rounded.School" href="learning-progress" Color="Color.Inherit">Learning Progress</MudButton>
+        <MudButton Class="mx-2" IconClass="@Icons.Material.Rounded.Code" href="code-tasks" Color="Color.Inherit">Code Tasks</MudButton>
+        <MudButton Class="mx-2" IconClass="@Icons.Material.Rounded.Cases" href="code-tasks" Color="Color.Inherit">Achievements</MudButton>
+        
+        <MudSpacer/>
+        <MudIconButton Icon="@Icons.Material.TwoTone.Logout" Color="Color.Inherit" OnClick="@((e) => LogoutUserAsync())" Edge="Edge.End"/>
+    </MudAppBar>
+   
+    <MudMainContent>
+        @Body
+    </MudMainContent>
+</MudLayout>
