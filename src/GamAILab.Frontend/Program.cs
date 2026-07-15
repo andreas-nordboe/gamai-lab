@@ -15,6 +15,9 @@ public class Program
         
         builder.Services.AddMudServices();
 
+        builder.Services.AddHttpClient("GamAILabAPI",
+            client => client.BaseAddress = new Uri(builder.Configuration.GetConnectionString("GamAILabAPI")));
+
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.

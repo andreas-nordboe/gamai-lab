@@ -1,6 +1,6 @@
 ﻿@inherits LayoutComponentBase
 
-<MudThemeProvider Theme="_theme" />
+<MudThemeProvider Theme="_theme" IsDarkMode="_isDarkMode"/>
 <MudPopoverProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
@@ -16,7 +16,7 @@
         <MudButton Class="mx-2" IconClass="@Icons.Material.Rounded.Cases" href="code-tasks" Color="Color.Inherit">Achievements</MudButton>
         
         <MudSpacer/>
-        <MudIconButton Icon="@Icons.Material.TwoTone.Logout" Color="Color.Inherit" OnClick="@((e) => LogoutUserAsync())" Edge="Edge.End"/>
+        <MudIconButton Icon="@Icons.Material.TwoTone.Logout" Color="Color.Inherit" Edge="Edge.End"/>
     </MudAppBar>
    
     <MudMainContent>
