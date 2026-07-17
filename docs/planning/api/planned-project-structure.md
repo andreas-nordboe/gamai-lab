@@ -114,8 +114,8 @@ User.cs
 
 Pages:
 - Dashboard/Home (Shows daily summary)
-- Learning path / Progress / Subbmission Summary 
-- Code task UI ()
+- Learning path / Progress / Submission Summary 
+- Code task UI (one landing page, nested components)
 - Achievements / Rewards
 - Onboarding (if time)
 

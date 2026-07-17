@@ -17,12 +17,12 @@ public partial class MainLayout
     {
         PaletteLight = new PaletteLight()
         {
-            Primary = "#3a446e",
+            Primary = "#435291",
             //Background = "#1e243b"
         },
         PaletteDark = new PaletteDark()
         {
-            Primary = "#3a446e",
+            Primary = "#435291",
             Background = "#1e243b"
         }
     };
