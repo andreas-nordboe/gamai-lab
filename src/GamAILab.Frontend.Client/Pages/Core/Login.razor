@@ -1,0 +1,17 @@
+@page "/login"
+@using Microsoft.AspNetCore.Authorization
+@attribute [AllowAnonymous]
+
+<MudContainer MaxWidth="MaxWidth.Small" Class="d-flex align-center justify-center" Style="height: 100vh">
+    <MudPaper Height="350px" Width="100%" Elevation="12" Class="px-4 py-4">
+        <MudText Align="Align.Center" Typo="Typo.h2" Style="font-weight: 900">GamAI Lab</MudText>
+
+        <MudForm>
+            <MudTextField Label="Email" @bind-Value="Email" Variant="Variant.Outlined"/>
+            <MudTextField Format="" Label="Password" @bind-Value="Password" Variant="Variant.Outlined" InputType="@PasswordInput" Adornment="Adornment.End" AdornmentIcon="@PasswordInputIcon" OnAdornmentClick="TogglePassword" AdornmentAriaLabel="Show Password" />
+            <MudButton Class="my-2" FullWidth="true" Color="Color.Primary" Variant="Variant.Filled" OnClick="LogInUserAsync">Login</MudButton>
+            <MudButton Class="my-2" FullWidth="true" Color="Color.Primary" Variant="Variant.Filled" Href="/register">Register</MudButton>
+        </MudForm>
+    </MudPaper>
+
+</MudContainer>

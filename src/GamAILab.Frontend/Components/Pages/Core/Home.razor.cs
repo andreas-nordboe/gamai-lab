@@ -4,4 +4,5 @@ namespace GamAILab.Frontend.Components.Pages.Core;
 
 public partial class Home : ComponentBase
 {
+    
 }

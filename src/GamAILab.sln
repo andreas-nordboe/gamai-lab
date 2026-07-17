@@ -9,7 +9,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GamAILab.Shared", "GamAILab.Shared\GamAILab.Shared.csproj", "{A3BBB1BE-79BD-4F84-8E8A-C4E34E4EADD7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GamAILab.Frontend", "GamAILab.Frontend\GamAILab.Frontend.csproj", "{9224EF7C-7FE8-46C9-958C-71B21CA90547}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GamAILab.Frontend.Client", "GamAILab.Frontend.Client\GamAILab.Frontend.Client.csproj", "{CBC93123-1EEC-482C-9F9C-6A72D68C2DF3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -25,9 +25,9 @@ Global
 		{A3BBB1BE-79BD-4F84-8E8A-C4E34E4EADD7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A3BBB1BE-79BD-4F84-8E8A-C4E34E4EADD7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A3BBB1BE-79BD-4F84-8E8A-C4E34E4EADD7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9224EF7C-7FE8-46C9-958C-71B21CA90547}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9224EF7C-7FE8-46C9-958C-71B21CA90547}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9224EF7C-7FE8-46C9-958C-71B21CA90547}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9224EF7C-7FE8-46C9-958C-71B21CA90547}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CBC93123-1EEC-482C-9F9C-6A72D68C2DF3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CBC93123-1EEC-482C-9F9C-6A72D68C2DF3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CBC93123-1EEC-482C-9F9C-6A72D68C2DF3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CBC93123-1EEC-482C-9F9C-6A72D68C2DF3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

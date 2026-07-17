@@ -15,7 +15,13 @@
     </ItemGroup>
 
     <ItemGroup>
+      <PackageReference Include="BlazorJWT.BlazoredLocalStorage" Version="1.0.1-tags-v1-0-0.1" />
       <PackageReference Include="MudBlazor" Version="9.7.0" />
+      <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.19.2" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\GamAILab.Shared\GamAILab.Shared.csproj" />
     </ItemGroup>
 
 </Project>

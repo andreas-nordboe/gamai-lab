@@ -73,14 +73,15 @@ public static class AuthenticationEndpoints
         var tokenHandler = new JsonWebTokenHandler();
         string accessToken = tokenHandler.CreateToken(tokenDescriptior);
 
-        return Results.Ok(new
+        return Results.Ok(new AuthenticationResponse
         {
             AccessToken = accessToken,
             ExpiresAt = tokenExpiry,
-            User = new
+            User = new AuthenticationUserResponse()
             {
-                user.Id,
-                user.Email,
+                Id = user.Id, 
+                Email = 
+                user.Email, 
                 Roles = roles
             }
         });
