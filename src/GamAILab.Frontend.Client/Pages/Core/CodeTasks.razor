@@ -39,15 +39,22 @@
         
         <MudItem xs="12" md="7">
             <MudText Typo="Typo.h5" Class="mb-2">Code Editor</MudText>
-            <MudPaper Outlined="true" Class="editor-panel">
-                <CodeEditorPanel/>
+            <MudPaper Outlined="true" Class="editor-container">
+                <CodeEditorPanel @ref="_codeEditorPanel" EditorId="code-editor" />
             </MudPaper>
             
             <MudStack Spacing="2"  Row="true" Justify="Justify.Center" Class="mt-3">
                 <MudButton FullWidth="true" Size="Size.Large" Variant="Variant.Filled" Color="Color.Primary" OnClick="SubmitCode">Submit Code</MudButton>
-                <MudButton FullWidth="true" Size="Size.Large" Variant="Variant.Filled" Color="Color.Primary" OnClick="RunCode">Run Code</MudButton>
-                
+                <MudButton FullWidth="true" Size="Size.Large" Disabled="_codeIsExecuting" Variant="Variant.Filled" Color="Color.Primary" OnClick="RunCode">
+                    @(_codeIsExecuting ? "Running code..." : "Run Code")
+                </MudButton>
             </MudStack>
+            
+            <MudText Class="mt-4 mb-2" Typo="Typo.h5">Code Output</MudText>
+            
+            <MudPaper Outlined="true" Class="output-container">
+                <CodeEditorPanel @ref="_codeOutputPanel" EditorId="code-output" ReadOnly="true" />
+            </MudPaper>
             
             
         </MudItem>

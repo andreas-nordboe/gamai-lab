@@ -30,8 +30,6 @@ public static class CodeSubmissionEndpoints
         
         var logger = loggerFactory.CreateLogger(typeof(AuthenticationEndpoints));
         
-        
-        
         var codeSubmit = await codeSubmissionService.SubmitCodeAsync(codeSubmission, userId);
 
         return Results.Ok(codeSubmit);

@@ -8,9 +8,14 @@
     border-radius: 18px;
 }
 
-
 .editor-container{
     overflow: hidden;
     min-height: 420px;
+    border-radius: 18px;
+}
+
+.output-container{
+    overflow: hidden;
+    min-height: 220px;
     border-radius: 18px;
 }

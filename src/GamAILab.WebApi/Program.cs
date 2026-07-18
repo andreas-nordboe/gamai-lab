@@ -146,6 +146,7 @@ using (var scope = app.Services.CreateScope())
 app.MapCodeSubmissionEndpoint();
 app.MapAuthenticationEndpoints();
 app.MapCodeTaskEndpoints();
+app.MapCodeExecutionEndpoints();
 
 if (!app.Environment.IsDevelopment())
 {
