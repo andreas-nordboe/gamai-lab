@@ -59,7 +59,8 @@ def main():
                     output.append(run_learner_code(learner_code, test))
             
             except BaseException as exception:
-                fatal_error = traceback.format_exc()
+                # fatal_error = traceback.format_exc()
+                fatal_error = f"{type(exception).__name__}: {exception}"
 
     print (json.dumps({
         "didComplete": fatal_error is None,
