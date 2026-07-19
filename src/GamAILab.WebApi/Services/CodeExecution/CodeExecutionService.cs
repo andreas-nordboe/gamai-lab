@@ -7,7 +7,7 @@ namespace GamAILab.WebApi.Services.CodeExecution;
 
 public class CodeExecutionService : ICodeExecutionService
 {
-    private const string DockerImage = "gamai-python-runner:0.1";
+    private const string DockerImage = "gamai-lab-code-runner:0.1";
     private static readonly TimeSpan Timeout = TimeSpan.FromSeconds(30);
     
     // TODO I might change these later, its to prevent many containers from starting together (which will be important for AI persona testing later)
@@ -27,7 +27,7 @@ public async Task<CodeExecutionResult> ExecuteCodeAsync(string learnerCode, AICo
 
     try
     {
-        return await ExecuteCode(learnerCode, codeEvaluationPlan, cancellationToken);
+        return await ExecuteCode(learnerCode, codeEvaluationPlan, true, cancellationToken);
     }
     finally
     {
@@ -35,27 +35,55 @@ public async Task<CodeExecutionResult> ExecuteCodeAsync(string learnerCode, AICo
     }
 }
 
-private async Task<CodeExecutionResult> ExecuteCode(string learnerCode, AICodeEvaluationPlan codeEvaluationPlan, CancellationToken cancellationToken = default)
+// Executes code without running AI evaluation plan (so learners can see outputs from the frontend)
+public async Task<CodeExecutionResponse> ExecuteCodeNoTests(string learnerCode, CancellationToken cancellationToken = default)
+{
+    await CodeExecutions.WaitAsync(cancellationToken);
+
+    try
+    {
+        var result = await ExecuteCode(learnerCode, null, false, cancellationToken);
+        
+        // It's probably enough to provide the client with minimal required since this only runs the code without the tests 
+        return new CodeExecutionResponse
+        {
+            CodeOutput = result.StandardOutput,
+            CodeError = !string.IsNullOrEmpty(result.FatalError) ? result.FatalError : result.StandardError,
+            DidComplete = result.DidComplete,
+            TimedOut = result.TimedOut,
+            ExecutionDurion = result.ExecutionDuration
+        };
+    }
+    finally
+    {
+        CodeExecutions.Release();
+    }
+}
+
+private async Task<CodeExecutionResult> ExecuteCode(string learnerCode, AICodeEvaluationPlan codeEvaluationPlan, bool runTests, CancellationToken cancellationToken = default)
 {
     if (string.IsNullOrWhiteSpace(learnerCode))
     {
         throw new ArgumentException("Learner code cannot be empty", nameof(learnerCode));
     }
+
+    if (runTests)
+    {
+        // I'll just hard-code Python for now and make the system more flexible later 
+        if(!string.Equals(codeEvaluationPlan.Language, "Python", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ArgumentException("Language is not supported", nameof(codeEvaluationPlan.Language));
+        }
+
+        if (codeEvaluationPlan.Tests.Count == 0)
+        {
+            throw new ArgumentException("There are no tests ot evaluate");
+        }
+    }
     
-    // I'll just hard-code Python for now and make the system more flexible later 
-    if(!string.Equals(codeEvaluationPlan.Language, "Python", StringComparison.OrdinalIgnoreCase))
-    {
-        throw new ArgumentException("Language is not supported", nameof(codeEvaluationPlan.Language));
-    }
-
-    if (codeEvaluationPlan.Tests.Count == 0)
-    {
-        throw new ArgumentException("There are no tests ot evaluate");
-    }
-
     var timerStart = Stopwatch.GetTimestamp();
     var codeExecutionId = Guid.NewGuid().ToString("N"); // Digits should be fine as I'll use it consistently
-    var containerName = $"gamai-code-runner-{codeExecutionId}"; // TODO append code languages here later
+    var containerName = $"gamai-lab-code-runner-{codeExecutionId}"; // TODO append code languages here later
     
     var tempDirectory = Path.Combine(Path.GetTempPath(), $"gamai-code-executon-{codeExecutionId}");
     
@@ -63,13 +91,13 @@ private async Task<CodeExecutionResult> ExecuteCode(string learnerCode, AICodeEv
 
     try
     {
-        var submissionPath = Path.Combine(tempDirectory, "code-submission.py");
+        var submissionPath = Path.Combine(tempDirectory, "code_submission.py");
         
         var testsPath = Path.Combine(tempDirectory, "tests.json");
         
         await File.WriteAllTextAsync(submissionPath, learnerCode, cancellationToken);
         
-        var testsJsonFormat = JsonSerializer.Serialize(codeEvaluationPlan.Tests, JsonSerializerOptions);
+        var testsJsonFormat = runTests ? JsonSerializer.Serialize(codeEvaluationPlan.Tests, JsonSerializerOptions) : "[]";
 
         await File.WriteAllTextAsync(testsPath, testsJsonFormat, cancellationToken);
 
@@ -160,7 +188,7 @@ private async Task<CodeExecutionResult> ExecuteCode(string learnerCode, AICodeEv
             };
         }
         
-        var testResults = runnerResponse.TestsOutputs.Select(test => new CodeTestResult
+        var testResults = runTests ? (runnerResponse.TestsOutputs ?? []).Select(test => new CodeTestResult
         {
             Name = test.Name,
             Passed = test.Passed,
@@ -170,14 +198,13 @@ private async Task<CodeExecutionResult> ExecuteCode(string learnerCode, AICodeEv
                     ? actualResult.Clone()
                     : null,
             Error = test.Error
-        }).ToList();
+        }).ToList() : new List<CodeTestResult>();
 
         return new CodeExecutionResult
         {
             DidComplete = runnerResponse.DidComplete,
             TimedOut = false,
-            EveryTestPassed = runnerResponse.DidComplete && testResults.Count > 0 &&
-                              testResults.All(test => test.Passed),
+            EveryTestPassed = runTests && runnerResponse.DidComplete && testResults.Count > 0 && testResults.All(test => test.Passed),
             ExitCode = dockerInstance.ExitCode,
             StandardOutput = TruncateString(runnerResponse.StandardOutput),
             StandardError = TruncateString(runnerResponse.StandardError),

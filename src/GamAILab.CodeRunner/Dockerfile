@@ -1,8 +1,8 @@
 ﻿FROM python:3.13-alpine3.24
 
-WORKDIR /runner
+WORKDIR /coderunner
 
-COPY python-code-runner-script.py
+COPY python-code-runner-script.py .
 
 RUN addgroup -S -g 10001 coderunner \
     && adduser -S -D -H -u 10001 -G coderunner coderunner 

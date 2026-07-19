@@ -1,0 +1,49 @@
+using GamAILab.Frontend.Client.Dialogs;
+using GamAILab.Frontend.Client.Providers;
+using Microsoft.AspNetCore.Components;
+using MudBlazor;
+
+namespace GamAILab.Frontend.Client.Layout;
+
+public partial class MainLayout
+{
+    [Inject] private NavigationManager NavigationManager { get; set; }
+    [Inject] private JWTAuthenticationStateProvider AuthenticationStateProvider { get; set; }
+    [Inject] private IDialogService DialogService { get; set; }
+    private int _activeTabIndex;
+    private bool _isDarkMode = true;
+    
+    private readonly MudTheme _theme = new()
+    {
+        PaletteLight = new PaletteLight()
+        {
+            Primary = "#435291",
+            //Background = "#1e243b"
+        },
+        PaletteDark = new PaletteDark()
+        {
+            Primary = "#435291",
+            Background = "#1e243b"
+        }
+    };
+
+    private void NavigateTo(string url)
+    {
+        NavigationManager.NavigateTo(url);
+    }
+    
+    private async Task LogoutUserAsync()
+    {
+        Console.WriteLine("Logging out...");
+        var options = new DialogOptions { CloseOnEscapeKey = true, FullWidth =  true, MaxWidth = MaxWidth.ExtraSmall };
+        
+        var dialog = await DialogService.ShowAsync<LogoutDialog>("Logout", options);
+        var result = await dialog.Result;
+
+        if (result != null && !result.Canceled)
+        {
+            await AuthenticationStateProvider.SetUserLoggedOut();
+            NavigationManager.NavigateTo("/login", forceLoad: true);
+        }
+    }
+}

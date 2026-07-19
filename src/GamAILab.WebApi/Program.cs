@@ -16,6 +16,17 @@ using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Add CORS for frontend
+
+const string FrontendClientPolicy = "WasmClient"; 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(FrontendClientPolicy, policy =>
+    {
+        policy .WithOrigins("http://localhost:5123").AllowAnyHeader().AllowAnyMethod();
+    });
+});
+
 // Add services to the container.
 builder.Services.AddOpenApi();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -135,8 +146,15 @@ using (var scope = app.Services.CreateScope())
 app.MapCodeSubmissionEndpoint();
 app.MapAuthenticationEndpoints();
 app.MapCodeTaskEndpoints();
+app.MapCodeExecutionEndpoints();
 
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
+
+app.UseRouting();
+app.UseCors(FrontendClientPolicy);
 
 app.UseAuthentication();
 app.UseAuthorization();

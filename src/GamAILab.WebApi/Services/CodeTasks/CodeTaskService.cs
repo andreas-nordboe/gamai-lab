@@ -65,6 +65,12 @@ public class CodeTaskService : ICodeTaskService
             CreatedAt =  DateTime.Now
         };
         
+        var taskExists = await _dbContext.CodeTasks.AnyAsync(p => p.Id == codeTaskPythonAdding.Id);
+        if (!taskExists)
+        {
+            return;
+        }
+        
         await AddCodeTask(codeTaskPythonAdding);
     }
 }

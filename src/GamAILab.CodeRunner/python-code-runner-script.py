@@ -5,9 +5,9 @@ import io
 import traceback
 
 def load_learner_code():
-    loc = importlib.util.find_spec_from_file_location("learner_code", "/workspace/submission.py")
+    loc = importlib.util.spec_from_file_location("learner_code", "/workspace/code_submission.py")
 
-    if loc is None or spec.loader is None:
+    if loc is None or loc.loader is None:
         raise ImportError("Could not find learner code")
     
     module = importlib.util.module_from_spec(loc)
@@ -59,14 +59,15 @@ def main():
                     output.append(run_learner_code(learner_code, test))
             
             except BaseException as exception:
-                fatal_error = traceback.format_exc()
+                # fatal_error = traceback.format_exc()
+                fatal_error = f"{type(exception).__name__}: {exception}"
 
     print (json.dumps({
-        "completed": fatal_error is None,
+        "didComplete": fatal_error is None,
         "standardOutput": stdout.getvalue(),
         "standardError": stderr.getvalue(),
         "fatalError": fatal_error,
-        "testResults": output
+        "testOutputs": output
     }))
 
 if __name__ == "__main__":

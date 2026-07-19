@@ -1,6 +1,6 @@
 # Project Scope MVP
 
-The purpose of this document is to defne what must be included in the MVP to reduce risks of overengineering.
+The purpose of this document is to define what must be included in the MVP to reduce risks of overengineering.
 
 - Learner opens one Python code task (maybe combining strings or for loops), which will be expanded upon later (possibly automated task generation for specific topics)
 - Learner submits code

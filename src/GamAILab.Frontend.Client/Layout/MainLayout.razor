@@ -1,0 +1,28 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@inherits LayoutComponentBase
+
+<MudThemeProvider Theme="_theme" IsDarkMode="_isDarkMode"/>
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<MudLayout>
+    <AuthorizeView>
+        <MudAppBar Color="Color.Primary" Elevation="1">
+            <MudText Typo="Typo.h5" Class="ml-2" Style="font-weight: 900">GamAI Lab</MudText>
+            <MudSpacer/>
+
+            <MudButton Class="mx-2" IconClass="@Icons.Material.Rounded.Home" Href="/" Color="Color.Inherit">Home</MudButton>
+            <MudButton Class="mx-2" IconClass="@Icons.Material.Rounded.School" href="learning-progress" Color="Color.Inherit">Learning Progress</MudButton>
+            <MudButton Class="mx-2" IconClass="@Icons.Material.Rounded.Code" href="code-tasks" Color="Color.Inherit">Code Tasks</MudButton>
+            <MudButton Class="mx-2" IconClass="@Icons.Material.Rounded.Cases" href="achievements" Color="Color.Inherit">Achievements</MudButton>
+
+            <MudSpacer/>
+            <MudIconButton Icon="@Icons.Material.TwoTone.Logout" OnClick="LogoutUserAsync" Color="Color.Inherit" Edge="Edge.End"/>
+        </MudAppBar>
+    </AuthorizeView>
+
+    <MudMainContent>
+        @Body
+    </MudMainContent>
+</MudLayout>
