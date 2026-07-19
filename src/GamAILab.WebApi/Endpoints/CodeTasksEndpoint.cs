@@ -26,11 +26,16 @@ public static class CodeTasksEndpoint
         .Produces<CodeTask>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
         
+        group.MapGet("/tasks",
+            async Task<Results<Ok<List<CodeTask>>, NotFound>> (ICodeTaskService codeTaskService) =>
+            {
+                var codeTasks = await codeTaskService.GetAllCodeTasks();
+
+                return TypedResults.Ok(codeTasks ?? []);
+            }).WithName("GetAllCodeTasks")
+        .Produces<List<CodeTask>>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound);
+        
         return app;
     }
-    
-    /*private static async Task<CodeTask> GetCodeTaskAsync(ICodeTaskService codeTaskService)
-    {
-        return codeTaskService.GetCodeTaskById()
-    }*/
 }

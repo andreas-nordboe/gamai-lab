@@ -1,11 +1,22 @@
-@page "/code-tasks"
+@page "/code-task/{TaskId:int}"
 @using BlazorMonaco.Editor
 @using GamAILab.Frontend.Client.Components.CodeTasks
 @using Microsoft.AspNetCore.Authorization
 @attribute [Authorize]
 
+@if (_isLoading)
+{
+    <MudProgressLinear/> 
+}
+else if(_codeTask is null)
+{
+    <MudAlert Severity="Severity.Error">
+        Code task was not found
+    </MudAlert>
+}
+
 <MudContainer Class="pa-4" MaxWidth="MaxWidth.False">
-    <MudText Align="Align.Center" Class="mb-4" Typo="Typo.h3">Code Task</MudText>
+    <MudText Align="Align.Left" Class="mb-4" Typo="Typo.h3">@_codeTask?.Title</MudText>
     
     <MudGrid Spacing="3">
         <MudItem xs="12" md="5">
@@ -14,11 +25,31 @@
             <MudPaper Outlined="true" Class="pa-4 task-container">
                 
                 <MudText Typo="Typo.h5" Class="mb-3">
-                    Instructions go here.
+                    @_codeTask?.Description
                 </MudText>
                 
-                <MudText><strong>Requirements:</strong></MudText>
-                Requirements list go here (for loop and add UI components)
+                <MudText><strong>Examples:</strong></MudText>
+                @if (_codeTask?.Constraints is not null)
+                {
+                    foreach (var constraint in _codeTask?.Constraints!)
+                    {
+                        <MudText>@constraint</MudText>
+                    }
+                }
+                
+                
+                @if (_codeTask?.Constraints is not null)
+                {
+                    if (_codeTask.Constraints.Any())
+                    {
+                        <MudText><strong>Requirements:</strong></MudText>
+                    
+                        foreach (var constraint in _codeTask?.Constraints!)
+                        {
+                            <MudText>@constraint</MudText>
+                        }
+                    }
+                }
             </MudPaper>
             
             <MudText Typo="Typo.h5" Class="mb-2">Progress</MudText>
@@ -44,7 +75,9 @@
             </MudPaper>
             
             <MudStack Spacing="2"  Row="true" Justify="Justify.Center" Class="mt-3">
-                <MudButton FullWidth="true" Size="Size.Large" Variant="Variant.Filled" Color="Color.Primary" OnClick="SubmitCode">Submit Code</MudButton>
+                <MudButton FullWidth="true" Size="Size.Large" Disabled="_codeIsSubmitting" Variant="Variant.Filled" Color="Color.Primary" OnClick="SubmitCode">
+                    @(_codeIsSubmitting ? "Submitting code..." : "Submit Code")
+                </MudButton>
                 <MudButton FullWidth="true" Size="Size.Large" Disabled="_codeIsExecuting" Variant="Variant.Filled" Color="Color.Primary" OnClick="RunCode">
                     @(_codeIsExecuting ? "Running code..." : "Run Code")
                 </MudButton>

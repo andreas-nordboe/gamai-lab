@@ -19,9 +19,7 @@ public class CodeSubmissionService : ICodeSubmissionService
         
         if (!response.IsSuccessStatusCode)
         {
-            if(response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                throw new UnauthorizedAccessException("Invalid or empty password");
-            
+            // TODO parse HTTP error codes 
             throw new HttpRequestException("An internal error occured");
         }
         
