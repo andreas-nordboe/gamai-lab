@@ -290,3 +290,10 @@ GamAILab.WebApi/GamAILabWebApiDb.db-wal
 GamAILab.WebApi/GamAILabWebApiDb.db
 GamAILab.WebApi/GamAILabWebApiDb.db-wal
 GamAILab.WebApi/GamAILabWebApiDb.db-shm
+src/GamAILab.WebApi/GamAILabWebApiDb.db
+
+# Mac DS_Stores
+.DS_Store
+**/.DS_Store
+._.DS_Store
+**/._.DS_Store
