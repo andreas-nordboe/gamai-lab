@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace GamAILab.Shared.Models.CodeExecution;
 
 public class CodeExecutionResult

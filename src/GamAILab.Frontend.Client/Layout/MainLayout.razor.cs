@@ -34,7 +34,6 @@ public partial class MainLayout
     
     private async Task LogoutUserAsync()
     {
-        Console.WriteLine("Logging out...");
         var options = new DialogOptions { CloseOnEscapeKey = true, FullWidth =  true, MaxWidth = MaxWidth.ExtraSmall };
         
         var dialog = await DialogService.ShowAsync<LogoutDialog>("Logout", options);

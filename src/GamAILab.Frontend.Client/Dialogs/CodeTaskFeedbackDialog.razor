@@ -1,0 +1,180 @@
+@using GamAILab.Frontend.Client.Components.CodeTasks
+<MudDialog>
+    <TitleContent>
+        Code Task Feedback
+    </TitleContent>
+    <DialogContent>
+        
+         <MudContainer MaxWidth="MaxWidth.False" Class="pa-4">
+
+            <MudText Typo="Typo.h4" Class="mb-1">
+                @CodeSubmissionFeedback.CodeTask.Title
+            </MudText>
+
+            <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-4">
+                @CodeSubmissionFeedback.CodeTask.Description
+            </MudText>
+
+            <CodeEditorPanel @ref="_codeFeedbackPanel" EditorId="code-feedback-panel" ReadOnly="true" />
+
+            <MudGrid Spacing="3" Class="mt-2">
+
+                <MudItem xs="12" md="6">
+                    <MudStack Spacing="3">
+
+                        <div>
+                            <MudText Typo="Typo.h6" Class="mb-2">Code Execution</MudText>
+
+                            <MudPaper Class="pa-4 result-container" Outlined="true">
+                                <MudText Color="@FormatOutcomeColor()">
+                                    <b>Learning Outcome:</b>
+                                    @CodeSubmissionFeedback.AIFeedback.TaskOutcome
+                                </MudText>
+
+                                <MudText>
+                                    <b>Checks passed:</b>
+                                    @PassedTests / @TotalTests
+                                </MudText>
+
+                                <MudText>
+                                    <b>Runtime:</b>
+                                    @CodeExecutionDuration
+                                </MudText>
+
+                                @if (CodeSubmissionFeedback.CodeExecution.TimedOut)
+                                {
+                                    <MudAlert Severity="Severity.Error" Class="mt-3">
+                                        The code execution timed out
+                                    </MudAlert>
+                                }
+                                else if (!string.IsNullOrWhiteSpace(CodeSubmissionFeedback.CodeExecution.FatalError))
+                                {
+                                    <MudAlert Severity="Severity.Error" Class="mt-3">
+                                        @CodeSubmissionFeedback.CodeExecution.FatalError
+                                    </MudAlert>
+                                }
+                            </MudPaper>
+                        </div>
+
+                        <div>
+                            <MudText Typo="Typo.h6" Class="mb-2">
+                                Test Results
+                            </MudText>
+
+                            <MudPaper Class="pa-4" Outlined="true">
+                                @if (TotalTests == 0)
+                                {
+                                    <MudText>
+                                        No test results were returned.
+                                    </MudText>
+                                }
+                                else
+                                {
+                                    @foreach (var test in CodeSubmissionFeedback.CodeExecution.CodeTests)
+                                    {
+                                        <MudPaper Class="pa-3 mb-2" Outlined="true">
+                                            <MudText><b>@test.Name</b></MudText>
+
+                                            <MudText>
+                                                Status:
+                                                @(test.Passed ? "Passed" : "Failed")
+                                            </MudText>
+
+                                            <MudText>
+                                                Expected: @FormatJsonValue(test.ExpectedResult)
+                                            </MudText>
+
+                                            <MudText>
+                                                Actual: @FormatJsonValue(test.ActualOutput)
+                                            </MudText>
+
+                                            @if (!string.IsNullOrWhiteSpace(test.Error))
+                                            {
+                                                <MudText Color="Color.Error">
+                                                    Error: @test.Error
+                                                </MudText>
+                                            }
+                                        </MudPaper>
+                                    }
+                                }
+                            </MudPaper>
+                        </div>
+
+                        @* Placeholder until later iteration/week *@
+                        @if (HallucinationCheckerResult is not null)
+                        {
+                            <div>
+                                <MudText Typo="Typo.h6" Class="mb-2">
+                                    AI Hallucination Verification
+                                </MudText>
+
+                                <MudPaper Class="pa-4 verification-container"
+                                          Outlined="true">
+                                    <MudText>
+                                        <b>Feedback consistency:</b>
+                                        @HallucinationCheckerResult
+                                    </MudText>
+                                </MudPaper>
+                            </div>
+                        }
+
+                    </MudStack>
+                </MudItem>
+
+                <MudItem xs="12" md="6">
+                    <MudText Typo="Typo.h6" Class="mb-2">
+                        AI Evaluation Output
+                    </MudText>
+
+                    <MudPaper Class="pa-4 evaluation-container" Outlined="true">
+                        <MudText>
+                            <b>Outcome:</b>
+                            @CodeSubmissionFeedback.AIFeedback.TaskOutcome
+                        </MudText>
+
+                        <MudText Class="mt-3">
+                            <b>Explanation:</b>
+                        </MudText>
+
+                        <MudText>
+                            @CodeSubmissionFeedback.AIFeedback.Explanation
+                        </MudText>
+
+                        @if (!string.IsNullOrWhiteSpace(
+                                 CodeSubmissionFeedback.AIFeedback.HintMessage))
+                        {
+                            <MudText Class="mt-4">
+                                <b>Hint:</b>
+                            </MudText>
+
+                            <MudText>
+                                @CodeSubmissionFeedback.AIFeedback.HintMessage
+                            </MudText>
+                        }
+
+                        @if (FeedbackEvidence.Count > 0)
+                        {
+                            <MudText Class="mt-4">
+                                <b>Evidence:</b>
+                            </MudText>
+
+                            <MudList T="string" Dense="true">
+                                @foreach (var evidence in FeedbackEvidence)
+                                {
+                                    <MudListItem T="string">
+                                        @evidence
+                                    </MudListItem>
+                                }
+                            </MudList>
+                        }
+                    </MudPaper>
+                </MudItem>
+
+            </MudGrid>
+        </MudContainer>
+        
+    </DialogContent>
+    <DialogActions>
+        
+    </DialogActions>
+</MudDialog>

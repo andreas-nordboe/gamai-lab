@@ -75,10 +75,10 @@ else if(_codeTask is null)
             </MudPaper>
             
             <MudStack Spacing="2"  Row="true" Justify="Justify.Center" Class="mt-3">
-                <MudButton FullWidth="true" Size="Size.Large" Disabled="_codeIsSubmitting" Variant="Variant.Filled" Color="Color.Primary" OnClick="SubmitCode">
+                <MudButton FullWidth="true" Size="Size.Large" Disabled="_codeIsSubmitting" Variant="Variant.Filled" Color="Color.Primary" OnClick="SubmitCodeAsync">
                     @(_codeIsSubmitting ? "Submitting code..." : "Submit Code")
                 </MudButton>
-                <MudButton FullWidth="true" Size="Size.Large" Disabled="_codeIsExecuting" Variant="Variant.Filled" Color="Color.Primary" OnClick="RunCode">
+                <MudButton FullWidth="true" Size="Size.Large" Disabled="_codeIsExecuting" Variant="Variant.Filled" Color="Color.Primary" OnClick="RunCodeAsync">
                     @(_codeIsExecuting ? "Running code..." : "Run Code")
                 </MudButton>
             </MudStack>
