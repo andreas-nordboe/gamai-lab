@@ -1,5 +1,6 @@
 using System.Text.Json;
 using GamAILab.Frontend.Client.Components.CodeTasks;
+using GamAILab.Frontend.Client.Dialogs;
 using GamAILab.Frontend.Client.Services;
 using GamAILab.Shared.Models;
 using GamAILab.Shared.Models.CodeSubmission;
@@ -16,6 +17,7 @@ public partial class CodeTaskPage : ComponentBase
    [Inject] public ICodeSubmissionService CodeSubmissionService { get; set; }
    [Inject] public ISnackbar Snackbar { get; set; }
    [Inject] public ICodeTasksService CodeTasksService { get; set; } = default;
+   [Inject] public IDialogService DialogService { get; set; }
    
    // Panels
    private CodeEditorPanel? _codeEditorPanel;
@@ -48,7 +50,7 @@ public partial class CodeTaskPage : ComponentBase
       }
    }
 
-   private async Task RunCode()
+   private async Task RunCodeAsync()
    {
       if (_codeEditorPanel is null || _codeIsExecuting)
       {
@@ -103,7 +105,7 @@ public partial class CodeTaskPage : ComponentBase
    
    private async Task ResetCode()
    {
-      await _codeEditorPanel?.SetCodeAsync(string.Empty); 
+      await _codeEditorPanel?.SetCodeAsync(_codeTask?.DefaultCode); 
    }
    
    private void GetCodeHint()
@@ -111,7 +113,7 @@ public partial class CodeTaskPage : ComponentBase
       // TODO   
    }
    
-   private async Task SubmitCode()
+   private async Task SubmitCodeAsync()
    {
       if (_codeEditorPanel is null || _codeIsSubmitting)
       {
@@ -136,6 +138,21 @@ public partial class CodeTaskPage : ComponentBase
          };
 
          var submitCodeResponse = await CodeSubmissionService.SubmitCodeAsync(codeSubmissionRequest);
+         
+         var parameters = new DialogParameters<CodeTaskFeedbackDialog>
+         {
+            { x => x.CodeSubmissionFeedback, submitCodeResponse }
+         };
+         
+         var options = new DialogOptions { CloseOnEscapeKey = true, FullWidth =  true, MaxWidth = MaxWidth.Large, CloseButton = true };
+         var dialog = await DialogService.ShowAsync<CodeTaskFeedbackDialog>("Code Task Feedback", parameters, options);
+         var result = await dialog.Result;
+
+         if (result != null && !result.Canceled)
+         {
+            // TODO
+         }
+         
       }
       catch (Exception e)
       {

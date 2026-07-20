@@ -78,7 +78,6 @@ public class CodeSubmissionService : ICodeSubmissionService
         await _dbContext.SaveChangesAsync(cancellationToken);
         _logger.LogInformation($"Persited feedback for submission {submission.Id} with task outcome {aiFeedback.TaskOutcome}");
         
-        
         // TODO 6. Verify feedback using AI Hallucination service (TODO I dedicated week 5 to this)
         
         // TODO 7. Update progress in Game/Progress Service
@@ -92,6 +91,8 @@ public class CodeSubmissionService : ICodeSubmissionService
             CodeTask = codeTask,
             AttemptNumber = submission.Attempts,
             CodeExecution = codeExecution,
+            SubmittedCode =  codeSubmission.Code,
+            ExecutionDuration = codeExecution.ExecutionDuration,
             AIFeedback = new AICodeTaskFeedbackDTO
             {
                 Id =  aiFeedback.Id,

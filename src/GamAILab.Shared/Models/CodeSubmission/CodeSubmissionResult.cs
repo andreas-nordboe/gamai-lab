@@ -9,6 +9,7 @@ public class CodeSubmissionResult
     public int AttemptNumber { get; set; }
     public CodeTask CodeTask { get; set; } = null!; // TODO mask internal fields from response (seen by client)
     public CodeExecutionResult CodeExecution { get; set; } = null!; 
-    public AICodeTaskFeedbackDTO AIFeedback { get; set; } = null!; 
-    
+    public AICodeTaskFeedbackDTO AIFeedback { get; set; } = null!;
+    public TimeSpan ExecutionDuration { get; set; }
+    public string SubmittedCode { get; set; } // Returns code back to client so it can be displayed on the frontend
 }
