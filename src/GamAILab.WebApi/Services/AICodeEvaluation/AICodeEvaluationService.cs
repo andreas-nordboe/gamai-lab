@@ -71,15 +71,15 @@ public class AICodeEvaluationService : IAICodeEvaluationService
                         "type": "integer"
                      }
                    },
-                    "expectedOutput": {
-                      "type": "string"
+                    "expectedResult": {
+                      "type": "integer"
                     }
                   },
                   "required": [
                     "name",
                     "functionName",
                     "arguments",
-                    "expectedOutput"
+                    "expectedResult"
                   ]
                 }
               }
@@ -238,12 +238,12 @@ public class AICodeEvaluationService : IAICodeEvaluationService
                 throw new InvalidOperationException("A code evaluation test has no name");
             }
             
-            if (test.FunctionName is null)
+            if (string.IsNullOrWhiteSpace(test.FunctionName))
             {
                 throw new InvalidOperationException($"Test '{test.Name}' has no input");
             }
 
-            if (test.ExpectedOutput is null)
+            if (test.ExpectedResult.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
             {
                 throw new InvalidOperationException($"Test '{test.Name}' has no expected output");
             }

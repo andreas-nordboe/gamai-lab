@@ -192,7 +192,7 @@ private async Task<CodeExecutionResult> ExecuteCode(string learnerCode, AICodeEv
         {
             Name = test.Name,
             Passed = test.Passed,
-            ExpectedOutput = test.ExpectedOutput is { } expectedOutput ? expectedOutput.Clone() : null,
+            ExpectedResult = test.ExpectedResult is { } expectedOutput ? expectedOutput.Clone() : null,
             ActualOutput = 
                 test.ActualOutput is { } actualResult
                     ? actualResult.Clone()
