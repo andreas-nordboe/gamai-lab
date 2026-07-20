@@ -132,7 +132,6 @@ public class AICodeEvaluationService : IAICodeEvaluationService
         var promptRequest = new ChatRequest
         {
             Model = "gemma4",
-            //Format = "json", // TODO use my own JSON schema instead
             Format = EvaluationPlanSchema,
             Stream = false, // I don't think there is a need for streaming here
             Think =  false, // I need to experiment with this one

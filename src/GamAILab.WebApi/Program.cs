@@ -43,6 +43,7 @@ builder.Services.AddScoped<ICodeTaskService, CodeTaskService>();
 builder.Services.AddScoped<ICodeSubmissionService,  CodeSubmissionService>();
 builder.Services.AddScoped<IAICodeEvaluationService, AICodeEvaluationService>();
 builder.Services.AddSingleton<ICodeExecutionService, CodeExecutionService>();
+builder.Services.AddSingleton<IAIFeedbackService, AIFeedbackService>();
 
 builder.Services.AddAuthentication(options =>
 {
