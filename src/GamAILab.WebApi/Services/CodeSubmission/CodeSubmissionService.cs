@@ -48,9 +48,6 @@ public class CodeSubmissionService : ICodeSubmissionService
             SubmittedAt = DateTime.UtcNow
         };
         
-        _dbContext.CodeSubmissions.Add(submission);
-        await _dbContext.SaveChangesAsync();
-        
         // 2. Request task information
         var codeTask = await _codeTaskService.GetCodeTaskById(codeSubmission.CodeTaskId);
 
@@ -59,6 +56,10 @@ public class CodeSubmissionService : ICodeSubmissionService
         {
             throw new KeyNotFoundException("CodeTask was not found");
         }
+        
+        // Save submission after validating that task exists
+        _dbContext.CodeSubmissions.Add(submission);
+        await _dbContext.SaveChangesAsync();
 
         var evaluationPlan = await _aiCodeEvaluationService.GenerateEvaluationPlanAsync(codeTask, cancellationToken);
         
@@ -75,19 +76,16 @@ public class CodeSubmissionService : ICodeSubmissionService
         
         _dbContext.AICodeTaskFeedbacks.Add(aiFeedback);
         await _dbContext.SaveChangesAsync(cancellationToken);
-        
         _logger.LogInformation($"Persited feedback for submission {submission.Id} with task outcome {aiFeedback.TaskOutcome}");
-            
-        // TODO Handle null (maybe just exception too)
         
-        // 6. Verify feedback using AI Hallucination service (TODO I dedicated week 5 to this)
         
-        // 7. Update progress in Game/Progress Service
+        // TODO 6. Verify feedback using AI Hallucination service (TODO I dedicated week 5 to this)
         
-        // Later: Adaptive learning (possibly in a separate service)
+        // TODO 7. Update progress in Game/Progress Service
+        
+        // TODO Later: Adaptive learning (possibly in a separate service)
         
         // 8. Return results to the client
-
         return new CodeSubmissionResult
         {
             SubmissionId =  submission.Id,
