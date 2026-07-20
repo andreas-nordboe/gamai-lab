@@ -12,4 +12,5 @@ public class CodeExecutionResult
     public string FatalError { get; init; } = string.Empty;
     public TimeSpan ExecutionDuration { get; init; }
     public IReadOnlyList<CodeTestResult> CodeTests { get; init; } = [];
+    // TODO add execution failure type: none, learner, timeout, platform
 }

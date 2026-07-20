@@ -1,10 +1,14 @@
+using GamAILab.Shared.Models.AICodeEvaluation;
+using GamAILab.Shared.Models.CodeExecution;
+
 namespace GamAILab.Shared.Models.CodeSubmission;
 
 public class CodeSubmissionResult
 {
-    // TODO to be displayed on frontend Status (Pass/Fail/Partial), Feedback, Progress
-    // TODO separate parameters for AI personas
-    //public string Status { get; set; }
-    public CodeTask? CodeTask { get; set; } // TODO remove after testing output to avoid disclosing internal code task
+    public int SubmissionId { get; set; }
+    public int AttemptNumber { get; set; }
+    public CodeTask CodeTask { get; set; } = null!; // TODO mask internal fields from response (seen by client)
+    public CodeExecutionResult CodeExecution { get; set; } = null!; 
+    public AICodeTaskFeedbackDTO AIFeedback { get; set; } = null!; 
     
 }

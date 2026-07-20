@@ -217,7 +217,7 @@ public class AIFeedbackService : IAIFeedbackService
             throw new InvalidOperationException("LLM did not provide any hints for an incorrect submission attempt");
         }
         
-        if (codeTaskOutcome == CodeTaskOutcome.CodeExecutionError && string.IsNullOrWhiteSpace(executionResult.FatalError))
+        if (codeTaskOutcome == CodeTaskOutcome.ExecutionError && string.IsNullOrWhiteSpace(executionResult.FatalError))
         {
             throw new InvalidOperationException("LLM claims that submission had an execution error without fatal execution evidence");
         }

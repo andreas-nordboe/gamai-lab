@@ -8,6 +8,6 @@ public enum CodeTaskOutcome
     Incorrect,
     Partial,
     Correct,
-    CodeExecutionError
+    ExecutionError
 }
 

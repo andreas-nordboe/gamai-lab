@@ -1,4 +1,5 @@
 using System.Text.Json;
+using GamAILab.Shared.Models.AICodeEvaluation;
 using GamAILab.Shared.Models.CodeSubmission;
 using GamAILab.WebApi.Data;
 using GamAILab.WebApi.Services.CodeExecution;
@@ -47,29 +48,37 @@ public class CodeSubmissionService : ICodeSubmissionService
             SubmittedAt = DateTime.UtcNow
         };
         
-        _dbContext.Add(submission);
+        _dbContext.CodeSubmissions.Add(submission);
         await _dbContext.SaveChangesAsync();
         
         // 2. Request task information
         var codeTask = await _codeTaskService.GetCodeTaskById(codeSubmission.CodeTaskId);
 
         // 3. Generate an evaluation plan that includes task information (id, description, constraints..)
-        if (codeTask != null)
+        if (codeTask is null)
         {
-            var evaluationPlan = await _aiCodeEvaluationService.GenerateEvaluationPlanAsync(codeTask, cancellationToken);
+            throw new KeyNotFoundException("CodeTask was not found");
+        }
 
-            Console.WriteLine(JsonSerializer.Serialize(evaluationPlan));
+        var evaluationPlan = await _aiCodeEvaluationService.GenerateEvaluationPlanAsync(codeTask, cancellationToken);
         
-            // 4. Execute code in isolated docker container (Docker code runner)
-            var codeExecution = await _codeExecutionService.ExecuteCodeAsync("1=2", evaluationPlan, cancellationToken);
+        // 4. Execute code in isolated docker container (Docker code runner)
+        var codeExecution = await _codeExecutionService.ExecuteCodeAsync(submission.Code, evaluationPlan, cancellationToken);
+        
+        _logger.LogInformation(JsonSerializer.Serialize(codeExecution));
+        
+        // 5. Send code to AIFeedbackService (I need to look into latency here and possibly feed back partial information or notify the learner)
+        var aiFeedback = await _aiFeedbackService.GenerateCodeTaskFeedbackAsync(codeTask, submission, evaluationPlan, codeExecution, cancellationToken);
+        
+        aiFeedback.CodeSubmissionId = submission.Id;
+        aiFeedback.CodeSubmission = submission;
+        
+        _dbContext.AICodeTaskFeedbacks.Add(aiFeedback);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        
+        _logger.LogInformation($"Persited feedback for submission {submission.Id} with task outcome {aiFeedback.TaskOutcome}");
             
-            _logger.LogInformation(JsonSerializer.Serialize(codeExecution));
-            
-            // 5. Send code to AIFeedbackService (I need to look into latency here and possibly feed back partial information or notify the learner)
-            var aiFeedback = await _aiFeedbackService.GenerateCodeTaskFeedbackAsync(codeTask, submission, evaluationPlan, codeExecution, cancellationToken);
-            
-        } // TODO Handle null (maybe just exception too)
-
+        // TODO Handle null (maybe just exception too)
         
         // 6. Verify feedback using AI Hallucination service (TODO I dedicated week 5 to this)
         
@@ -79,10 +88,23 @@ public class CodeSubmissionService : ICodeSubmissionService
         
         // 8. Return results to the client
 
-
         return new CodeSubmissionResult
         {
-            CodeTask = codeTask
+            SubmissionId =  submission.Id,
+            CodeTask = codeTask,
+            AttemptNumber = submission.Attempts,
+            CodeExecution = codeExecution,
+            AIFeedback = new AICodeTaskFeedbackDTO
+            {
+                Id =  aiFeedback.Id,
+                TaskOutcome = aiFeedback.TaskOutcome,
+                Explanation =  aiFeedback.Explanation,
+                HintMessage =  aiFeedback.HintMessage,
+                CodeTaskExecutionEvidence =  aiFeedback.CodeTaskExecutionEvidence,
+                LLMModelUsed =   aiFeedback.LLMModelUsed,
+                CreatedAt =   aiFeedback.CreatedAt,
+                GeneationTimeInMs =  aiFeedback.GeneationTimeInMs
+            }
         };
     }
 }

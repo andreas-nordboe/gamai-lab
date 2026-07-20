@@ -15,7 +15,7 @@ public class CodeTaskService : ICodeTaskService
     
     public async Task AddCodeTask(CodeTask codeTask)
     {
-        _dbContext.Add(codeTask);
+        _dbContext.CodeTasks.Add(codeTask);
         await _dbContext.SaveChangesAsync();
     }
 

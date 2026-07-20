@@ -1,4 +1,5 @@
 ﻿using GamAILab.Shared.Models;
+using GamAILab.Shared.Models.AICodeEvaluation;
 using GamAILab.Shared.Models.CodeSubmission;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -9,4 +10,16 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
 {
     public DbSet<CodeSubmission> CodeSubmissions => Set<CodeSubmission>();
     public DbSet<CodeTask> CodeTasks => Set<CodeTask>();
+    public DbSet<AICodeTaskFeedback>  AICodeTaskFeedbacks => Set<AICodeTaskFeedback>();
+
+    protected override void OnModelCreating(ModelBuilder builder)
+    {
+        base.OnModelCreating(builder);
+        
+        builder.Entity<AICodeTaskFeedback>()
+            .HasOne(feedback => feedback.CodeSubmission)
+            .WithOne(codeSubmission => codeSubmission.AICodeTaskFeedback)
+            .HasForeignKey<AICodeTaskFeedback>(feedback => feedback.CodeSubmissionId)
+            .OnDelete(DeleteBehavior.Cascade);
+    }
 }
