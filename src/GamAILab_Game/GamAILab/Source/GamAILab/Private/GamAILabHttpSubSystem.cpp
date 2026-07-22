@@ -10,7 +10,7 @@
 #include "Misc/ConfigCacheIni.h"
 #include "Serialization/JsonSerializer.h"
 #include "Serialization/JsonWriter.h"
-
+#include "Misc/Base64.h"
 
 void UGamAILabHttpSubSystem::Initialize(FSubsystemCollectionBase& CollectionBase)
 {
