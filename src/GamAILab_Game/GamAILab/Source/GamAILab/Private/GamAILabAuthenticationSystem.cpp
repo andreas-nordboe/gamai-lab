@@ -17,19 +17,12 @@ void UGamAILabAuthenticationSystem::Initialize(FSubsystemCollectionBase& Collect
 	Super::Initialize(CollectionBase);
 	
 	const bool bLoaded = GConfig->GetString(TEXT("GamAILab.Api"),TEXT("BaseUrl"),BaseUrl, GGameIni);
-	
 	BaseUrl = "http://localhost:5270";
 	
 	if (!bLoaded || BaseUrl.IsEmpty())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Base URL is missing: %s"), *BaseUrl);
-		return;
 	}
-	
-	// if (BaseUrl.EndsWith(TEXT("/")))
-	// {
-	// 	BaseUrl.LeftChopInline(1);
-	// }
 }
 
 void UGamAILabAuthenticationSystem::Login(const FString& Email, const FString& Password)

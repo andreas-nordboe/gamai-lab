@@ -62,9 +62,7 @@ public:
 	
 private:
 	
-	// TODO hard-coded for now but I might put this into config later
-	
-	FString BaseUrl = TEXT("http://127.0.0.1:5270/");
+	FString BaseUrl;
 	
 	UPROPERTY()
 	FString AccessToken;

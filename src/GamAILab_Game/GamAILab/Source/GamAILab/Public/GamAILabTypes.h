@@ -11,5 +11,37 @@ enum class EGamAILabPanel : uint8
     LearningProgress,
     CodeTasks,
     Achievements,
-    Menu
+    Menu,
+    CodePanel
+};
+
+USTRUCT(BlueprintType)
+struct FCodeTask
+{
+    GENERATED_BODY()
+    
+    UPROPERTY(BlueprintReadWrite)
+    int32 Id;
+    
+    UPROPERTY(BlueprintReadWrite)
+    FString Title;
+    
+    UPROPERTY(BlueprintReadWrite)
+    FString Description;
+    
+    UPROPERTY(BlueprintReadWrite)
+    FString DefaultCode;
+    
+    UPROPERTY(BlueprintReadWrite)
+    int32 Version;
+    
+    UPROPERTY(BlueprintReadWrite)
+    int32 Difficulty;
+    
+    UPROPERTY(BlueprintReadWrite)
+    TArray<FString> Examples;
+    
+    UPROPERTY(BlueprintReadWrite)
+    TArray<FString> Constraints;
+    
 };
