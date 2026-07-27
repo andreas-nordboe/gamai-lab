@@ -2,7 +2,7 @@
 
 
 //#include "GamAILabHttpSubSystem.h"
-#include "Public/GamAILabHttpSubSystem.h"
+#include "Public/GamAILabAuthenticationSubSystem.h"
 #include "Dom/JsonObject.h"
 #include "HttpModule.h"
 #include "Components/SlateWrapperTypes.h"
@@ -12,7 +12,7 @@
 #include "Serialization/JsonWriter.h"
 #include "Misc/Base64.h"
 
-void UGamAILabHttpSubSystem::Initialize(FSubsystemCollectionBase& CollectionBase)
+void UGamAILabAuthenticationSystem::Initialize(FSubsystemCollectionBase& CollectionBase)
 {
 	Super::Initialize(CollectionBase);
 	
@@ -32,7 +32,7 @@ void UGamAILabHttpSubSystem::Initialize(FSubsystemCollectionBase& CollectionBase
 	// }
 }
 
-void UGamAILabHttpSubSystem::Login(const FString& Email, const FString& Password)
+void UGamAILabAuthenticationSystem::Login(const FString& Email, const FString& Password)
 {
 	if (Email.IsEmpty() || Password.IsEmpty())
 	{
@@ -65,7 +65,7 @@ void UGamAILabHttpSubSystem::Login(const FString& Email, const FString& Password
 	
 	HttpRequest->SetContentAsString(RequestJson);
 	
-	HttpRequest->OnProcessRequestComplete().BindUObject(this, &UGamAILabHttpSubSystem::HandleLogin);
+	HttpRequest->OnProcessRequestComplete().BindUObject(this, &UGamAILabAuthenticationSystem::HandleLogin);
 	
 	if (!HttpRequest->ProcessRequest())
 	{
@@ -73,7 +73,7 @@ void UGamAILabHttpSubSystem::Login(const FString& Email, const FString& Password
 	}
 }
 
-void UGamAILabHttpSubSystem::Register(const FString& Email, const FString& Password, const FString& ConfirmPassword)
+void UGamAILabAuthenticationSystem::Register(const FString& Email, const FString& Password, const FString& ConfirmPassword)
 {
 	if (Email.IsEmpty() || Password.IsEmpty() || ConfirmPassword.IsEmpty())
 	{
@@ -113,7 +113,7 @@ void UGamAILabHttpSubSystem::Register(const FString& Email, const FString& Passw
 	
 	HttpRequest->SetContentAsString(RequestJson);
 	
-	HttpRequest->OnProcessRequestComplete().BindUObject(this, &UGamAILabHttpSubSystem::HandleRegister);
+	HttpRequest->OnProcessRequestComplete().BindUObject(this, &UGamAILabAuthenticationSystem::HandleRegister);
 	
 	if (!HttpRequest->ProcessRequest())
 	{
@@ -121,7 +121,7 @@ void UGamAILabHttpSubSystem::Register(const FString& Email, const FString& Passw
 	}
 }
 
-void UGamAILabHttpSubSystem::HandleLogin(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bSuccess)
+void UGamAILabAuthenticationSystem::HandleLogin(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bSuccess)
 {
 	if (!bSuccess || !Response.IsValid())
 	{
@@ -164,7 +164,7 @@ void UGamAILabHttpSubSystem::HandleLogin(FHttpRequestPtr Request, FHttpResponseP
 	OnLoginFinished.Broadcast(true, StatusCode, ResponseBody);
 }
 
-void UGamAILabHttpSubSystem::HandleRegister(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bSuccess)
+void UGamAILabAuthenticationSystem::HandleRegister(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bSuccess)
 {
 	if (!bSuccess || !Response.IsValid())
 	{
@@ -176,7 +176,7 @@ void UGamAILabHttpSubSystem::HandleRegister(FHttpRequestPtr Request, FHttpRespon
 	const int32 StatusCode = Response->GetResponseCode();
 	const FString ResponseBody = Response->GetContentAsString();
 	
-	const bool bIsSuccess = StatusCode >= 200 && StatusCode < 300;
+	const bool bIsSuccess = StatusCode == 401 && StatusCode < 300; // I use 401 Created on the backend
 	
 	if (!bIsSuccess)
 	{

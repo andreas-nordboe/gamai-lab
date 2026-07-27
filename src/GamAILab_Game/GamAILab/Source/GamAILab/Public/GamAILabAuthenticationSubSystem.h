@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "Interfaces/IHttpRequest.h"
 #include "Subsystems/GameInstanceSubsystem.h"
-#include "GamAILabHttpSubSystem.generated.h"
+#include "GamAILabAuthenticationSubSystem.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(
 	FAPIRequestFinished,
@@ -18,7 +18,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(
  * 
  */
 UCLASS()
-class GAMAILAB_API UGamAILabHttpSubSystem : public UGameInstanceSubsystem
+class GAMAILAB_API UGamAILabAuthenticationSystem : public UGameInstanceSubsystem
 {
 	GENERATED_BODY()
 	

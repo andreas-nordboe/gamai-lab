@@ -1,6 +1,6 @@
 {
 	"FileVersion": 3,
-	"EngineAssociation": "5.8",
+	"EngineAssociation": "{8CEBD7C2-4471-7FFE-119A-99BAD98E9B0A}",
 	"Category": "",
 	"Description": "",
 	"Modules": [
@@ -29,6 +29,10 @@
 		},
 		{
 			"Name": "GameplayStateTree",
+			"Enabled": true
+		},
+		{
+			"Name": "WebBrowserWidget",
 			"Enabled": true
 		}
 	]
