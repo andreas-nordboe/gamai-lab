@@ -106,6 +106,7 @@ private async Task<CodeExecutionResult> ExecuteCode(string learnerCode, AICodeEv
             StartInfo = CreateDockerInstanceStartInfo(containerName, tempDirectory )
         };
         
+        _logger.LogInformation($"Executing code in docker container {containerName} with code {learnerCode} and tests {testsJsonFormat}");
         _logger.LogInformation("Starting up docker container ");
 
         if (!dockerInstance.Start())

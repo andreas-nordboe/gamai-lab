@@ -14,6 +14,12 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(
 	const TArray<FCodeTask>&, Response
 );
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(
+	FOnCodeExecution,
+	bool, bSuccess,
+	const FCodeExecutionResponse&, Response
+);
+
 /**
  * 
  */
@@ -30,16 +36,26 @@ public:
 	) override;
 	
 	
-	UPROPERTY(BlueprintAssignable, Category = "GAMAILab|Authentication")
+	UPROPERTY(BlueprintAssignable, Category = "GAMAILab|CodeTasks")
 	FOnListCodetasks FOnListCodetasks;
 	
-	UFUNCTION(BlueprintCallable, Category = "GAMAILab|Authentication")
+	UFUNCTION(BlueprintCallable, Category = "GAMAILab|CodeTasks")
 	void ListCodeTasks();
 
+	UPROPERTY(BlueprintAssignable, Category = "GAMAILab|CodeTasks")
+	FOnCodeExecution FOnCodeExecution;
+	
+	UFUNCTION(BlueprintCallable, Category = "GAMAILab|CodeExecution")
+	void ExecuteCode(const FString& Code);
+
+	//UFUNCTION(BlueprintCallable, Category = "GAMAILab|CodeExecution")
+	//void SubmitCode(const FString& Code);
 	
 private:
 	
 	void HandleTasksReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bSuccess);
+	void HandleCodeExecution(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bSuccess);
+	void HandleCodeSubmission(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bSuccess);
 	
 	FString BaseUrl;
 	

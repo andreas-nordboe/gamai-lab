@@ -3,6 +3,7 @@
 
 #include "GamAICodeTaskSubsystem.h"
 
+#include "GamAILab.h"
 #include "GamAILabTypes.h"
 #include "HttpModule.h"
 #include "Interfaces/IHttpResponse.h"
@@ -51,6 +52,47 @@ void UGamAICodeTaskSubsystem::ListCodeTasks()
 	
 }
 
+void UGamAICodeTaskSubsystem::ExecuteCode(const FString& Code)
+{
+	if (Code.IsEmpty())
+	{
+		FOnCodeExecution.Broadcast(false, FCodeExecutionResponse());
+		return;
+	}
+	
+	
+	const TSharedRef<FJsonObject> Json = MakeShared<FJsonObject>();
+	Json->SetStringField(TEXT("code"), Code);
+	
+	FString RequestJson;
+	
+	const TSharedRef< TJsonWriter<> > Writer = TJsonWriterFactory<>::Create(&RequestJson);
+	
+	if (!FJsonSerializer::Serialize(Json, Writer))
+	{
+		FOnCodeExecution.Broadcast(false, FCodeExecutionResponse());
+		return;
+	}
+	
+	TSharedRef<IHttpRequest, ESPMode::ThreadSafe> HttpRequest = FHttpModule::Get().CreateRequest();
+
+	HttpRequest->SetURL(BaseUrl + "/api/code-execution/execute");
+	HttpRequest->SetVerb("POST");
+	HttpRequest->SetHeader("Content-Type", "application/json");
+	HttpRequest->SetHeader("Accept", "application/json");
+	
+	// TODO Add JWT as part of request payload
+
+	HttpRequest->SetContentAsString(RequestJson);
+	
+	HttpRequest->OnProcessRequestComplete().BindUObject(this, &UGamAICodeTaskSubsystem::HandleCodeExecution);
+	
+	if (!HttpRequest->ProcessRequest())
+	{
+		FOnCodeExecution.Broadcast(false, FCodeExecutionResponse());
+	}
+}
+
 void UGamAICodeTaskSubsystem::HandleTasksReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bSuccess)
 {
 	if (!bSuccess || !Response.IsValid())
@@ -91,19 +133,57 @@ void UGamAICodeTaskSubsystem::HandleTasksReceived(FHttpRequestPtr Request, FHttp
 			Task.DefaultCode = JsonObject->GetStringField(TEXT("defaultCode"));
 			Task.Version = JsonObject->GetIntegerField(TEXT("version"));
 			Task.Difficulty = JsonObject->GetIntegerField(TEXT("difficulty"));
-
-			// Parse arrays of strings
 			JsonObject->TryGetStringArrayField(TEXT("examples"), Task.Examples);
 			JsonObject->TryGetStringArrayField(TEXT("constraints"), Task.Constraints);
 
 			ParsedTasks.Add(Task);
-
-			// Log to screen/console as a test print
-			UE_LOG(LogTemp, Log, TEXT("Task Found: [%d] %s"), Task.Id, *Task.Title);
 		}
 		
 		FOnListCodetasks.Broadcast(true, ParsedTasks);
 	}
+}
+
+void UGamAICodeTaskSubsystem::HandleCodeExecution(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bSuccess)
+{
+	if (!bSuccess || !Response.IsValid())
+	{
+		FOnCodeExecution.Broadcast(false, FCodeExecutionResponse());
+		return;
+	}
 	
+	const int32 StatusCode = Response->GetResponseCode();
+	const FString ResponseBody = Response->GetContentAsString();
+	
+	const bool bIsSuccess = StatusCode >= 200 && StatusCode < 300;
+	
+	if (!bIsSuccess)
+	{
+		FOnCodeExecution.Broadcast(false, FCodeExecutionResponse());
+		
+		return;
+	}
+	
+	FString ResponseString = Response->GetContentAsString();
+	TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(ResponseString);
+	TSharedPtr<FJsonObject> Json = MakeShared<FJsonObject>();
+
+	UE_LOG(LogTemp, Warning, TEXT("Code Execution Response %s"), *ResponseString);
+	
+	if (FJsonSerializer::Deserialize(Reader, Json))
+	{
+		FCodeExecutionResponse CodeExecution;
+		
+		Json->TryGetStringField(TEXT("codeOutput"), CodeExecution.CodeOutput);
+		Json->TryGetStringField(TEXT("codeError"), CodeExecution.CodeError);
+		Json->TryGetBoolField(TEXT("didComplete"), CodeExecution.DidComplete);
+		Json->TryGetBoolField(TEXT("timedOut"), CodeExecution.TimedOut);
+		//Json->TryGetStringField(TEXT("executionDuration"), CodeExecution.ExecutionDuration);
+		
+		FOnCodeExecution.Broadcast(true, CodeExecution);
+	}
+}
+
+void UGamAICodeTaskSubsystem::HandleCodeSubmission(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bSuccess)
+{
 	
 }

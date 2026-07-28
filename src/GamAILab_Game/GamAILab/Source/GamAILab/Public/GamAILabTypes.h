@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <Windows.ApplicationModel.Activation.h>
+
 #include "CoreMinimal.h"
 #include "GamAILabTypes.generated.h"
 
@@ -44,4 +46,108 @@ struct FCodeTask
     UPROPERTY(BlueprintReadWrite)
     TArray<FString> Constraints;
     
+};
+
+
+USTRUCT(BlueprintType)
+struct FCodeTestResult
+{
+    GENERATED_BODY()
+    
+    UPROPERTY(BlueprintReadWrite)
+    FString Name;
+    
+    UPROPERTY(BlueprintReadWrite)
+    bool Passed;
+    
+    UPROPERTY(BlueprintReadWrite)
+    FString ExpectedResult;
+
+    UPROPERTY(BlueprintReadWrite)
+    FString ActualResult;
+    
+    UPROPERTY(BlueprintReadWrite)
+    FString Error;
+};
+
+
+USTRUCT(BlueprintType)
+struct FCodeExecutionResult
+{
+    GENERATED_BODY()
+    
+    UPROPERTY(BlueprintReadWrite)
+    bool DidComplete;
+    
+    UPROPERTY(BlueprintReadWrite)
+    bool TimedOut;
+    
+    UPROPERTY(BlueprintReadWrite)
+    bool EveryTestPassed;
+
+    UPROPERTY(BlueprintReadWrite)
+    int32 ExitCode;
+    
+    UPROPERTY(BlueprintReadWrite)
+    FString StandardOutput;
+    
+    UPROPERTY(BlueprintReadWrite)
+    FString StandardError;
+
+    UPROPERTY(BlueprintReadWrite)
+    FString FatalError;
+
+    UPROPERTY(BlueprintReadWrite)
+    FTimespan ExecutionDuration;
+
+    UPROPERTY(BlueprintReadWrite)
+    TArray<FCodeTestResult> CodeTests;
+};
+
+
+USTRUCT(BlueprintType)
+struct FCodeSubmission
+{
+    GENERATED_BODY()
+    
+    UPROPERTY(BlueprintReadWrite)
+    int32 SubmissionId;
+    
+    UPROPERTY(BlueprintReadWrite)
+    int32 AttemptNumber;
+    
+    UPROPERTY(BlueprintReadWrite)
+    FCodeTask CodeTask;
+
+    UPROPERTY(BlueprintReadWrite)
+    FCodeExecutionResult CodeExecution;
+
+    UPROPERTY(BlueprintReadWrite)
+    FTimespan ExecutionDuration;
+
+    UPROPERTY(BlueprintReadWrite)
+    FString SubmittedCode;
+    
+};
+
+
+USTRUCT(BlueprintType)
+struct FCodeExecutionResponse
+{
+    GENERATED_BODY()
+    
+    UPROPERTY(BlueprintReadWrite)
+    FString CodeOutput;
+    
+    UPROPERTY(BlueprintReadWrite)
+    FString CodeError;
+    
+    UPROPERTY(BlueprintReadWrite)
+    bool DidComplete;
+
+    UPROPERTY(BlueprintReadWrite)
+    bool TimedOut;
+
+    UPROPERTY(BlueprintReadWrite)
+    FTimespan ExecutionDuration;
 };
