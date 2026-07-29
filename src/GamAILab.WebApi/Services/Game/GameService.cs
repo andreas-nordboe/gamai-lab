@@ -1,4 +1,5 @@
 using GamAILab.Shared.Models.Game;
+using GamAILab.Shared.Models.Game.DTOs;
 using GamAILab.WebApi.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -23,20 +24,42 @@ public class GameService : IGameService
             .AsNoTracking()
             .Where(prog => prog.UserId == userId)
             .ToListAsync();
+        
+        
     }
     
-    public async Task SaveLearnerGameProgress(string userId, LearnerGameProgress learnerGameProgress)
+    public async Task SaveLearnerGameProgress(string userId, LearnerGameProgressRequest learnerGameProgress)
     {
         ValidateUser(userId);
         ArgumentNullException.ThrowIfNull(learnerGameProgress);
         
-        learnerGameProgress.UserId = userId;
+        //learnerGameProgress.UserId = userId;
         
-        var existingGameProgress = await _dbContext.LearnerGameProgresses.SingleOrDefaultAsync(prog => prog.UserId == userId && prog.Id == learnerGameProgress.Id);
+        var existingGameProgress = await _dbContext.LearnerGameProgresses.SingleOrDefaultAsync(prog => prog.UserId == userId);
 
         if (existingGameProgress is null)
         {
+            // Handle achievements
+            List<Achievement> achievements = new List<Achievement>();
+            foreach (var achievement in learnerGameProgress.Achievements)
+            {
+                achievements.Add(new Achievement
+                {
+                    AchievementId = achievement.AchievementId,
+                    Description = achievement.Description,
+                    Title = achievement.Title
+                });
+            }
             
+            //learnerGameProgress.UserId = userId;
+            _dbContext.LearnerGameProgresses.Add(new LearnerGameProgress
+            {
+                UserId = userId,
+                Level = learnerGameProgress.Level,
+                Currency = learnerGameProgress.Currency,
+                Achievements = achievements,
+                LastUpdated = DateTime.UtcNow,
+            });
         }
         else
         {
@@ -71,13 +94,11 @@ public class GameService : IGameService
             .SingleOrDefaultAsync(data => data.UserId == userId && data.Key == key);
     }
 
-    public async Task SaveCustomData(string userId, CustomData customData)
+    public async Task SaveCustomData(string userId, CustomDataRequest customData)
     {
         ValidateUser(userId);
         ArgumentNullException.ThrowIfNull(customData);
         ValidateValue(customData.Key, nameof(customData.Key));
-        
-        customData.UserId = userId;
         
         var dataSet = _dbContext.Set<CustomData>();
         
@@ -85,13 +106,16 @@ public class GameService : IGameService
 
         if (existingData is null)
         {
-            dataSet.Add(customData);
+            dataSet.Add(new CustomData
+            {
+                UserId = userId,
+                Key = customData.Key,
+                Value = customData.Value
+            });
         }
         else
         {
-            _dbContext.Entry(existingData).CurrentValues.SetValues(customData);
-            existingData.UserId = userId;
-            existingData.Key = customData.Key;
+            existingData.Value = customData.Value;
         }
         
         await _dbContext.SaveChangesAsync();
@@ -122,13 +146,12 @@ public class GameService : IGameService
 
     }
 
-    public async Task SaveGameObjectives(string userId, GameObjective gameObjective)
+    public async Task SaveGameObjectives(string userId, GameObjectiveRequest gameObjective)
     {
         ValidateUser(userId);
         ArgumentNullException.ThrowIfNull(gameObjective);
 
         ValidateValue(gameObjective.ObjectiveId, nameof(gameObjective.ObjectiveId));
-        gameObjective.UserId = userId;
 
         var objectiveSet = _dbContext.Set<GameObjective>();
 
@@ -140,7 +163,16 @@ public class GameService : IGameService
 
         if (existingObjective is null)
         {
-            objectiveSet.Add(gameObjective);
+            objectiveSet.Add(new GameObjective
+            {
+                UserId = userId,
+                ObjectiveId = gameObjective.ObjectiveId,
+                Title = gameObjective.Title,
+                Description = gameObjective.Description,
+                IsCompleted = gameObjective.IsCompleted,
+                TargetValue = gameObjective.TargetValue,
+                CurrentValue = gameObjective.CurrentValue
+            });
         }
         else
         {

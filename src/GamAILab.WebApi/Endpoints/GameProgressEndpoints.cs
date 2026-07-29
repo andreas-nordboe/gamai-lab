@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using GamAILab.Shared.Models.Game;
+using GamAILab.Shared.Models.Game.DTOs;
 using GamAILab.WebApi.Services.Game;
 using Microsoft.AspNetCore.Http.HttpResults;
 
@@ -14,7 +15,7 @@ public static class GameProgressEndpoints
         
         // Game progress
         
-        group.MapPost("/progress", async Task<Results<NoContent, BadRequest<string>>> (IGameService gameService, ClaimsPrincipal user, LearnerGameProgress progress) =>
+        group.MapPost("/progress", async Task<Results<NoContent, BadRequest<string>>> (IGameService gameService, ClaimsPrincipal user, LearnerGameProgressRequest progress) =>
             {
                 var userId = GetUserId(user);
                 if (progress == null)
@@ -82,11 +83,13 @@ public static class GameProgressEndpoints
             .Produces(StatusCodes.Status404NotFound);
         
         group.MapPost("/custom-data", async Task<Results<NoContent, BadRequest<string>>> (
-                IGameService gameService, ClaimsPrincipal user, CustomData customData) =>
+                IGameService gameService, ClaimsPrincipal user, CustomDataRequest customData) =>
             {
                 var userId = GetUserId(user);
                 if (customData == null || string.IsNullOrWhiteSpace(customData.Key)) 
                     return TypedResults.BadRequest("Valid custom data with a key is required.");
+                
+                Console.WriteLine(userId);
 
                 await gameService.SaveCustomData(userId, customData);
                 return TypedResults.NoContent();
@@ -124,7 +127,7 @@ public static class GameProgressEndpoints
         
 
         group.MapPost("/objectives", async Task<Results<NoContent, BadRequest<string>>> (
-                IGameService gameService, ClaimsPrincipal user, GameObjective objective) =>
+                IGameService gameService, ClaimsPrincipal user, GameObjectiveRequest objective) =>
             {
                 var userId = GetUserId(user);
                 if (objective == null || string.IsNullOrWhiteSpace(objective.ObjectiveId))
