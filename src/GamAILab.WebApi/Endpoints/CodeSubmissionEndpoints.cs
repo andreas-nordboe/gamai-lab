@@ -21,12 +21,17 @@ public static class CodeSubmissionEndpoints
         ILoggerFactory loggerFactory,
         CancellationToken cancellationToken)
     {
-        // TODO check user.Identity?.IsAuthenticated is not true and return unauthorised or use a different method
+        if (user.Identity?.IsAuthenticated != true)
+        {
+            return Results.Unauthorized();
+        }
 
-        //var userId = user.FindFirstValue(ClaimTypes.NameIdentifier) ?? user.FindFirstValue("sub") ?? "";
-        var userId = Guid.NewGuid().ToString(); // TODO Remove fallback to GUID after testing
-        
-        // TODO return unauthroised if userid is null/whitespace
+        var userId = user.FindFirstValue(ClaimTypes.NameIdentifier) ?? user.FindFirstValue("sub") ?? "";
+
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Results.Unauthorized();
+        }
         
         var logger = loggerFactory.CreateLogger(typeof(AuthenticationEndpoints));
         

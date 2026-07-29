@@ -24,7 +24,7 @@ public static class CodeTasksEndpoint
                 return codeTask is null ? TypedResults.NotFound() : TypedResults.Ok(codeTask);
             }).WithName("GetCodeTaskById")
         .Produces<CodeTask>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status404NotFound);
+        .Produces(StatusCodes.Status404NotFound).RequireAuthorization();
         
         group.MapGet("/tasks",
             async Task<Results<Ok<List<CodeTask>>, NotFound>> (ICodeTaskService codeTaskService) =>
@@ -34,7 +34,7 @@ public static class CodeTasksEndpoint
                 return TypedResults.Ok(codeTasks ?? []);
             }).WithName("GetAllCodeTasks")
         .Produces<List<CodeTask>>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status404NotFound);
+        .Produces(StatusCodes.Status404NotFound).RequireAuthorization();
         
         return app;
     }
