@@ -6,10 +6,12 @@
 #include "GamAILab.h"
 #include "GamAILabTypes.h"
 #include "HttpModule.h"
+#include "JsonObjectConverter.h"
 #include "Interfaces/IHttpResponse.h"
 #include "Misc/ConfigCacheIni.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
+#include "JsonObjectConverter.h"
 
 class FJsonObject;
 class IHttpRequest;
@@ -90,6 +92,46 @@ void UGamAICodeTaskSubsystem::ExecuteCode(const FString& Code)
 	if (!HttpRequest->ProcessRequest())
 	{
 		FOnCodeExecution.Broadcast(false, FCodeExecutionResponse());
+	}
+}
+
+void UGamAICodeTaskSubsystem::SubmitCode(const int32 codeTaskId, const FString& Code)
+{
+	if (Code.IsEmpty() || codeTaskId == 0)
+	{
+		FOnCodeSubmission.Broadcast(false, FCodeSubmission());
+		return;
+	}
+	
+	const TSharedRef<FJsonObject> Json = MakeShared<FJsonObject>();
+	Json->SetNumberField(TEXT("codeTaskId"), codeTaskId);
+	Json->SetStringField(TEXT("code"), Code);
+	
+	FString RequestJson;
+	
+	const TSharedRef< TJsonWriter<> > Writer = TJsonWriterFactory<>::Create(&RequestJson);
+	
+	if (!FJsonSerializer::Serialize(Json, Writer))
+	{
+		FOnCodeSubmission.Broadcast(false, FCodeSubmission());
+		return;
+	}
+	
+	TSharedRef<IHttpRequest, ESPMode::ThreadSafe> HttpRequest = FHttpModule::Get().CreateRequest();
+
+	HttpRequest->SetURL(BaseUrl + "/api/code-submission/submit");
+	HttpRequest->SetVerb("POST");
+	HttpRequest->SetHeader("Content-Type", "application/json");
+	HttpRequest->SetHeader("Accept", "application/json");
+	
+	// TODO Add JWT as part of request payload
+
+	HttpRequest->SetContentAsString(RequestJson);
+	HttpRequest->OnProcessRequestComplete().BindUObject(this, &UGamAICodeTaskSubsystem::HandleCodeSubmission);
+	
+	if (!HttpRequest->ProcessRequest())
+	{
+		FOnCodeSubmission.Broadcast(false, FCodeSubmission());
 	}
 }
 
@@ -185,5 +227,34 @@ void UGamAICodeTaskSubsystem::HandleCodeExecution(FHttpRequestPtr Request, FHttp
 
 void UGamAICodeTaskSubsystem::HandleCodeSubmission(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bSuccess)
 {
+	if (!bSuccess || !Response.IsValid())
+	{
+		FOnCodeSubmission.Broadcast(false, FCodeSubmission());
+		return;
+	}
 	
+	const int32 StatusCode = Response->GetResponseCode();
+	const FString ResponseBody = Response->GetContentAsString();
+	
+	const bool bIsSuccess = StatusCode >= 200 && StatusCode < 300;
+	
+	if (!bIsSuccess)
+	{
+		FOnCodeSubmission.Broadcast(false, FCodeSubmission());
+		
+		return;
+	}
+
+	FCodeSubmission Submission;
+	FText JsonError;
+
+	const bool bDidParse = FJsonObjectConverter::JsonObjectStringToUStruct<FCodeSubmission>(ResponseBody, &Submission, 0, 0, false, &JsonError, nullptr);
+
+	if (!bDidParse)
+	{
+		FOnCodeSubmission.Broadcast(false, FCodeSubmission());
+		return;
+	}
+
+	FOnCodeSubmission.Broadcast(true, Submission);
 }

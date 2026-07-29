@@ -23,7 +23,7 @@ struct FCodeTask
     GENERATED_BODY()
     
     UPROPERTY(BlueprintReadWrite)
-    int32 Id;
+    int32 Id = 0;
     
     UPROPERTY(BlueprintReadWrite)
     FString Title;
@@ -35,10 +35,10 @@ struct FCodeTask
     FString DefaultCode;
     
     UPROPERTY(BlueprintReadWrite)
-    int32 Version;
+    int32 Version = 0;
     
     UPROPERTY(BlueprintReadWrite)
-    int32 Difficulty;
+    int32 Difficulty = 0;
     
     UPROPERTY(BlueprintReadWrite)
     TArray<FString> Examples;
@@ -58,7 +58,7 @@ struct FCodeTestResult
     FString Name;
     
     UPROPERTY(BlueprintReadWrite)
-    bool Passed;
+    bool Passed = false;
     
     UPROPERTY(BlueprintReadWrite)
     FString ExpectedResult;
@@ -77,16 +77,16 @@ struct FCodeExecutionResult
     GENERATED_BODY()
     
     UPROPERTY(BlueprintReadWrite)
-    bool DidComplete;
+    bool DidComplete = false;
     
     UPROPERTY(BlueprintReadWrite)
-    bool TimedOut;
+    bool TimedOut = false;
     
     UPROPERTY(BlueprintReadWrite)
-    bool EveryTestPassed;
+    bool EveryTestPassed = false;
 
     UPROPERTY(BlueprintReadWrite)
-    int32 ExitCode;
+    int32 ExitCode = 0;
     
     UPROPERTY(BlueprintReadWrite)
     FString StandardOutput;
@@ -98,10 +98,41 @@ struct FCodeExecutionResult
     FString FatalError;
 
     UPROPERTY(BlueprintReadWrite)
-    FTimespan ExecutionDuration;
+    FString ExecutionDuration; // = FTimespan::Zero();
 
     UPROPERTY(BlueprintReadWrite)
     TArray<FCodeTestResult> CodeTests;
+};
+
+USTRUCT(BlueprintType)
+struct FCodeAIFeedback
+{
+    GENERATED_BODY()
+
+    UPROPERTY(BlueprintReadWrite)
+    int32 Id = 0;
+
+    UPROPERTY(BlueprintReadWrite)
+    FString TaskOutcome;
+
+    UPROPERTY(BlueprintReadWrite)
+    FString HintMessage;
+
+    // Holds JSON inside a JSON string
+    UPROPERTY(BlueprintReadWrite)
+    FString CodeTaskExecutionEvidence;
+
+    UPROPERTY(BlueprintReadWrite)
+    FString LlmModelUsed;
+
+    UPROPERTY(BlueprintReadWrite)
+    FString Explanation;
+
+    UPROPERTY(BlueprintReadWrite)
+    FString CreatedAt;
+
+    UPROPERTY(BlueprintReadWrite)
+    int32 GeneationTimeInMs = 0;
 };
 
 
@@ -111,10 +142,10 @@ struct FCodeSubmission
     GENERATED_BODY()
     
     UPROPERTY(BlueprintReadWrite)
-    int32 SubmissionId;
+    int32 SubmissionId = 0;
     
     UPROPERTY(BlueprintReadWrite)
-    int32 AttemptNumber;
+    int32 AttemptNumber = 0;
     
     UPROPERTY(BlueprintReadWrite)
     FCodeTask CodeTask;
@@ -123,11 +154,13 @@ struct FCodeSubmission
     FCodeExecutionResult CodeExecution;
 
     UPROPERTY(BlueprintReadWrite)
-    FTimespan ExecutionDuration;
+    FString ExecutionDuration; // = FTimespan::Zero();
 
     UPROPERTY(BlueprintReadWrite)
     FString SubmittedCode;
-    
+
+    UPROPERTY(BlueprintReadWrite)
+    FCodeAIFeedback AIFeedback;
 };
 
 
@@ -149,5 +182,5 @@ struct FCodeExecutionResponse
     bool TimedOut;
 
     UPROPERTY(BlueprintReadWrite)
-    FTimespan ExecutionDuration;
+    FString ExecutionDuration; // = FTimespan::Zero();
 };

@@ -20,6 +20,12 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(
 	const FCodeExecutionResponse&, Response
 );
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(
+	FOnCodeSubmission,
+	bool, bSuccess,
+	const FCodeSubmission&, Response
+);
+
 /**
  * 
  */
@@ -34,7 +40,8 @@ public:
 	virtual void Initialize(
 		FSubsystemCollectionBase& CollectionBase
 	) override;
-	
+
+	// List code tasks
 	
 	UPROPERTY(BlueprintAssignable, Category = "GAMAILab|CodeTasks")
 	FOnListCodetasks FOnListCodetasks;
@@ -42,14 +49,21 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "GAMAILab|CodeTasks")
 	void ListCodeTasks();
 
+	// Execute code
+	
 	UPROPERTY(BlueprintAssignable, Category = "GAMAILab|CodeTasks")
 	FOnCodeExecution FOnCodeExecution;
 	
 	UFUNCTION(BlueprintCallable, Category = "GAMAILab|CodeExecution")
 	void ExecuteCode(const FString& Code);
 
-	//UFUNCTION(BlueprintCallable, Category = "GAMAILab|CodeExecution")
-	//void SubmitCode(const FString& Code);
+	// Submit Code
+	
+	UPROPERTY(BlueprintAssignable, Category = "GAMAILab|CodeSubmission")
+	FOnCodeSubmission FOnCodeSubmission;
+	
+	UFUNCTION(BlueprintCallable, Category = "GAMAILab|CodeExecution")
+	void SubmitCode(const int32 codeTaskId, const FString& Code);
 	
 private:
 	
