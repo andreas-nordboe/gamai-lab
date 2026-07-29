@@ -1,6 +1,7 @@
 ﻿using GamAILab.Shared.Models;
 using GamAILab.Shared.Models.AICodeEvaluation;
 using GamAILab.Shared.Models.CodeSubmission;
+using GamAILab.Shared.Models.Game;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,6 +12,12 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
     public DbSet<CodeSubmission> CodeSubmissions => Set<CodeSubmission>();
     public DbSet<CodeTask> CodeTasks => Set<CodeTask>();
     public DbSet<AICodeTaskFeedback>  AICodeTaskFeedbacks => Set<AICodeTaskFeedback>();
+    
+    
+    // Gamification
+    public DbSet<LearnerGameProgress> LearnerGameProgresses => Set<LearnerGameProgress>();
+    public DbSet<CustomData> CustomData => Set<CustomData>();
+    public DbSet<GameObjective> GameObjectives => Set<GameObjective>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
