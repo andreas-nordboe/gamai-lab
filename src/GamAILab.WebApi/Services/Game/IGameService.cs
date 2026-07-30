@@ -8,7 +8,7 @@ namespace GamAILab.WebApi.Services.Game;
 public interface IGameService
 {
     // Key learner progress data
-    Task<List<LearnerGameProgress>> LoadLearnerGameProgress(string userId);
+    Task<LearnerGameProgressRequest> LoadLearnerGameProgress(string userId);
     Task SaveLearnerGameProgress(string userId, LearnerGameProgressRequest learnerGameProgress);
     
     // Key value stores

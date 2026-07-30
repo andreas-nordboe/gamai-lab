@@ -53,8 +53,6 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(
 );
 
 
-
-
 /**
  * 
  */
@@ -159,5 +157,5 @@ private:
 	
 	bool ResponseWasSuccessful(const FHttpResponsePtr& Response,const bool bWasSuccessful);
 	FString GetResponseError(const FHttpResponsePtr& Response,const bool bWasSuccessful);
-	FString GetAccessToken();
+	FString GetAccessToken() const;
 };

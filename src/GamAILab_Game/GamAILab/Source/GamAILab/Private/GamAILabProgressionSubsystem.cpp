@@ -351,13 +351,16 @@ TSharedRef<IHttpRequest, ESPMode::ThreadSafe> UGamAILabProgressionSubsystem::Cre
     HttpRequest->SetHeader(TEXT("Accept"),TEXT("application/json"));
     HttpRequest->SetHeader(TEXT("Content-Type"),TEXT("application/json"));
     
+    
+    const FString CurrentToken = GetAccessToken();
 
-    if (!AccessToken.IsEmpty())
+    if (!CurrentToken.IsEmpty())
     {
-        HttpRequest->SetHeader(
-            TEXT("Authorization"),
-            TEXT("Bearer ") + AccessToken
-        );
+        HttpRequest->SetHeader(TEXT("Authorization"),FString::Printf(TEXT("Bearer %s"), *CurrentToken));
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Auth header failed: %s"), *Route);
     }
 
     return HttpRequest;
@@ -398,7 +401,7 @@ FString UGamAILabProgressionSubsystem::GetResponseError(const FHttpResponsePtr& 
     return FString::Printf(TEXT("Server responded with status code: %d"),StatusCode);
 }
 
-FString UGamAILabProgressionSubsystem::GetAccessToken()
+FString UGamAILabProgressionSubsystem::GetAccessToken() const
 {
     UWorld* World = GetWorld();
     if (!World)
@@ -406,17 +409,17 @@ FString UGamAILabProgressionSubsystem::GetAccessToken()
         return FString();
     }
 	
-    UGameInstance* GameInstance = GetGameInstance();
-    if (!GameInstance)
+    if (UGameInstance* GI = GetGameInstance())
     {
-        return FString();
+        if (auto* AuthenticationSubsystem = GI->GetSubsystem<UGamAILabAuthenticationSystem>())
+        {
+            FString LiveToken = AuthenticationSubsystem->GetAccessToken();
+            if (!LiveToken.IsEmpty())
+            {
+                return LiveToken;
+            }
+        }
     }
 	
-    UGamAILabAuthenticationSystem* AuthenticationSystem = GameInstance->GetSubsystem<UGamAILabAuthenticationSystem>();
-    if (!AuthenticationSystem)
-    {
-        return FString();
-    }
-	
-    return AuthenticationSystem->GetAccessToken();
+    return AccessToken;
 }

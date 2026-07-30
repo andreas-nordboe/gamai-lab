@@ -8,6 +8,8 @@
 #include "GamAILabTypes.h"
 #include "GamAILabGameStateSubsystem.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGameStateLoadCompleted, bool, WasSuccessful);
+
 /**
  * 
  */
@@ -17,6 +19,9 @@ class GAMAILAB_API UGamAILabGameStateSubsystem : public UGameInstanceSubsystem
 	GENERATED_BODY()
 	
 public:
+	
+	UPROPERTY(BlueprintAssignable, Category = "GamAILab|GameState")
+	FOnGameStateLoadCompleted OnLoadComplete;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "GamAILab|GameState")
 	FGameProgress GameProgress;
@@ -36,6 +41,9 @@ public:
 	
 private:
 	int32 ItemsToLoad = 0;
+	bool bLoadFailed = false; // in case one fails
+	
+	void VerifyLoadingProgress();
 	
 	UFUNCTION()
 	void OnProgressLoaded(bool bSuccess, FGameProgress Progress, const FString& ErrorMessage);

@@ -31,7 +31,7 @@ public static class GameProgressEndpoints
             .Produces(StatusCodes.Status404NotFound);
         
         group.MapGet("/game-progress",
-                async Task<Results<Ok<List<LearnerGameProgress>>, NotFound, UnauthorizedHttpResult>> (IGameService gameService, ClaimsPrincipal user) =>
+                async Task<Results<Ok<LearnerGameProgressRequest>, NotFound, UnauthorizedHttpResult>> (IGameService gameService, ClaimsPrincipal user) =>
                 {
                     if (user.Identity?.IsAuthenticated != true)
                     {
