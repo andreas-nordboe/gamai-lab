@@ -250,3 +250,18 @@ struct FGameProgress
     UPROPERTY(BlueprintReadWrite)
     TArray<FAchievement> Achievements;
 };
+
+USTRUCT(BlueprintType)
+struct FNPCData
+{
+    GENERATED_BODY()
+    
+    UPROPERTY(BlueprintReadWrite)
+    FString Name;
+    
+    UPROPERTY(BlueprintReadWrite)
+    TArray<FGameObjective> StartsObjectives;
+    
+    UPROPERTY(BlueprintReadWrite)
+    TArray<FGameObjective> FinishesObjectives;
+};
