@@ -22,13 +22,18 @@ void UGamAICodeTaskSubsystem::Initialize(FSubsystemCollectionBase& CollectionBas
 
 	// TODO move this to a separate service to avoid duplication
 	
-	const bool bLoaded = GConfig->GetString(TEXT("GamAILab.Api"),TEXT("BaseUrl"),BaseUrl, GGameIni);
-	BaseUrl = "http://localhost:5270";
-	
+	const bool bLoaded = GConfig->GetString(TEXT("GamAILab.Api"),TEXT("BaseUrl"),BaseUrl,GGameIni);
+
 	if (!bLoaded || BaseUrl.IsEmpty())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Base URL is missing: %s"), *BaseUrl);
+
+		BaseUrl = TEXT("http://localhost:5270");
 	}
+    
+	BaseUrl.RemoveFromEnd(TEXT("/"));
+
+	UE_LOG(LogTemp,Log,TEXT("Code task subsystem uses API URL: %s"),*BaseUrl);
 }
 
 void UGamAICodeTaskSubsystem::ListCodeTasks()

@@ -184,3 +184,69 @@ struct FCodeExecutionResponse
     UPROPERTY(BlueprintReadWrite)
     FString ExecutionDuration; // = FTimespan::Zero();
 };
+
+USTRUCT(BlueprintType)
+struct FAchievement
+{
+    GENERATED_BODY()
+    
+    UPROPERTY(BlueprintReadWrite)
+    FString AchievementId;
+    
+    UPROPERTY(BlueprintReadWrite)
+    FString Title;
+    
+    UPROPERTY(BlueprintReadWrite)
+    FString Description;
+};
+
+USTRUCT(BlueprintType)
+struct FCustomData
+{
+    GENERATED_BODY()
+    
+    UPROPERTY(BlueprintReadWrite)
+    FString Key;
+    
+    UPROPERTY(BlueprintReadWrite)
+    FString Value;
+};
+
+USTRUCT(BlueprintType)
+struct FGameObjective
+{
+    GENERATED_BODY()
+    
+    UPROPERTY(BlueprintReadWrite)
+    FString ObjectiveId;
+    
+    UPROPERTY(BlueprintReadWrite)
+    FString Title;
+    
+    UPROPERTY(BlueprintReadWrite)
+    FString Description;
+    
+    UPROPERTY(BlueprintReadWrite)
+    bool bIsCompleted;
+    
+    UPROPERTY(BlueprintReadWrite)
+    int32 TargetValue;
+    
+    UPROPERTY(BlueprintReadWrite)
+    int32 CurrentValue;
+};
+
+USTRUCT(BlueprintType)
+struct FGameProgress
+{
+    GENERATED_BODY()
+    
+    UPROPERTY(BlueprintReadWrite)
+    int32 Level;
+    
+    UPROPERTY(BlueprintReadWrite)
+    int32 Currency;
+    
+    UPROPERTY(BlueprintReadWrite)
+    TArray<FAchievement> Achievements;
+};
