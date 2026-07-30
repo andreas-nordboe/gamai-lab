@@ -4,6 +4,7 @@
 #include "GamAICodeTaskSubsystem.h"
 
 #include "GamAILab.h"
+#include "GamAILabAuthenticationSubSystem.h"
 #include "GamAILabTypes.h"
 #include "HttpModule.h"
 #include "JsonObjectConverter.h"
@@ -24,14 +25,14 @@ void UGamAICodeTaskSubsystem::Initialize(FSubsystemCollectionBase& CollectionBas
 	
 	const bool bLoaded = GConfig->GetString(TEXT("GamAILab.Api"),TEXT("BaseUrl"),BaseUrl,GGameIni);
 
+	BaseUrl = TEXT("http://localhost:5270");
+	
 	if (!bLoaded || BaseUrl.IsEmpty())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Base URL is missing: %s"), *BaseUrl);
-
-		BaseUrl = TEXT("http://localhost:5270");
 	}
     
-	BaseUrl.RemoveFromEnd(TEXT("/"));
+	//BaseUrl.RemoveFromEnd(TEXT("/"));
 
 	UE_LOG(LogTemp,Log,TEXT("Code task subsystem uses API URL: %s"),*BaseUrl);
 }
@@ -41,13 +42,10 @@ void UGamAICodeTaskSubsystem::ListCodeTasks()
 	TSharedRef<IHttpRequest, ESPMode::ThreadSafe> HttpRequest = FHttpModule::Get().CreateRequest();
 
 	HttpRequest->SetURL(BaseUrl + "/api/code-tasks/tasks");
-	
 	HttpRequest->SetVerb("GET");
-	
 	HttpRequest->SetHeader("Content-Type", "application/json");
 	HttpRequest->SetHeader("Accept", "application/json");
-	
-	// TODO Add JWT as part of request payload
+	HttpRequest->SetHeader("Authorization", "Bearer " + GetAccessToken());
 	
 	HttpRequest->OnProcessRequestComplete().BindUObject(this, &UGamAICodeTaskSubsystem::HandleTasksReceived);
 	
@@ -87,9 +85,7 @@ void UGamAICodeTaskSubsystem::ExecuteCode(const FString& Code)
 	HttpRequest->SetVerb("POST");
 	HttpRequest->SetHeader("Content-Type", "application/json");
 	HttpRequest->SetHeader("Accept", "application/json");
-	
-	// TODO Add JWT as part of request payload
-
+	HttpRequest->SetHeader("Authorization", "Bearer " + GetAccessToken());
 	HttpRequest->SetContentAsString(RequestJson);
 	
 	HttpRequest->OnProcessRequestComplete().BindUObject(this, &UGamAICodeTaskSubsystem::HandleCodeExecution);
@@ -128,9 +124,7 @@ void UGamAICodeTaskSubsystem::SubmitCode(const int32 codeTaskId, const FString& 
 	HttpRequest->SetVerb("POST");
 	HttpRequest->SetHeader("Content-Type", "application/json");
 	HttpRequest->SetHeader("Accept", "application/json");
-	
-	// TODO Add JWT as part of request payload
-
+	HttpRequest->SetHeader("Authorization", "Bearer " + GetAccessToken());
 	HttpRequest->SetContentAsString(RequestJson);
 	HttpRequest->OnProcessRequestComplete().BindUObject(this, &UGamAICodeTaskSubsystem::HandleCodeSubmission);
 	
@@ -262,4 +256,27 @@ void UGamAICodeTaskSubsystem::HandleCodeSubmission(FHttpRequestPtr Request, FHtt
 	}
 
 	FOnCodeSubmission.Broadcast(true, Submission);
+}
+
+FString UGamAICodeTaskSubsystem::GetAccessToken()
+{
+	UWorld* World = GetWorld();
+	if (!World)
+	{
+		return FString();
+	}
+	
+	UGameInstance* GameInstance = GetGameInstance();
+	if (!GameInstance)
+	{
+		return FString();
+	}
+	
+	UGamAILabAuthenticationSystem* AuthenticationSystem = GameInstance->GetSubsystem<UGamAILabAuthenticationSystem>();
+	if (!AuthenticationSystem)
+	{
+		return FString();
+	}
+	
+	return AuthenticationSystem->GetAccessToken();
 }

@@ -18,14 +18,14 @@ void UGamAILabAuthenticationSystem::Initialize(FSubsystemCollectionBase& Collect
 	
 	const bool bLoaded = GConfig->GetString(TEXT("GamAILab.Api"),TEXT("BaseUrl"),BaseUrl,GGameIni);
 
+	BaseUrl = TEXT("http://localhost:5270");
+	
 	if (!bLoaded || BaseUrl.IsEmpty())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Base URL is missing: %s"), *BaseUrl);
-
-		BaseUrl = TEXT("http://localhost:5270");
 	}
     
-	BaseUrl.RemoveFromEnd(TEXT("/"));
+	//BaseUrl.RemoveFromEnd(TEXT("/"));
 
 	UE_LOG(LogTemp,Log,TEXT("Authentication subsystem uses API URL: %s"),*BaseUrl);
 }

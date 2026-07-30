@@ -8,6 +8,8 @@
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "GamAICodeTaskSubsystem.generated.h"
 
+class UGamAILabAuthenticationSystem;
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(
 	FOnListCodetasks,
 	bool, bSuccess,
@@ -72,5 +74,7 @@ private:
 	void HandleCodeSubmission(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bSuccess);
 	
 	FString BaseUrl;
+	
+	FString GetAccessToken();
 	
 };

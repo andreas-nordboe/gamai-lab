@@ -20,7 +20,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(
 	FOnGameProgressLoaded,
 	bool, bSuccess,
-	const TArray<FGameProgress>&, Progress,
+	const FGameProgress, Progress,
 	const FString&, ErrorMessage
 );
 
@@ -159,4 +159,5 @@ private:
 	
 	bool ResponseWasSuccessful(const FHttpResponsePtr& Response,const bool bWasSuccessful);
 	FString GetResponseError(const FHttpResponsePtr& Response,const bool bWasSuccessful);
+	FString GetAccessToken();
 };

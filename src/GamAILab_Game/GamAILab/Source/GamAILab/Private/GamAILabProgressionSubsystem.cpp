@@ -3,6 +3,7 @@
 
 #include "GamAILabProgressionSubsystem.h"
 
+#include "GamAILabAuthenticationSubSystem.h"
 #include "HttpModule.h"
 #include "JsonObjectConverter.h"
 #include "GenericPlatform/GenericPlatformHttp.h"
@@ -16,14 +17,14 @@ void UGamAILabProgressionSubsystem::Initialize(FSubsystemCollectionBase& Collect
     
     const bool bLoaded = GConfig->GetString(TEXT("GamAILab.Api"),TEXT("BaseUrl"),BaseUrl,GGameIni);
 
+    BaseUrl = TEXT("http://localhost:5270");
+    
     if (!bLoaded || BaseUrl.IsEmpty())
     {
         UE_LOG(LogTemp, Warning, TEXT("Base URL is missing: %s"), *BaseUrl);
-
-        BaseUrl = TEXT("http://localhost:5270");
     }
     
-    BaseUrl.RemoveFromEnd(TEXT("/"));
+    //BaseUrl.RemoveFromEnd(TEXT("/"));
 
     UE_LOG(LogTemp,Log,TEXT("Game progress subsystem uses API URL: %s"),*BaseUrl);
 
@@ -72,7 +73,7 @@ void UGamAILabProgressionSubsystem::LoadLearnerGameProgress()
 
     if (!HttpRequest->ProcessRequest())
     {
-        OnGameProgressLoaded.Broadcast(false,TArray<FGameProgress>(), TEXT("Failed to load game progress"));
+        OnGameProgressLoaded.Broadcast(false, FGameProgress(), TEXT("Failed to load game progress"));
     }
 }
 
@@ -141,7 +142,7 @@ void UGamAILabProgressionSubsystem::LoadGameObjectives()
 
     if (!HttpRequest->ProcessRequest())
     {
-        OnGameObjectivesLoaded.Broadcast(false, TArray<FGameObjective>(),TEXT("Could not start the load objectives request."));
+        OnGameObjectivesLoaded.Broadcast(false, TArray<FGameObjective>(),TEXT("Failed to load game objectives"));
     }
 }
 
@@ -149,7 +150,7 @@ void UGamAILabProgressionSubsystem::GetGameObjective(const FString& ObjectiveId)
 {
     if (ObjectiveId.IsEmpty())
     {
-        OnGameObjectiveLoaded.Broadcast(false,FGameObjective(), TEXT("Objective ID is empty."));
+        OnGameObjectiveLoaded.Broadcast(false,FGameObjective(), TEXT("Game objective id is empty"));
         return;
     }
 
@@ -210,22 +211,16 @@ void UGamAILabProgressionSubsystem::HandleGameProgressLoaded(FHttpRequestPtr Req
 {
     if (!ResponseWasSuccessful(Response, bSuccess))
     {
-        OnGameProgressLoaded.Broadcast(false,TArray<FGameProgress>(), GetResponseError(Response, bSuccess));
+        OnGameProgressLoaded.Broadcast(false,FGameProgress(), GetResponseError(Response, bSuccess));
         return;
     }
 
-    TArray<FGameProgress> Progress;
+    FGameProgress Progress;
     FText ParseError;
-
     
-    
-    if (!FJsonObjectConverter::JsonArrayStringToUStruct<FGameProgress>(Response->GetContentAsString(), &Progress, 0, 0, false, &ParseError, nullptr))
+    if (!FJsonObjectConverter::JsonObjectStringToUStruct<FGameProgress>(Response->GetContentAsString(), &Progress, 0, 0))
     {
-        OnGameProgressLoaded.Broadcast(
-            false,
-            TArray<FGameProgress>(),
-            ParseError.ToString()
-        );
+        OnGameProgressLoaded.Broadcast(false,FGameProgress(),TEXT("Failed to parse game progress"));
         return;
     }
 
@@ -355,6 +350,7 @@ TSharedRef<IHttpRequest, ESPMode::ThreadSafe> UGamAILabProgressionSubsystem::Cre
     HttpRequest->SetVerb(Verb);
     HttpRequest->SetHeader(TEXT("Accept"),TEXT("application/json"));
     HttpRequest->SetHeader(TEXT("Content-Type"),TEXT("application/json"));
+    
 
     if (!AccessToken.IsEmpty())
     {
@@ -400,5 +396,27 @@ FString UGamAILabProgressionSubsystem::GetResponseError(const FHttpResponsePtr& 
     }
 
     return FString::Printf(TEXT("Server responded with status code: %d"),StatusCode);
+}
 
+FString UGamAILabProgressionSubsystem::GetAccessToken()
+{
+    UWorld* World = GetWorld();
+    if (!World)
+    {
+        return FString();
+    }
+	
+    UGameInstance* GameInstance = GetGameInstance();
+    if (!GameInstance)
+    {
+        return FString();
+    }
+	
+    UGamAILabAuthenticationSystem* AuthenticationSystem = GameInstance->GetSubsystem<UGamAILabAuthenticationSystem>();
+    if (!AuthenticationSystem)
+    {
+        return FString();
+    }
+	
+    return AuthenticationSystem->GetAccessToken();
 }
