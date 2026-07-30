@@ -8,6 +8,7 @@ using GamAILab.WebApi.Endpoints;
 using GamAILab.WebApi.Services;
 using GamAILab.WebApi.Services.CodeExecution;
 using GamAILab.WebApi.Services.CodeTasks;
+using GamAILab.WebApi.Services.Game;
 using GamAILab.WebApi.Services.LLMService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -44,6 +45,7 @@ builder.Services.AddScoped<ICodeSubmissionService,  CodeSubmissionService>();
 builder.Services.AddScoped<IAICodeEvaluationService, AICodeEvaluationService>();
 builder.Services.AddSingleton<ICodeExecutionService, CodeExecutionService>();
 builder.Services.AddSingleton<IAIFeedbackService, AIFeedbackService>();
+builder.Services.AddScoped<IGameService, GameService>();
 
 builder.Services.AddAuthentication(options =>
 {
@@ -148,6 +150,7 @@ app.MapCodeSubmissionEndpoint();
 app.MapAuthenticationEndpoints();
 app.MapCodeTaskEndpoints();
 app.MapCodeExecutionEndpoints();
+app.MapGameProgressEndpoints();
 
 if (!app.Environment.IsDevelopment())
 {
