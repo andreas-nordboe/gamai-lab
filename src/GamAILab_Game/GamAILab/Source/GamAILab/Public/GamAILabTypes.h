@@ -186,18 +186,25 @@ struct FCodeExecutionResponse
 };
 
 USTRUCT(BlueprintType)
-struct FAchievement
+struct FAchievement : public FTableRowBase
 {
     GENERATED_BODY()
     
-    UPROPERTY(BlueprintReadWrite)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FString AchievementId;
     
-    UPROPERTY(BlueprintReadWrite)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FString Title;
     
-    UPROPERTY(BlueprintReadWrite)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FString Description;
+    
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UTexture2D* Texture;
+    
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FDateTime GrantedAt;
+    
 };
 
 USTRUCT(BlueprintType)
@@ -217,22 +224,22 @@ struct FGameObjective
 {
     GENERATED_BODY()
     
-    UPROPERTY(BlueprintReadWrite)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FString ObjectiveId;
     
-    UPROPERTY(BlueprintReadWrite)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FString Title;
     
-    UPROPERTY(BlueprintReadWrite)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FString Description;
     
-    UPROPERTY(BlueprintReadWrite)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     bool bIsCompleted;
     
-    UPROPERTY(BlueprintReadWrite)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     int32 TargetValue;
     
-    UPROPERTY(BlueprintReadWrite)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     int32 CurrentValue;
 };
 
@@ -241,27 +248,113 @@ struct FGameProgress
 {
     GENERATED_BODY()
     
-    UPROPERTY(BlueprintReadWrite)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     int32 Level;
     
-    UPROPERTY(BlueprintReadWrite)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     int32 Currency;
     
-    UPROPERTY(BlueprintReadWrite)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TArray<FAchievement> Achievements;
 };
 
 USTRUCT(BlueprintType)
-struct FNPCData
+struct FNPCDialogueOption : public FTableRowBase
 {
     GENERATED_BODY()
     
-    UPROPERTY(BlueprintReadWrite)
-    FString Name;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FString FDialogueOptionId;
     
-    UPROPERTY(BlueprintReadWrite)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FText DialogueText;
+    
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FString NextDialogueLine;
+    
+    // Constraint (for example needs to complete objective first)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TArray<FGameObjective> RequiresObjectives;
+    
+    // Used for when completing an objective for an NPC
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TArray<FGameObjective> StartsObjectives;
     
-    UPROPERTY(BlueprintReadWrite)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TArray<FGameObjective> FinishesObjectives;
+    
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TArray<FAchievement> GrantsAchievements;
+    
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    int32 GrantsLevel = 0;
+    
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    int32 GrantsCurrency = 0;
+    
 };
+
+
+USTRUCT(BlueprintType)
+struct FNPCDialogueLine : public FTableRowBase
+{
+    GENERATED_BODY()
+    
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FString DialogueLineId;
+    
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FText DialogueText;
+    
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TArray<FString> DialogueLines;
+    
+};
+
+
+USTRUCT(BlueprintType)
+struct FNPCDialogue : public FTableRowBase
+{
+    GENERATED_BODY()
+    
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FString DialogueId;
+    
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TArray<FString> DialogueLines;
+    
+};
+
+UENUM(BlueprintType)
+enum class ENPCType : uint8
+{
+    Dialogue,
+    CodeTaskObjective
+};
+
+
+USTRUCT(BlueprintType)
+struct FNPCData : public FTableRowBase
+{
+    GENERATED_BODY()
+    
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FString Name;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    ENPCType NPCType;
+    
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TArray<FGameObjective> RequiresObjectives;
+    
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TArray<FGameObjective> StartsObjectives;
+    
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TArray<FGameObjective> FinishesObjectives;
+    
+    // TODO add dialogue/rewards/achievements that can be used in DataTables
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FDataTableRowHandle Dialogue;
+};
+

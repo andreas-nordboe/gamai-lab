@@ -174,7 +174,8 @@ void UGamAILabAuthenticationSystem::HandleRegister(FHttpRequestPtr Request, FHtt
 	const int32 StatusCode = Response->GetResponseCode();
 	const FString ResponseBody = Response->GetContentAsString();
 	
-	const bool bIsSuccess = StatusCode == 401 && StatusCode < 300; // I use 401 Created on the backend
+	//const bool bIsSuccess = StatusCode == 401 && StatusCode < 300; // I use 401 Created on the backend
+	const bool bIsSuccess = StatusCode == 201; // I use 401 Created on the backend
 	
 	if (!bIsSuccess)
 	{
@@ -194,13 +195,14 @@ void UGamAILabAuthenticationSystem::HandleRegister(FHttpRequestPtr Request, FHtt
 		OnRegisterFinished.Broadcast(false, StatusCode, ResponseBody);
 		return;
 	}
-	
-	if (!Json->TryGetStringField(TEXT("accessToken"), AccessToken) || AccessToken.IsEmpty())
-	{
-		AccessToken.Empty();
-		OnRegisterFinished.Broadcast(false, StatusCode, ResponseBody);
-		return;
-	}
+
+	// TODO make backend return access token fist
+	// if (!Json->TryGetStringField(TEXT("accessToken"), AccessToken) || AccessToken.IsEmpty())
+	// {
+	// 	AccessToken.Empty();
+	// 	OnRegisterFinished.Broadcast(false, StatusCode, ResponseBody);
+	// 	return;
+	// }
 	
 	OnRegisterFinished.Broadcast(true, StatusCode, ResponseBody);
 }
