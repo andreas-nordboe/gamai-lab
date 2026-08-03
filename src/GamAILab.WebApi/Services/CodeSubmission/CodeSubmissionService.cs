@@ -93,11 +93,10 @@ public class CodeSubmissionService : ICodeSubmissionService
         
         // 7. Update progress in Game/Progress Service
         LearnerGameProgressRequest? updatedLearnerGameProgress = null;
-        var didCodeSubmissionPassRequirements = codeExecution.DidComplete && codeExecution.EveryTestPassed && string.IsNullOrEmpty(codeExecution.FatalError);
+        var didCodeExecutionPassCompletion = codeExecution.DidComplete && !codeExecution.TimedOut && codeExecution.ExitCode == 0 && codeExecution.EveryTestPassed && string.IsNullOrEmpty(codeExecution.FatalError);
         
         // checks if feedback was verified by hallucination checker BEFORE granting task completion
-        // 
-        if (didCodeSubmissionPassRequirements && hallucinationCheckResult.Status == HallucinationCheckerStatus.IsConsistent)
+        if (didCodeExecutionPassCompletion && aiFeedback.TaskOutcome == CodeTaskOutcome.Correct && hallucinationCheckResult.Status == HallucinationCheckerStatus.IsConsistent)
         {
             updatedLearnerGameProgress = await _gameService.GrantCodeTaskCompletionRewardsAsync(userId!, codeTask, cancellationToken);
             _logger.LogInformation($"Updated game progresss for learner with id {userId} after completing task {codeTask.Id}");
@@ -125,7 +124,8 @@ public class CodeSubmissionService : ICodeSubmissionService
                 CreatedAt =   aiFeedback.CreatedAt,
                 GeneationTimeInMs =  aiFeedback.GeneationTimeInMs
             },
-            HallucinationCheck = hallucinationCheckResult
+            HallucinationCheck = hallucinationCheckResult,
+            GameProgress = updatedLearnerGameProgress
         };
     }
 }

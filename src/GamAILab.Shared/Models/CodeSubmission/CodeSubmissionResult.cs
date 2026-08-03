@@ -2,6 +2,8 @@ using GamAILab.Shared.Models.AICodeEvaluation;
 using GamAILab.Shared.Models.AIHallucinationChecker;
 using GamAILab.Shared.Models.AIHallucinationChecker.DTOs;
 using GamAILab.Shared.Models.CodeExecution;
+using GamAILab.Shared.Models.Game;
+using GamAILab.Shared.Models.Game.DTOs;
 
 namespace GamAILab.Shared.Models.CodeSubmission;
 
@@ -15,4 +17,5 @@ public class CodeSubmissionResult
     public TimeSpan ExecutionDuration { get; set; }
     public string SubmittedCode { get; set; } // Returns code back to client so it can be displayed on the frontend
     public HallucinationCheckResult HallucinationCheck { get; set; } = null!;
+    public LearnerGameProgressRequest? GameProgress { get; set; } 
 }
