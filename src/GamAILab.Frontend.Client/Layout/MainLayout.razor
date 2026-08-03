@@ -17,6 +17,18 @@
             <MudButton Class="mx-2" IconClass="@Icons.Material.Rounded.Code" href="code-tasks" Color="Color.Inherit">Code Tasks</MudButton>
             <MudButton Class="mx-2" IconClass="@Icons.Material.Rounded.Cases" href="achievements" Color="Color.Inherit">Achievements</MudButton>
 
+            @*This is a bit verbose but it works*@
+            <AuthorizeView>
+                <ChildContent Context="user">
+                    <AuthorizeView Roles="Admin">
+                        <ChildContent Context="adminUser">
+                            <MudButton Class="mx-2" IconClass="@Icons.Material.Rounded.Cases" href="code-task-management" Color="Color.Inherit">Code Task Management</MudButton>
+                            <MudButton Class="mx-2" IconClass="@Icons.Material.Rounded.Cases" href="ai-persona-testing" Color="Color.Inherit">AI Persona Testing</MudButton>
+                        </ChildContent>
+                    </AuthorizeView>
+                </ChildContent>
+            </AuthorizeView>
+            
             <MudSpacer/>
             <MudIconButton Icon="@Icons.Material.TwoTone.Logout" OnClick="LogoutUserAsync" Color="Color.Inherit" Edge="Edge.End"/>
         </MudAppBar>

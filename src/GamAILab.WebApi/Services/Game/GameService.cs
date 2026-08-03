@@ -213,15 +213,14 @@ public class GameService : IGameService
             _dbContext.LearnerGameProgresses.Add(progress);
         }
 
-        var completedAchievementId = $"code-task-{codeTask.Id}-completed";
+        var completedAchievementId = $"code_task_{codeTask.Id}_completed";
         
         var hasBeenCompleted = progress.Achievements.Any(achievement => achievement.AchievementId == completedAchievementId);
         if (!hasBeenCompleted)
         {
-            const int currencyReward = 10; // TODO move to task itself or handle this from Unreal (would not be authoritatively)
-            
             // TODO level 1 at 0-99, level 2 at 100-199 etc. etc.
-            progress.Level = 1 + progress.Level * currencyReward / 100;
+            progress.Level = 1 + progress.Level * codeTask.CurrencyReward / 100;
+            progress.Currency = codeTask.CurrencyReward;
             
             progress.Achievements.Add(new Achievement
             {

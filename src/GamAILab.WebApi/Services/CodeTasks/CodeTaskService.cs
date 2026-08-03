@@ -73,4 +73,19 @@ public class CodeTaskService : ICodeTaskService
         
         await AddCodeTask(codeTaskPythonAdding);
     }
+
+    public async Task<CodeTask> AddOrUpdateCodeTask(CodeTask codeTask)
+    {
+        if (codeTask.Id == 0)
+        {
+            await _dbContext.CodeTasks.AddAsync(codeTask);
+        }
+        else
+        {
+            _dbContext.CodeTasks.Update(codeTask);
+        }
+        
+        await _dbContext.SaveChangesAsync();
+        return codeTask;
+    }
 }
