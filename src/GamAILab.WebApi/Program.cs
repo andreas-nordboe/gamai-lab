@@ -6,6 +6,7 @@ using GamAILab.WebApi;
 using GamAILab.WebApi.Data;
 using GamAILab.WebApi.Endpoints;
 using GamAILab.WebApi.Services;
+using GamAILab.WebApi.Services.AIPersonaSimulation;
 using GamAILab.WebApi.Services.CodeExecution;
 using GamAILab.WebApi.Services.CodeTasks;
 using GamAILab.WebApi.Services.Game;
@@ -47,8 +48,11 @@ builder.Services.AddScoped<ICodeSubmissionService,  CodeSubmissionService>();
 builder.Services.AddScoped<IAICodeEvaluationService, AICodeEvaluationService>();
 builder.Services.AddScoped<IAIHallucinationCheckerService, AIHallucinationCheckerService>();
 builder.Services.AddSingleton<ICodeExecutionService, CodeExecutionService>();
-builder.Services.AddSingleton<IAIFeedbackService, AIFeedbackService>(); // TODO make scoped?
+builder.Services.AddScoped<IAIFeedbackService, AIFeedbackService>();
 builder.Services.AddScoped<IGameService, GameService>();
+builder.Services.AddScoped<IAIPersonaSimulationService, AIPersonaSimulationService>();
+builder.Services.AddScoped<ILearningEngagementService, LearningLearningEngagementService>();
+
 
 builder.Services.AddAuthentication(options =>
 {
