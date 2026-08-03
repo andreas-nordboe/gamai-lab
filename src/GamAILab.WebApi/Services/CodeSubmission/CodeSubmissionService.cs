@@ -1,5 +1,6 @@
 using System.Text.Json;
 using GamAILab.Shared.Models.AICodeEvaluation;
+using GamAILab.Shared.Models.AIHallucinationChecker;
 using GamAILab.Shared.Models.CodeSubmission;
 using GamAILab.Shared.Models.Game.DTOs;
 using GamAILab.WebApi.Data;
@@ -94,7 +95,9 @@ public class CodeSubmissionService : ICodeSubmissionService
         LearnerGameProgressRequest? updatedLearnerGameProgress = null;
         var didCodeSubmissionPassRequirements = codeExecution.DidComplete && codeExecution.EveryTestPassed && string.IsNullOrEmpty(codeExecution.FatalError);
         
-        if (didCodeSubmissionPassRequirements)
+        // checks if feedback was verified by hallucination checker BEFORE granting task completion
+        // 
+        if (didCodeSubmissionPassRequirements && hallucinationCheckResult.Status == HallucinationCheckerStatus.IsConsistent)
         {
             updatedLearnerGameProgress = await _gameService.GrantCodeTaskCompletionRewardsAsync(userId!, codeTask, cancellationToken);
             _logger.LogInformation($"Updated game progresss for learner with id {userId} after completing task {codeTask.Id}");
