@@ -15,7 +15,7 @@
                 @CodeSubmissionFeedback.CodeTask.Description
             </MudText>
 
-            <CodeEditorPanel @ref="_codeFeedbackPanel" EditorId="code-feedback-panel" ReadOnly="true" />
+            <CodeEditorPanel EditorId="code-feedback-panel" DefaultCode="@CodeSubmissionFeedback.SubmittedCode" ReadOnly="true" />
 
             <MudGrid Spacing="3" Class="mt-2">
 

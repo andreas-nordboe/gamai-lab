@@ -23,18 +23,6 @@ public partial class CodeTaskFeedbackDialog : ComponentBase
     private int PassedTests => CodeSubmissionFeedback.CodeExecution.CodeTests.Count(tests => tests.Passed);
     private int TotalTests => CodeSubmissionFeedback.CodeExecution.CodeTests.Count();
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (!string.IsNullOrWhiteSpace(CodeSubmissionFeedback.SubmittedCode))
-        {
-            if (_codeFeedbackPanel != null)
-            {
-                // TODO FIX
-                //await _codeFeedbackPanel?.SetCodeAsync(CodeSubmissionFeedback.SubmittedCode)!;
-            }
-        }
-    }
-
     private IReadOnlyList<string> FeedbackEvidence
     {
         get
