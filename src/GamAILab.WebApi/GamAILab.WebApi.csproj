@@ -40,7 +40,6 @@
 
     <ItemGroup>
       <Folder Include="Services\Analytics\" />
-      <Folder Include="Services\HallucinationChecker\" />
     </ItemGroup>
 
 </Project>
