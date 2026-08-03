@@ -13,7 +13,7 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
     public DbSet<CodeSubmission> CodeSubmissions => Set<CodeSubmission>();
     public DbSet<CodeTask> CodeTasks => Set<CodeTask>();
     public DbSet<AICodeTaskFeedback>  AICodeTaskFeedbacks => Set<AICodeTaskFeedback>();
-    public DbSet<HallucinationCheckResult>  HallucinationCheckResults => Set<HallucinationCheckResult>();
+    public DbSet<HallucinationCheckResult>  AIHallucinationCheckResults => Set<HallucinationCheckResult>();
     
     // Gamification
     public DbSet<LearnerGameProgress> LearnerGameProgresses => Set<LearnerGameProgress>();

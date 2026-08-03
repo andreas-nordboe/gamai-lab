@@ -4,6 +4,7 @@ using GamAILab.Shared.Models.CodeSubmission;
 using GamAILab.WebApi.Data;
 using GamAILab.WebApi.Services.CodeExecution;
 using GamAILab.WebApi.Services.CodeTasks;
+using GamAILab.WebApi.Services.HallucinationChecker;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,10 +17,11 @@ public class CodeSubmissionService : ICodeSubmissionService
     private readonly IAICodeEvaluationService _aiCodeEvaluationService;
     private readonly ICodeExecutionService _codeExecutionService;
     private readonly IAIFeedbackService _aiFeedbackService;
+    private readonly IAIHallucinationCheckerService _aiHallucinationCheckerService;
     private readonly ILogger<CodeSubmissionService> _logger;
 
 
-    public CodeSubmissionService(ApplicationDbContext dbContext, ICodeTaskService codeTaskService, IAICodeEvaluationService aiCodeEvaluationService, ICodeExecutionService codeExecutionService, ILogger<CodeSubmissionService> logger, IAIFeedbackService aiFeedbackService)
+    public CodeSubmissionService(ApplicationDbContext dbContext, ICodeTaskService codeTaskService, IAICodeEvaluationService aiCodeEvaluationService, ICodeExecutionService codeExecutionService, ILogger<CodeSubmissionService> logger, IAIFeedbackService aiFeedbackService, IAIHallucinationCheckerService iaiHallucinationCheckerService)
     {
         _dbContext = dbContext;
         _codeTaskService = codeTaskService;
@@ -27,6 +29,7 @@ public class CodeSubmissionService : ICodeSubmissionService
         _codeExecutionService = codeExecutionService;
         _logger = logger;
         _aiFeedbackService = aiFeedbackService;
+        _aiHallucinationCheckerService = iaiHallucinationCheckerService;
     }
 
     public async Task<CodeSubmissionResult> SubmitCodeAsync(CodeSubmissionRequest codeSubmission, string? userId, CancellationToken cancellationToken = default)
@@ -74,11 +77,14 @@ public class CodeSubmissionService : ICodeSubmissionService
         aiFeedback.CodeSubmissionId = submission.Id;
         aiFeedback.CodeSubmission = submission;
         
+        // 6. Verify feedback using AI Hallucination service
+        var hallucinationCheckResult = await _aiHallucinationCheckerService.CheckAIFeedbackConsistencyAsync(codeTask, submission, evaluationPlan, codeExecution, aiFeedback, cancellationToken);
+            
         _dbContext.AICodeTaskFeedbacks.Add(aiFeedback);
+        _dbContext.AIHallucinationCheckResults.Add(hallucinationCheckResult);
         await _dbContext.SaveChangesAsync(cancellationToken);
-        _logger.LogInformation($"Persited feedback for submission {submission.Id} with task outcome {aiFeedback.TaskOutcome}");
         
-        // TODO 6. Verify feedback using AI Hallucination service (TODO I dedicated week 5 to this)
+        _logger.LogInformation($"Persited feedback '{aiFeedback.Id}' and hallucination check '{hallucinationCheckResult.Id}' for submission {submission.Id} with task outcome {aiFeedback.TaskOutcome} and hallucination check status '{hallucinationCheckResult.Status}'");
         
         // TODO 7. Update progress in Game/Progress Service
         

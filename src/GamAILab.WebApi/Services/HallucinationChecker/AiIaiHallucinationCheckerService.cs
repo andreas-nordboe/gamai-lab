@@ -14,9 +14,9 @@ using OllamaSharp.Models.Chat;
 
 namespace GamAILab.WebApi.Services.HallucinationChecker;
 
-public class HallucinationCheckerService : IHallucinationCheckerService
+public class AiIaiHallucinationCheckerService : IAIHallucinationCheckerService
 {
-    private readonly ILogger<HallucinationCheckerService> _logger;
+    private readonly ILogger<AiIaiHallucinationCheckerService> _logger;
     private readonly ILLMService _llmService;
     private readonly IConfiguration _configuration;
     private readonly string _llmModelUsed;
@@ -30,7 +30,7 @@ public class HallucinationCheckerService : IHallucinationCheckerService
         PropertyNameCaseInsensitive = true
     };
 
-    public HallucinationCheckerService(ILogger<HallucinationCheckerService> logger, ILLMService llmService, IConfiguration configuration)
+    public AiIaiHallucinationCheckerService(ILogger<AiIaiHallucinationCheckerService> logger, ILLMService llmService, IConfiguration configuration)
     {
         _llmModelUsed = _configuration["Ollama:Model"];
         _logger = logger;

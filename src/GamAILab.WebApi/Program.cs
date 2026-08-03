@@ -9,6 +9,7 @@ using GamAILab.WebApi.Services;
 using GamAILab.WebApi.Services.CodeExecution;
 using GamAILab.WebApi.Services.CodeTasks;
 using GamAILab.WebApi.Services.Game;
+using GamAILab.WebApi.Services.HallucinationChecker;
 using GamAILab.WebApi.Services.LLMService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -43,8 +44,9 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
 builder.Services.AddScoped<ICodeTaskService, CodeTaskService>();
 builder.Services.AddScoped<ICodeSubmissionService,  CodeSubmissionService>();
 builder.Services.AddScoped<IAICodeEvaluationService, AICodeEvaluationService>();
+builder.Services.AddScoped<IAIHallucinationCheckerService, AiIaiHallucinationCheckerService>();
 builder.Services.AddSingleton<ICodeExecutionService, CodeExecutionService>();
-builder.Services.AddSingleton<IAIFeedbackService, AIFeedbackService>();
+builder.Services.AddSingleton<IAIFeedbackService, AIFeedbackService>(); // TODO make scoped?
 builder.Services.AddScoped<IGameService, GameService>();
 
 builder.Services.AddAuthentication(options =>
