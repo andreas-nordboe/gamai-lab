@@ -1,3 +1,4 @@
+using GamAILab.Shared.Models;
 using GamAILab.Shared.Models.Game;
 using GamAILab.Shared.Models.Game.DTOs;
 
@@ -22,5 +23,5 @@ public interface IGameService
     Task<List<GameObjective>> LoadGameObjectives(string userId);
     Task<GameObjective?> GetGameObjective(string userId, string objectiveId);
     Task SaveGameObjectives(string userId, GameObjectiveRequest gameObjective);
-    
+    Task<LearnerGameProgressRequest> GrantCodeTaskCompletionRewardsAsync(string userId, CodeTask codeTask, CancellationToken cancellationToken = default);
 }
