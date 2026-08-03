@@ -1,9 +1,12 @@
 using System.Text.Json;
 using GamAILab.Shared.Models.AICodeEvaluation;
+using GamAILab.Shared.Models.AIHallucinationChecker;
 using GamAILab.Shared.Models.CodeSubmission;
+using GamAILab.Shared.Models.Game.DTOs;
 using GamAILab.WebApi.Data;
 using GamAILab.WebApi.Services.CodeExecution;
 using GamAILab.WebApi.Services.CodeTasks;
+using GamAILab.WebApi.Services.Game;
 using GamAILab.WebApi.Services.HallucinationChecker;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
@@ -18,10 +21,11 @@ public class CodeSubmissionService : ICodeSubmissionService
     private readonly ICodeExecutionService _codeExecutionService;
     private readonly IAIFeedbackService _aiFeedbackService;
     private readonly IAIHallucinationCheckerService _aiHallucinationCheckerService;
+    private readonly IGameService _gameService;
     private readonly ILogger<CodeSubmissionService> _logger;
 
 
-    public CodeSubmissionService(ApplicationDbContext dbContext, ICodeTaskService codeTaskService, IAICodeEvaluationService aiCodeEvaluationService, ICodeExecutionService codeExecutionService, ILogger<CodeSubmissionService> logger, IAIFeedbackService aiFeedbackService, IAIHallucinationCheckerService iaiHallucinationCheckerService)
+    public CodeSubmissionService(ApplicationDbContext dbContext, ICodeTaskService codeTaskService, IAICodeEvaluationService aiCodeEvaluationService, ICodeExecutionService codeExecutionService, ILogger<CodeSubmissionService> logger, IAIFeedbackService aiFeedbackService, IAIHallucinationCheckerService iaiHallucinationCheckerService, IGameService gameService)
     {
         _dbContext = dbContext;
         _codeTaskService = codeTaskService;
@@ -30,6 +34,7 @@ public class CodeSubmissionService : ICodeSubmissionService
         _logger = logger;
         _aiFeedbackService = aiFeedbackService;
         _aiHallucinationCheckerService = iaiHallucinationCheckerService;
+        _gameService = gameService;
     }
 
     public async Task<CodeSubmissionResult> SubmitCodeAsync(CodeSubmissionRequest codeSubmission, string? userId, CancellationToken cancellationToken = default)
@@ -86,7 +91,17 @@ public class CodeSubmissionService : ICodeSubmissionService
         
         _logger.LogInformation($"Persited feedback '{aiFeedback.Id}' and hallucination check '{hallucinationCheckResult.Id}' for submission {submission.Id} with task outcome {aiFeedback.TaskOutcome} and hallucination check status '{hallucinationCheckResult.Status}'");
         
-        // TODO 7. Update progress in Game/Progress Service
+        // 7. Update progress in Game/Progress Service
+        LearnerGameProgressRequest? updatedLearnerGameProgress = null;
+        var didCodeSubmissionPassRequirements = codeExecution.DidComplete && codeExecution.EveryTestPassed && string.IsNullOrEmpty(codeExecution.FatalError);
+        
+        // checks if feedback was verified by hallucination checker BEFORE granting task completion
+        // 
+        if (didCodeSubmissionPassRequirements && hallucinationCheckResult.Status == HallucinationCheckerStatus.IsConsistent)
+        {
+            updatedLearnerGameProgress = await _gameService.GrantCodeTaskCompletionRewardsAsync(userId!, codeTask, cancellationToken);
+            _logger.LogInformation($"Updated game progresss for learner with id {userId} after completing task {codeTask.Id}");
+        }
         
         // TODO Later: Adaptive learning (possibly in a separate service)
         
