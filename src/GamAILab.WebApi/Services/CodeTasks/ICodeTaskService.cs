@@ -9,4 +9,5 @@ public interface ICodeTaskService
     public Task<List<CodeTask>> GetAllCodeTasks();
     public Task<bool> DeleteCodeTaskById(int codeTaskId);
     public Task SeedCodeTasks();
+    public Task<CodeTask> AddOrUpdateCodeTask(CodeTask codeTask);
 }

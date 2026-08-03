@@ -104,7 +104,7 @@
                         {
                             <div>
                             <MudText Typo="Typo.h6" Class="mb-2">
-                                AI Feedback Verification
+                                AI Hallucination Checker
                             </MudText>
 
                             <MudAlert Severity="@GetVerificationSeverity(CodeSubmissionFeedback.HallucinationCheck.Status)" Variant="Variant.Outlined" Class="verification-container">
@@ -147,7 +147,7 @@
                                 }
 
                                 <MudText Typo="Typo.caption"Class="d-block">
-                                    Verification processing time: @CodeSubmissionFeedback.HallucinationCheck.GenerationTimeInMilliseconds)
+                                    Verification processing time: @CodeSubmissionFeedback.HallucinationCheck.GenerationTimeInMilliseconds ms
                                 </MudText>
                             </MudAlert>
                         </div>

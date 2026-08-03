@@ -27,6 +27,7 @@ builder.Services.AddCors(options =>
     {
         policy .WithOrigins("http://localhost:5123").AllowAnyHeader().AllowAnyMethod();
     });
+    
 });
 
 // Add services to the container.
@@ -61,7 +62,14 @@ builder.Services.AddAuthentication(options =>
     options.TokenValidationParameters.IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SecretKey"]!));
 });
 
-builder.Services.AddAuthorization();
+
+builder.Services.AddAuthorizationBuilder()
+.AddPolicy("RequireAdmin", policy =>
+{
+    policy.RequireAuthenticatedUser();
+    policy.RequireRole(UserRole.Admin);
+});
+
 builder.Services.AddHttpClient<ILLMService, LLMService>((provider, client) =>
 {
     var configuration = provider.GetRequiredService<IConfiguration>();
@@ -119,7 +127,7 @@ using (var scope = app.Services.CreateScope())
                 rootAdminUser = new ApplicationUser
                 {
                     UserName = rootAdminEmail,
-                    Email = rootAdminEmail
+                    Email = rootAdminEmail,
                 };
         
                 var createRootAdminUser = await userManager.CreateAsync(rootAdminUser, rootAdminPassword);

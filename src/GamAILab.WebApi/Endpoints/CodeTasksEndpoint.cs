@@ -10,12 +10,8 @@ public static class CodeTasksEndpoint
     {
         var group = app.MapGroup("/api/code-tasks")
             .WithTags("CodeTasks");
-
-        //group.MapPost("get-code-task", GetC3odeTaskAsync)
-        //.RequireAuthorization();
-
-        // TODO Make sure this is internally callable (or via admin/tokenised server communication)
         
+        // Get a single task
         group.MapGet("/{codeTaskId:int}",
             async Task<Results<Ok<CodeTask>, NotFound>> (int codeTaskId, ICodeTaskService codeTaskService) =>
             {
@@ -26,6 +22,7 @@ public static class CodeTasksEndpoint
         .Produces<CodeTask>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound).RequireAuthorization();
         
+        // List code tasks
         group.MapGet("/tasks",
             async Task<Results<Ok<List<CodeTask>>, NotFound>> (ICodeTaskService codeTaskService) =>
             {
@@ -35,6 +32,27 @@ public static class CodeTasksEndpoint
             }).WithName("GetAllCodeTasks")
         .Produces<List<CodeTask>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound).RequireAuthorization();
+        
+        // Add or update code task
+        group.MapPost("/add-or-update",
+                async Task<Results<Ok<CodeTask>, NotFound>> (ICodeTaskService codeTaskService, CodeTask codeTask) =>
+                {
+                    var codeTasks = await codeTaskService.AddOrUpdateCodeTask(codeTask);
+
+                    return TypedResults.Ok(codeTasks);
+                }).WithName("AddOrUpdateCodeTask")
+            .Produces<List<CodeTask>>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status404NotFound).RequireAuthorization("RequireAdmin");
+        
+        group.MapDelete("/delete/{codeTaskId:int}",
+                async Task<Results<Ok<bool>, NotFound>> (ICodeTaskService codeTaskService, int codeTaskId) =>
+                {
+                    var deletedCodeTask = await codeTaskService.DeleteCodeTaskById(codeTaskId);
+
+                    return TypedResults.Ok(deletedCodeTask);
+                }).WithName("DeleteCodeTask")
+            .Produces<bool>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status404NotFound).RequireAuthorization("RequireAdmin");
         
         return app;
     }

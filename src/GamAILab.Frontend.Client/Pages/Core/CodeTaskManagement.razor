@@ -1,0 +1,8 @@
+@page "/code-task-management"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Admin")]
+
+<MudButton Class="mt-4 ml-4" OnClick="@OnAddTaskClicked" Variant="Variant.Filled" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Add">Add Code Task</MudButton>
+
+@*Shows code task management but enables performing code task CRUD operations as an administrator *@
+<CodeTaskList @ref="_taskListRef" CanModifyTasks="true" />

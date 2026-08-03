@@ -99,7 +99,7 @@ public class CodeSubmissionService : ICodeSubmissionService
         if (didCodeExecutionPassCompletion && aiFeedback.TaskOutcome == CodeTaskOutcome.Correct && hallucinationCheckResult.Status == HallucinationCheckerStatus.IsConsistent)
         {
             updatedLearnerGameProgress = await _gameService.GrantCodeTaskCompletionRewardsAsync(userId!, codeTask, cancellationToken);
-            _logger.LogInformation($"Updated game progresss for learner with id {userId} after completing task {codeTask.Id}");
+            _logger.LogInformation($"Updated game progress for learner with id {userId} after completing task {codeTask.Id}");
         }
         
         // TODO Later: Adaptive learning (possibly in a separate service)
