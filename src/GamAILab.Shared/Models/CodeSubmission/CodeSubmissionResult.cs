@@ -1,4 +1,5 @@
 using GamAILab.Shared.Models.AICodeEvaluation;
+using GamAILab.Shared.Models.AIHallucinationChecker;
 using GamAILab.Shared.Models.AIHallucinationChecker.DTOs;
 using GamAILab.Shared.Models.CodeExecution;
 
@@ -13,5 +14,5 @@ public class CodeSubmissionResult
     public AICodeTaskFeedbackDTO AIFeedback { get; set; } = null!;
     public TimeSpan ExecutionDuration { get; set; }
     public string SubmittedCode { get; set; } // Returns code back to client so it can be displayed on the frontend
-    public HallucinationCheckerDTO HallucinationCheck { get; set; } = null!;
+    public HallucinationCheckResult HallucinationCheck { get; set; } = null!;
 }

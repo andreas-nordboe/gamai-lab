@@ -44,7 +44,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
 builder.Services.AddScoped<ICodeTaskService, CodeTaskService>();
 builder.Services.AddScoped<ICodeSubmissionService,  CodeSubmissionService>();
 builder.Services.AddScoped<IAICodeEvaluationService, AICodeEvaluationService>();
-builder.Services.AddScoped<IAIHallucinationCheckerService, AiIaiHallucinationCheckerService>();
+builder.Services.AddScoped<IAIHallucinationCheckerService, AIHallucinationCheckerService>();
 builder.Services.AddSingleton<ICodeExecutionService, CodeExecutionService>();
 builder.Services.AddSingleton<IAIFeedbackService, AIFeedbackService>(); // TODO make scoped?
 builder.Services.AddScoped<IGameService, GameService>();

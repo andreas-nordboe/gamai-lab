@@ -14,9 +14,9 @@ using OllamaSharp.Models.Chat;
 
 namespace GamAILab.WebApi.Services.HallucinationChecker;
 
-public class AiIaiHallucinationCheckerService : IAIHallucinationCheckerService
+public class AIHallucinationCheckerService : IAIHallucinationCheckerService
 {
-    private readonly ILogger<AiIaiHallucinationCheckerService> _logger;
+    private readonly ILogger<AIHallucinationCheckerService> _logger;
     private readonly ILLMService _llmService;
     private readonly IConfiguration _configuration;
     private readonly string _llmModelUsed;
@@ -30,12 +30,12 @@ public class AiIaiHallucinationCheckerService : IAIHallucinationCheckerService
         PropertyNameCaseInsensitive = true
     };
 
-    public AiIaiHallucinationCheckerService(ILogger<AiIaiHallucinationCheckerService> logger, ILLMService llmService, IConfiguration configuration)
+    public AIHallucinationCheckerService(ILogger<AIHallucinationCheckerService> logger, ILLMService llmService, IConfiguration configuration)
     {
-        _llmModelUsed = _configuration["Ollama:Model"];
+        _configuration = configuration;
+        _llmModelUsed = configuration["Ollama:Model"];
         _logger = logger;
         _llmService = llmService;
-        _configuration = configuration;
     }
 
     private static readonly JsonNode HallucionCheckerJsonSchema = JsonNode.Parse(

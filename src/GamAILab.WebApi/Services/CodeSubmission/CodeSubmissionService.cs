@@ -109,7 +109,8 @@ public class CodeSubmissionService : ICodeSubmissionService
                 LLMModelUsed =   aiFeedback.LLMModelUsed,
                 CreatedAt =   aiFeedback.CreatedAt,
                 GeneationTimeInMs =  aiFeedback.GeneationTimeInMs
-            }
+            },
+            HallucinationCheck = hallucinationCheckResult
         };
     }
 }

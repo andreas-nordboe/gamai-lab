@@ -1,6 +1,7 @@
 using System.Text.Json;
 using GamAILab.Frontend.Client.Components.CodeTasks;
 using GamAILab.Shared.Models.AICodeEvaluation;
+using GamAILab.Shared.Models.AIHallucinationChecker;
 using GamAILab.Shared.Models.CodeSubmission;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
@@ -14,8 +15,6 @@ public partial class CodeTaskFeedbackDialog : ComponentBase
     
     [Parameter]
     public CodeSubmissionResult CodeSubmissionFeedback { get; set; }
-    
-    [Parameter] public string? HallucinationCheckerResult { get; set; }
     
     private CodeEditorPanel? _codeFeedbackPanel;
     
@@ -71,4 +70,66 @@ public partial class CodeTaskFeedbackDialog : ComponentBase
     private void LogOut () => MudDialog.Close(DialogResult.Ok(true));
 
     private void Cancel() => MudDialog.Cancel();
+    
+    private static Severity GetTaskOutcomeServerity(CodeTaskOutcome status)
+    {
+        switch (status)
+        {
+            case CodeTaskOutcome.Correct:
+                return Severity.Success;
+            case CodeTaskOutcome.Incorrect:
+                return Severity.Error;
+            case CodeTaskOutcome.ExecutionError:
+                return Severity.Error;
+            case CodeTaskOutcome.Partial:
+                return Severity.Warning;
+            default:
+                return Severity.Error;
+        }
+    }
+    
+    private static Severity GetVerificationSeverity(HallucinationCheckerStatus status)
+    {
+        switch (status)
+        {
+            case HallucinationCheckerStatus.IsConsistent:
+                return Severity.Success;
+            case HallucinationCheckerStatus.IsNotConsistent:
+                return Severity.Error;
+            case HallucinationCheckerStatus.Unverifiable:
+                return Severity.Warning;
+            default:
+                return Severity.Info;
+        }
+    }
+
+    private static string GetHallucinationStatusTitle(HallucinationCheckerStatus status)
+    {
+        switch (status)
+        {
+            case HallucinationCheckerStatus.IsConsistent:
+                return "The feedback is consistent with the code execution";
+            case HallucinationCheckerStatus.IsNotConsistent:
+                return "The feedback is not consistent with the code execution";
+            case HallucinationCheckerStatus.Unverifiable:
+                return "The feedback was unverifiable";
+            default:
+                return "Verification status is invalid";
+        }
+    }
+
+    private static string GetHallucinationStatusText(HallucinationCheckerStatus status)
+    {
+        switch (status)
+        {
+            case HallucinationCheckerStatus.IsConsistent:
+                return "Consistent";
+            case HallucinationCheckerStatus.IsNotConsistent:
+                return "Not consistent";
+            case HallucinationCheckerStatus.Unverifiable:
+                return "Unverifiable";
+            default:
+                return "Verification status is invalid";
+        }
+    }
 }
