@@ -1,0 +1,88 @@
+@using GamAILab.Shared.Models
+@inject IDialogService DialogService
+
+<MudDialog>
+    <DialogContent>
+        <MudButton Class="my-2" OnClick="AddLearningCapabilitiesClicked" Variant="Variant.Filled" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Add">Add Learning Capabilities</MudButton>
+        <MudButton Class="my-2" OnClick="AddLearningDifficultiesClicked" Variant="Variant.Filled" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Add">Add Learning Difficulties</MudButton>
+        <MudButton Class="my-2" OnClick="AddAccessibilityRequirementsClicked" Variant="Variant.Filled" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Add">Add Accessibility Requirements</MudButton>
+
+        @if (!string.IsNullOrWhiteSpace(@AIPersona.UserId))
+        {
+            <MudTextField Class="my-4" Lines="5" Label="Name" @bind-Value="AIPersona.Name" Variant="Variant.Outlined"/>
+        }
+        <MudTextField Class="my-4" Lines="5" Label="Background" @bind-Value="AIPersona.Background" Variant="Variant.Outlined"/>
+
+        <MudText>Learning Capabilities</MudText>
+        @if (AIPersona.LearningCapabilities.Count > 0)
+        {
+            @for (var i = 0; i < AIPersona.LearningCapabilities.Count; i++)
+            {
+                var index = i;
+
+                <MudStack Row="true" AlignItems="AlignItems.Center">
+                    <MudTextField Class="flex-grow-1" Label="@($"Learning capability {index + 1}")" @bind-Value="AIPersona.LearningCapabilities[index]" Variant="Variant.Outlined" />
+
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => RemoveLearningCapability(index))" aria-label="Remove learning capability" />
+                </MudStack>
+            }
+        }
+        else
+        {
+            <MudText Typo="Typo.subtitle1" Class="my-2">There are no learning capabilities, click the add button first</MudText>
+        }
+
+
+        <MudText>Learning Difficulties</MudText>
+        @if (AIPersona.LearningDifficulties.Count > 0)
+        {
+            @for (var i = 0; i < AIPersona.LearningDifficulties.Count; i++)
+            {
+                var index = i;
+
+                <MudStack Row="true" AlignItems="AlignItems.Center">
+                    <MudTextField Class="flex-grow-1" Label="@($"Learning difficulty {index + 1}")" @bind-Value="AIPersona.LearningDifficulties[index]" Variant="Variant.Outlined" />
+
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => RemoveLearningDifficulty(index))" aria-label="Remove learning difficulty" />
+                </MudStack>
+            }
+        }
+        else
+        {
+            <MudText Typo="Typo.subtitle1" Class="my-2">There are no learning difficulties, click the add button first</MudText>
+        }
+        
+        <MudText>Accessibility Requirements</MudText>
+        @if (AIPersona.AccessibilityRequirements.Count > 0)
+        {
+            @for (var i = 0; i < AIPersona.AccessibilityRequirements.Count; i++)
+            {
+                var index = i;
+
+                <MudStack Row="true" AlignItems="AlignItems.Center">
+                    <MudTextField Class="flex-grow-1" Label="@($"Accessibility requirement {index + 1}")" @bind-Value="AIPersona.AccessibilityRequirements[index]" Variant="Variant.Outlined" />
+
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => RemoveAccessibilityRequirement(index))" aria-label="Remove accessibility requirement" />
+                </MudStack>
+            }
+        }
+        else
+        {
+            <MudText Typo="Typo.subtitle1" Class="my-2">There are no learning capabilities, click the add button first</MudText>
+        }
+        
+        
+        <MudSelect Class="my-2" T="CodeTaskDifficulty" Label="Difficulty" @bind-Value="AIPersona.AssignedDifficulty" Variant="Variant.Outlined">
+            @foreach (var difficulty in Enum.GetValues<CodeTaskDifficulty>())
+            {
+                <MudSelectItem T="CodeTaskDifficulty" Value="difficulty">
+                    @difficulty
+                </MudSelectItem>
+            }
+        </MudSelect>
+    </DialogContent>
+    <DialogActions>
+        <MudButton EndIcon="@Icons.Material.Filled.Save" Color="@Color.Success" Variant="Variant.Filled" OnClick="SaveAIPersona">Save</MudButton>
+        <MudButton EndIcon="@Icons.Material.Filled.Close" Color="@Color.Error" Variant="Variant.Filled" OnClick="Cancel">Cancel</MudButton>
+    </DialogActions>
+</MudDialog>

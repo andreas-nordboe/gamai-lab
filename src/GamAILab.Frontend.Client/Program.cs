@@ -21,6 +21,7 @@ builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<ICodeSubmissionService, CodeSubmissionService>();
 builder.Services.AddScoped<ICodeTasksService, CodeTasksService>();
+builder.Services.AddScoped<IAIPersonaSimulationService, AIPersonaSimulationService>();
 
 builder.Services.AddScoped<JWTAuthenticationStateProvider>();
 builder.Services.AddTransient<AuthenticationStateProvider>(provider => provider.GetRequiredService<JWTAuthenticationStateProvider>());

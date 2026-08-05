@@ -6,11 +6,11 @@ using GamAILab.Shared.Models.AIPersonaSimulation.DTOs;
 
 namespace GamAILab.Frontend.Client.Services;
 
-public class PersonaEvaluationService : IPersonaEvaluationService
+public class AIPersonaSimulationService : IAIPersonaSimulationService
 {
     private readonly HttpClient _httpClient;
 
-    public PersonaEvaluationService(HttpClient httpClient)
+    public AIPersonaSimulationService(HttpClient httpClient)
     {
         _httpClient = httpClient;
     }
@@ -49,7 +49,7 @@ public class PersonaEvaluationService : IPersonaEvaluationService
 
     public async Task<AIPersona?> AddOrUpdateAIPersona(AIPersona aiPersona)
     {
-        var addOrUpdateAiPersona = await _httpClient.PostAsJsonAsync($"api/code-tasks/add-or-update", aiPersona);
+        var addOrUpdateAiPersona = await _httpClient.PostAsJsonAsync($"api/ai-personas/add-or-update", aiPersona);
         if (!addOrUpdateAiPersona.IsSuccessStatusCode)
             return null;
         

@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using GamAILab.Shared.Models;
@@ -32,14 +33,31 @@ public class AIPersonaSimulationService : IAIPersonaSimulationService
         RespectRequiredConstructorParameters =  true,
         //WriteIndented = true
     };
+    
+    private static readonly JsonNode CodeAttemptJsonSchema = JsonNode.Parse(
+        """
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "code": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": ["code"]
+        }
+        """)!;
+    
 
-    public AIPersonaSimulationService(ILLMService llmService, ICodeSubmissionService codeSubmissionService, IConfiguration configuration, ApplicationDbContext dbContext, ILogger<AIPersonaSimulationService> logger)
+    public AIPersonaSimulationService(ILLMService llmService, ICodeSubmissionService codeSubmissionService, IConfiguration configuration, ApplicationDbContext dbContext, ILogger<AIPersonaSimulationService> logger, ICodeTaskService codeTaskService)
     {
         _llmService = llmService;
         _codeSubmissionService = codeSubmissionService;
         _configuration = configuration;
         _dbContext = dbContext;
         _logger = logger;
+        _codeTaskService = codeTaskService;
         _llmModelUsed = _configuration["Ollama:Model"];
     }
 
@@ -52,25 +70,25 @@ public class AIPersonaSimulationService : IAIPersonaSimulationService
             throw new ArgumentNullException(nameof(codeTask));
         }
         
-        // TODO this is just temporary for now until there is a persona management system in place
-        // 1-3 hard-coded personas for now
-        List<AIPersona> personaList = await SeedAIPersonas();
+        var startedAt = DateTime.UtcNow;
+        var simulationId = Guid.NewGuid();
+        
+        List<AIPersona> personaList = [];
 
         // 2. Loop through AI persona list from request and load their attributes (personas could have their own userIds) 
-        foreach (var persona in request.Personas)
-        {
-            var storedPersona = _dbContext.AIPeronas.FirstOrDefault(p => p.Id == persona.Id);
-            if(storedPersona is not null)
-                personaList.Add(persona);
-        }
         
         // 3. Run prompts where AI Personas attempts to solve the tasks
-        
-        foreach (var persona in request.Personas)
+        /*
+        foreach (var persona in personaList)
         {
+            if (persona is null)
+            {
+                throw new InvalidOperationException("Persona was not found");
+            }
             
             // 4. Give AI personas testing instructions for the specified code task and output their code attempt
-            var personaCodeAttempt = await AttemptToSolveCodeTaskAsPersona(persona, codeTask, cancellationToken);
+            var personaCodeAttempt = await AttemptToSolveCodeTaskAsPersonaAsync(persona, codeTask, cancellationToken);
+            
             
             var codeSubmission = new CodeSubmissionRequest
             {
@@ -80,45 +98,127 @@ public class AIPersonaSimulationService : IAIPersonaSimulationService
             
             // 5. Run code attempt for each persona 
             var codeSubmissionAttempt = await _codeSubmissionService.SubmitCodeAsync(codeSubmission,  persona.UserId, cancellationToken);
+            
+            // 6. Store learning outcomes and struggles for each persona in the database (should be done automatically via CodeSubmissionService, but it might require adjustments for persona-type users)
+            
+            
+        }*/
+        
+        var requestedPersonaIds = request.PersonaIds
+            .Distinct()
+            .ToList();
+
+        var personas = await _dbContext.AIPersonas
+            .AsNoTracking()
+            .Where(persona => requestedPersonaIds.Contains(persona.Id))
+            .ToListAsync(cancellationToken);
+
+        var personaResults = new List<AIPersonaSimulationResult>(personas.Count);
+
+        foreach (var persona in personas.OrderBy(persona => requestedPersonaIds.IndexOf(persona.Id)))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            try
+            {
+                var attemptedCode = await AttemptToSolveCodeTaskAsPersonaAsync(
+                    persona,
+                    codeTask,
+                    cancellationToken);
+
+                var submissionRequest = new CodeSubmissionRequest
+                {
+                    CodeTaskId = codeTask.Id,
+                    Code = attemptedCode
+                };
+
+                var submissionResult =
+                    await _codeSubmissionService.SubmitCodeAsync(
+                        submissionRequest,
+                        persona.UserId,
+                        cancellationToken);
+
+                personaResults.Add(new AIPersonaSimulationResult
+                {
+                    Persona = persona,
+                    CodeAttempt = attemptedCode,
+                    SubmissionResult = submissionResult
+                });
+
+                _logger.LogInformation(
+                    "AI persona {PersonaId} completed simulation {SimulationId} for code task {CodeTaskId}",
+                    persona.Id,
+                    simulationId,
+                    codeTask.Id);
+            }
+            catch (OperationCanceledException)
+                when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception exception)
+            {
+                _logger.LogError(
+                    exception,
+                    "AI persona {PersonaId} failed simulation {SimulationId} for code task {CodeTaskId}",
+                    persona.Id,
+                    simulationId,
+                    codeTask.Id);
+
+                personaResults.Add(new AIPersonaSimulationResult
+                {
+                    Persona = persona,
+                    ErrorMessage = exception.Message
+                });
+            }
         }
-        
-        // 6. Store learning outcomes and struggles for each persona in the database (should be done automatically via CodeSubmissionService, but it might require adjustments for persona-type users)
-        
+
         
         // 7. (Later) Potentially use LLM model service to reason over where learner personas start to struggle or lose focus  
         
         
-        // 8. Output and store a summary object that is returned in the response (eventually shown on the GamAILab frontend simulation dashboard)
+        var completedAt = DateTime.UtcNow;
+
         return new AIPersonaSimulationResponse
         {
-
+            SimulationId = simulationId,
+            CodeTaskId = codeTask.Id,
+            //CodeTaskTitle = codeTask.Title,
+            LlmModelUsed = _llmModelUsed,
+            StartedAt = startedAt,
+            CompletedAt = completedAt,
+            PersonaResults = personaResults
         };
     }
 
     public async Task CreateAIPersona(AIPersona aiPersona, CancellationToken cancellationToken)
     {
-        _dbContext.AIPeronas.Add(aiPersona);
+        aiPersona.UserId =  Guid.NewGuid().ToString();
+        _dbContext.AIPersonas.Add(aiPersona);
         await _dbContext.SaveChangesAsync(cancellationToken);
     }
     
     public async Task<AIPersona?> GetPersonaById(int personaId)
     {
-        return await _dbContext.AIPeronas.FindAsync(personaId);
+        return await _dbContext.AIPersonas.FindAsync(personaId);
     }
 
     public async Task<List<AIPersona>> GetAllAIPersonas()
     {
-        return await _dbContext.AIPeronas.ToListAsync();
+        return await _dbContext.AIPersonas.ToListAsync();
     }
 
     public async Task<bool> DeleteAIPersonaById(int personaId)
     {
-        var aiPersonaRowsDeleted = await _dbContext.AIPeronas.Where(p => p.Id == personaId).ExecuteDeleteAsync();
+        var aiPersonaRowsDeleted = await _dbContext.AIPersonas.Where(p => p.Id == personaId).ExecuteDeleteAsync();
         return aiPersonaRowsDeleted > 0;
     }
 
     public async Task<List<AIPersona>> SeedAIPersonas()
     {
+        if (_dbContext.AIPersonas.Any())
+            return new(); // return empty list even though it's not being used for anything else than seeding any more
+        
         var persona1 = new AIPersona()
         {
             UserId = Guid.NewGuid().ToString(),
@@ -132,6 +232,8 @@ public class AIPersonaSimulationService : IAIPersonaSimulationService
             },
             LearningDifficulties = [],
             AccessibilityRequirements = [],
+            UpdatedAt = DateTime.UtcNow,
+            CreatedAt = DateTime.UtcNow
         };
         
         var persona2 = new AIPersona()
@@ -153,9 +255,15 @@ public class AIPersonaSimulationService : IAIPersonaSimulationService
             },
             AccessibilityRequirements = new List<string>
             {
-                "Has dyslexia"
+                "Has surface dyslexia"
             },
+            UpdatedAt = DateTime.UtcNow,
+            CreatedAt = DateTime.UtcNow
         };
+        
+        _dbContext.AIPersonas.Add(persona1);
+        _dbContext.AIPersonas.Add(persona2);
+        await _dbContext.SaveChangesAsync();
 
         return new List<AIPersona>
         {
@@ -168,21 +276,21 @@ public class AIPersonaSimulationService : IAIPersonaSimulationService
     {
         if (persona.Id == 0)
         {
-            await _dbContext.AIPeronas.AddAsync(persona);
+            await _dbContext.AIPersonas.AddAsync(persona);
         }
         else
         {
-            _dbContext.AIPeronas.Update(persona);
+            _dbContext.AIPersonas.Update(persona);
         }
         
         await _dbContext.SaveChangesAsync();
         return persona;
     }
 
-    private async Task<string> AttemptToSolveCodeTaskAsPersona(AIPersona aiPersona, CodeTask codeTask, CancellationToken cancellationToken)
+    private async Task<string> AttemptToSolveCodeTaskAsPersonaAsync(AIPersona aiPersona, CodeTask codeTask, CancellationToken cancellationToken)
     {
         var codeTaskJson = JsonSerializer.Serialize(codeTask, JsonOptions);
-        var personaJson = JsonSerializer.Serialize(codeTask, JsonOptions);
+        var personaJson = JsonSerializer.Serialize(aiPersona, JsonOptions);
         
         var prompt = $$"""
            You are a learner with these characteristics:
@@ -201,7 +309,7 @@ public class AIPersonaSimulationService : IAIPersonaSimulationService
         var promptRequest = new ChatRequest
         {
             Model = _llmModelUsed,
-            Format = "json", // TODO specify format similarly to other services
+            Format = CodeAttemptJsonSchema, // TODO specify format similarly to other services
             Stream = false, // I don't think ther0+78e is a need for streaming here
             Think =  false, // I need to experiment with this one
             KeepAlive = "30m", // prevent reloading model when requests are happening concurrently

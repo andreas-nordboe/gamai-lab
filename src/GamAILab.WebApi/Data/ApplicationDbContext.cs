@@ -15,7 +15,7 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
     public DbSet<CodeTask> CodeTasks => Set<CodeTask>();
     public DbSet<AICodeTaskFeedback>  AICodeTaskFeedbacks => Set<AICodeTaskFeedback>();
     public DbSet<HallucinationCheckResult>  AIHallucinationCheckResults => Set<HallucinationCheckResult>();
-    public DbSet<AIPersona>  AIPeronas => Set<AIPersona>();
+    public DbSet<AIPersona>  AIPersonas => Set<AIPersona>();
     
     // Gamification
     public DbSet<LearnerGameProgress> LearnerGameProgresses => Set<LearnerGameProgress>();

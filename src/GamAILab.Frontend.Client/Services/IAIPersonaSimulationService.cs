@@ -3,7 +3,7 @@ using GamAILab.Shared.Models.AIPersonaSimulation.DTOs;
 
 namespace GamAILab.Frontend.Client.Services;
 
-public interface IPersonaEvaluationService
+public interface IAIPersonaSimulationService
 {
     Task<AIPersonaSimulationResponse?> RunAIPersonaCodeEvaluationSimulationAsync(AIPersonaSimulationRequest request, CancellationToken cancellationToken = default);
     Task <List<AIPersona?>> ListAIPersonasAsync();

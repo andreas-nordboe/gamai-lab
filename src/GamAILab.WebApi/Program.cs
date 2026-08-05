@@ -113,9 +113,10 @@ using (var scope = app.Services.CreateScope())
         }
     }
 
-    // Seed root admin user
+    // Seeding for empty initialisations
     if (app.Environment.IsDevelopment())
     {
+        // Seed root admin user
         var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
         
         // Note to self: I've moved these to a secrets.json for development (.NET user secrets)
@@ -152,11 +153,17 @@ using (var scope = app.Services.CreateScope())
                 }
             }
         }
+        
+        // Seed code tasks
+        var codeTaskService = services.GetRequiredService<ICodeTaskService>();
+        await codeTaskService.SeedCodeTasks();
+
+        // Seed AI personas
+        var aiPersonaSimulationService = services.GetRequiredService<IAIPersonaSimulationService>();
+        await aiPersonaSimulationService.SeedAIPersonas();
     }
     
-    // Seed tasks
-    var codeTaskService = services.GetRequiredService<ICodeTaskService>();
-    await codeTaskService.SeedCodeTasks();
+   
 }
 
 // Map endpoints (TODO refactor this into using a separate endpoint handler later)

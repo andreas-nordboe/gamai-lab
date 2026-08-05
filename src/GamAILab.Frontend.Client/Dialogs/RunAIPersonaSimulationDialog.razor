@@ -1,0 +1,23 @@
+@using GamAILab.Shared.Models
+@inject IDialogService DialogService
+
+<MudDialog>
+    <DialogContent>
+        <MudSelect Class="my-2" T="int" Label="Difficulty" @bind-Value="@AiPersonaSimulationRequest.CodeTaskId" Variant="Variant.Outlined">
+            @foreach (var codeTask in CodeTasks)
+            {
+                if (codeTask is not null)
+                {
+                    <MudSelectItem T="int" Value="codeTask.Id">
+                        @codeTask
+                    </MudSelectItem>
+                }
+            }
+        </MudSelect>
+        <MudTextField Class="my-4" Lines="5" Label="Background" @bind-Value="AiPersonaSimulationRequest" Variant="Variant.Outlined"/>
+    </DialogContent>
+    <DialogActions>
+        <MudButton EndIcon="@Icons.Material.Filled.Save" Color="@Color.Success" Variant="Variant.Filled" OnClick="RunCodeSimulation">Run Code Simulation</MudButton>
+        <MudButton EndIcon="@Icons.Material.Filled.Close" Color="@Color.Error" Variant="Variant.Filled" OnClick="StopCodeSimulation">Stop Code Simulation</MudButton>
+    </DialogActions>
+</MudDialog>

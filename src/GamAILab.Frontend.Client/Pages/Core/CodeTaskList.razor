@@ -2,11 +2,13 @@
 
 <MudTable Class="mx-4 my-4" Items="CodeTasks" Hover="true" Breakpoint="Breakpoint.Sm" Loading="@_isLoadingCodeTasks" LoadingProgressColor="Color.Info">
     <HeaderContent>
+        <MudTh>Id</MudTh>
         <MudTh>Title</MudTh>
         <MudTh>Description</MudTh>
         <MudTh>Action</MudTh>
     </HeaderContent>
     <RowTemplate>
+        <MudTd DataLabel="Id">@context.Id</MudTd>
         <MudTd DataLabel="Title">@context.Title</MudTd>
         <MudTd DataLabel="Description">@context.Description</MudTd>
         <MudTd DataLabel="Action">

@@ -26,7 +26,7 @@
         }
         else
         {
-            <MudText Class="my-2">There are no examples, click the add button first</MudText>
+            <MudText Typo="Typo.subtitle1" Class="my-2">There are no examples, click the add button first</MudText>
         }
 
 
@@ -46,7 +46,7 @@
         }
         else
         {
-            <MudText Class="my-2">There are no constraints, click the add button first</MudText>
+            <MudText Typo="Typo.subtitle1" Class="my-2">There are no constraints, click the add button first</MudText>
         }
         <MudSelect Class="my-2" T="CodeTaskDifficulty" Label="Difficulty" @bind-Value="CodeTask.Difficulty" Variant="Variant.Outlined">
             @foreach (var difficulty in Enum.GetValues<CodeTaskDifficulty>())
