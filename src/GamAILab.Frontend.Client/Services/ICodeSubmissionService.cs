@@ -6,6 +6,6 @@ namespace GamAILab.Frontend.Client.Services;
 
 public interface ICodeSubmissionService
 {
-    public Task<CodeSubmissionResult> SubmitCodeAsync(CodeSubmissionRequest codeSubmission, CancellationToken cancellationToken = default);
+    Task<CodeSubmissionResult> SubmitCodeAsync(CodeSubmissionRequest codeSubmission, CancellationToken cancellationToken = default);
     Task<CodeExecutionResponse> ExecuteCodeAsync(string code, CancellationToken cancellationToken = default);
 }

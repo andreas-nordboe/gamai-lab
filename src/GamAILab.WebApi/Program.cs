@@ -165,6 +165,7 @@ app.MapAuthenticationEndpoints();
 app.MapCodeTaskEndpoints();
 app.MapCodeExecutionEndpoints();
 app.MapGameProgressEndpoints();
+app.MapPersonaEvaluationEndpoints();
 
 if (!app.Environment.IsDevelopment())
 {

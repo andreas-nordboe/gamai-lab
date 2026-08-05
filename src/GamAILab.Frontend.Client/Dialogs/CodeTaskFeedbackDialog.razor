@@ -120,7 +120,7 @@
                                     </MudText>
                                 }
 
-                                @if (CodeSubmissionFeedback.HallucinationCheck.ConflictedClaims.Length > 0)
+                                @if (CodeSubmissionFeedback.HallucinationCheck.ConflictedClaims.Length > 0 && CodeSubmissionFeedback.HallucinationCheck.ConflictedClaims != "[]")
                                 {
                                     <MudText Class="mt-3">
                                         <b>Conflicting claims:</b>

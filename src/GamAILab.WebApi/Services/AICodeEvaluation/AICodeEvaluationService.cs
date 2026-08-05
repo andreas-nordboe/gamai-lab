@@ -14,6 +14,8 @@ public class AICodeEvaluationService : IAICodeEvaluationService
 {
     private readonly ILLMService _llmService;
     private readonly  ILogger<AICodeEvaluationService> _logger;
+    private readonly IConfiguration _configuration;
+    private readonly string _llmModelUsed;
     
     // https://learn.microsoft.com/en-us/dotnet/api/system.text.json.schema.jsonschemaexporter.getjsonschemaasnode?view=net-11.0-pp
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
@@ -24,6 +26,7 @@ public class AICodeEvaluationService : IAICodeEvaluationService
         RespectRequiredConstructorParameters =  true,
         //WriteIndented = true
     };
+    
     
     // TODO saving this automated schema generation for later
     //private static readonly JsonNode EvaluationPlanSchema = JsonOptions.GetJsonSchemaAsNode(typeof(AICodeEvaluationPlan), SchemaOptions);
@@ -94,10 +97,12 @@ public class AICodeEvaluationService : IAICodeEvaluationService
           }
         """)!;
     
-    public AICodeEvaluationService(ILLMService llmService, ILogger<AICodeEvaluationService> logger)
+    public AICodeEvaluationService(ILLMService llmService, ILogger<AICodeEvaluationService> logger, IConfiguration configuration)
     {
         _llmService = llmService;
         _logger = logger;
+        _configuration = configuration;
+        _llmModelUsed = _configuration["Ollama:Model"];
     }
 
     public async Task<AICodeEvaluationPlan> GenerateEvaluationPlanAsync(CodeTask codeTaskContext, CancellationToken cancellationToken = default)
@@ -131,7 +136,7 @@ public class AICodeEvaluationService : IAICodeEvaluationService
 
         var promptRequest = new ChatRequest
         {
-            Model = "gemma4",
+            Model = _llmModelUsed,
             Format = EvaluationPlanSchema,
             Stream = false, // I don't think there is a need for streaming here
             Think =  false, // I need to experiment with this one
@@ -192,7 +197,7 @@ public class AICodeEvaluationService : IAICodeEvaluationService
             FeedbackInstructions = evaluationPlanOutput.FeedbackInstructions,
             Language = codeLanguage,
             Tests = evaluationPlanOutput.Tests,
-            ModelUsed = "gemma4", // TODO get from appsettings (eventually move to options)
+            ModelUsed = _llmModelUsed, // TODO get from appsettings (eventually move to options)
             InitiatedAt = initiatedAt,
             PlanningDuration = Stopwatch.GetElapsedTime(startTime)
         };

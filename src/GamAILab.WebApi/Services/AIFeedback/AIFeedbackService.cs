@@ -17,6 +17,8 @@ public class AIFeedbackService : IAIFeedbackService
 {
     private readonly ILLMService _llmService;
     private readonly  ILogger<AIFeedbackService> _logger;
+    private readonly IConfiguration _configuration;
+    private readonly string _llmModelUsed;
     
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
     {
@@ -70,10 +72,11 @@ public class AIFeedbackService : IAIFeedbackService
         }
         """)!;
 
-    public AIFeedbackService(ILLMService llmService, ILogger<AIFeedbackService> logger)
+    public AIFeedbackService(ILLMService llmService, ILogger<AIFeedbackService> logger, string llmModelUsed)
     {
         _llmService = llmService;
         _logger = logger;
+        _llmModelUsed = llmModelUsed;
     }
 
     public async Task<AICodeTaskFeedback> GenerateCodeTaskFeedbackAsync(CodeTask codeTask, CodeSubmission submission,

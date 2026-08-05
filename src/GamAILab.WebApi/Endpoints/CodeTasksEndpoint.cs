@@ -44,6 +44,7 @@ public static class CodeTasksEndpoint
             .Produces<List<CodeTask>>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound).RequireAuthorization("RequireAdmin");
         
+        // Delete code task
         group.MapDelete("/delete/{codeTaskId:int}",
                 async Task<Results<Ok<bool>, NotFound>> (ICodeTaskService codeTaskService, int codeTaskId) =>
                 {

@@ -1,6 +1,7 @@
 ﻿using GamAILab.Shared.Models;
 using GamAILab.Shared.Models.AICodeEvaluation;
 using GamAILab.Shared.Models.AIHallucinationChecker;
+using GamAILab.Shared.Models.AIPersonaSimulation;
 using GamAILab.Shared.Models.CodeSubmission;
 using GamAILab.Shared.Models.Game;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -14,6 +15,7 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
     public DbSet<CodeTask> CodeTasks => Set<CodeTask>();
     public DbSet<AICodeTaskFeedback>  AICodeTaskFeedbacks => Set<AICodeTaskFeedback>();
     public DbSet<HallucinationCheckResult>  AIHallucinationCheckResults => Set<HallucinationCheckResult>();
+    public DbSet<AIPersona>  AIPeronas => Set<AIPersona>();
     
     // Gamification
     public DbSet<LearnerGameProgress> LearnerGameProgresses => Set<LearnerGameProgress>();
