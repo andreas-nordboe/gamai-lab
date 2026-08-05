@@ -48,7 +48,7 @@ builder.Services.AddScoped<ICodeSubmissionService,  CodeSubmissionService>();
 builder.Services.AddScoped<IAICodeEvaluationService, AICodeEvaluationService>();
 builder.Services.AddScoped<IAIHallucinationCheckerService, AIHallucinationCheckerService>();
 builder.Services.AddSingleton<ICodeExecutionService, CodeExecutionService>();
-builder.Services.AddScoped<IAIFeedbackService, AIFeedbackService>();
+builder.Services.AddSingleton<IAIFeedbackService, AIFeedbackService>();
 builder.Services.AddScoped<IGameService, GameService>();
 builder.Services.AddScoped<IAIPersonaSimulationService, AIPersonaSimulationService>();
 builder.Services.AddScoped<ILearningEngagementService, LearningLearningEngagementService>();

@@ -72,11 +72,11 @@ public class AIFeedbackService : IAIFeedbackService
         }
         """)!;
 
-    public AIFeedbackService(ILLMService llmService, ILogger<AIFeedbackService> logger, string llmModelUsed)
+    public AIFeedbackService(ILLMService llmService, ILogger<AIFeedbackService> logger, IConfiguration configuration)
     {
         _llmService = llmService;
         _logger = logger;
-        _llmModelUsed = llmModelUsed;
+        _llmModelUsed = configuration["Ollama:Model"];
     }
 
     public async Task<AICodeTaskFeedback> GenerateCodeTaskFeedbackAsync(CodeTask codeTask, CodeSubmission submission,
