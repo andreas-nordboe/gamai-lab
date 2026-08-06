@@ -107,7 +107,11 @@ public class AIPersonaSimulationService : IAIPersonaSimulationService
                 var submissionRequest = new CodeSubmissionRequest
                 {
                     CodeTaskId = codeTask.Id,
-                    Code = "def add(a, b):\\n    return a + b"//attemptedCode
+                    Code = """"
+                           def add(a, b):
+                               return a + b
+                           """"
+                    //Code = attemptedCode
                 };
 
                 var submissionResult =

@@ -61,13 +61,56 @@ public partial class AIPersonaTesting : ComponentBase
 
     private async Task OnAIPersonaClicked(AIPersona persona)
     {
-        // Clear and then set this specific persona for now
-        SelectedAIPersonas = null;
+        if(_personaSimulationIsRunning)
+            return;
         
-        await RunAIPersonaSimulation(new List<AIPersona?>
+        _personaSimulationIsRunning = true;
+
+        try
         {
-            persona
-        });
+            if (SelectedCodeTask is null)
+            {
+                Snackbar.Add("Failed to run simulation. No selected code task", Severity.Error);
+                return;
+            }
+
+            var personaList = new List<int>
+            {
+                persona.Id
+            };
+
+            var request = new AIPersonaSimulationRequest
+            {
+                CodeTaskId = SelectedCodeTask.Id,
+                PersonaIds = personaList,
+                ExecutionCounts = _executionCounts
+            };
+
+            var codeSimulation = await AIPersonaSimulationService.RunAIPersonaCodeEvaluationSimulationAsync(request);
+            if (codeSimulation is not null)
+            {
+                // TODO display output temporarily (presenting for supervisor tomorrow) 
+                _simulationResults = JsonSerializer.Serialize(codeSimulation);
+                StateHasChanged();
+                
+                var parameters = new DialogParameters<CodeTaskFeedbackDialog>
+                {
+                    { x => x.CodeSubmissionFeedback, codeSimulation.PersonaResults.FirstOrDefault()?.SubmissionResult }
+                };
+                
+                var options = new DialogOptions { CloseOnEscapeKey = true, FullWidth =  true, MaxWidth = MaxWidth.Large, CloseButton = true };
+                var dialog = await DialogService.ShowAsync<CodeTaskFeedbackDialog>("Code Task Feedback", parameters, options);
+                var result = await dialog.Result;
+            }
+        }
+        catch (Exception e)
+        {
+            Snackbar.Add("Failed to run simulation " + e.Message, Severity.Error);
+        }
+        finally
+        {
+            _personaSimulationIsRunning = false;
+        }
     }
 
     private async Task OnDeleteAIPersonaClicked(int aiPersonaId)
@@ -158,6 +201,7 @@ public partial class AIPersonaTesting : ComponentBase
             {
                 // TODO display output temporarily (presenting for supervisor tomorrow) 
                 _simulationResults = JsonSerializer.Serialize(codeSimulation);
+                StateHasChanged();
             }
         }
         catch (Exception e)
