@@ -65,9 +65,9 @@
                             <MudPaper Class="pa-4" Outlined="true">
                                 @if (TotalTests == 0)
                                 {
-                                    <MudText>
-                                        No test results were returned.
-                                    </MudText>
+                                    <MudAlert Severity="Severity.Info">
+                                        Code evaluation did not return any test results. 
+                                    </MudAlert>
                                 }
                                 else
                                 {
@@ -172,7 +172,8 @@
                         AI Evaluation Output
                     </MudText>
 
-                    <MudPaper Class="pa-4 evaluation-container" Outlined="true">
+                    @*<MudPaper Class="pa-4 evaluation-container" Outlined="true">*@
+                    <MudAlert Severity="@GetTaskOutcomeServerity(CodeSubmissionFeedback.AIFeedback.TaskOutcome)" Variant="Variant.Outlined" Class="pa-4 evaluation-container">
                         <MudText>
                             <b>Outcome:</b>
                             @CodeSubmissionFeedback.AIFeedback.TaskOutcome
@@ -213,7 +214,7 @@
                                 }
                             </MudList>
                         }
-                    </MudPaper>
+                    </MudAlert>
                 </MudItem>
 
             </MudGrid>

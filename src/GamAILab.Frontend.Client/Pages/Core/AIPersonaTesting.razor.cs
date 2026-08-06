@@ -59,9 +59,15 @@ public partial class AIPersonaTesting : ComponentBase
         
     }
 
-    private void OnAIPersonaClicked(AIPersona persona)
+    private async Task OnAIPersonaClicked(AIPersona persona)
     {
-        // TODO Open dialogue that runs code tasks using this persona only
+        // Clear and then set this specific persona for now
+        SelectedAIPersonas = null;
+        
+        await RunAIPersonaSimulation(new List<AIPersona?>
+        {
+            persona
+        });
     }
 
     private async Task OnDeleteAIPersonaClicked(int aiPersonaId)
@@ -111,8 +117,15 @@ public partial class AIPersonaTesting : ComponentBase
 
     private async Task OnRunAIPersonaSimulationClicked()
     {
+        await RunAIPersonaSimulation(SelectedAIPersonas.ToList());
+    }
+
+    private async Task RunAIPersonaSimulation(List<AIPersona?> aiPersonas)
+    {
         if(_personaSimulationIsRunning)
             return;
+        
+        _personaSimulationIsRunning = true;
 
         try
         {
@@ -122,13 +135,13 @@ public partial class AIPersonaTesting : ComponentBase
                 return;
             }
 
-            if (SelectedAIPersonas is null || !SelectedAIPersonas.Any(p => p is not null))
+            if (aiPersonas is null || !aiPersonas.Any(p => p is not null))
             {
                 Snackbar.Add("Failed to run simulation. No selected AI personas.", Severity.Warning);
                 return;
             }
 
-            List<int> personaIds = SelectedAIPersonas
+            List<int> personaIds = aiPersonas
                 .Where(persona => persona is not null)
                 .Select(persona => persona!.Id)
                 .ToList();

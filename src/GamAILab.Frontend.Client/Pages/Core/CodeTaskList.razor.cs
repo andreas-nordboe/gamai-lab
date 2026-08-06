@@ -91,5 +91,6 @@ public partial class CodeTaskList : ComponentBase
     public void AddTaskToList(CodeTask newTask)
     {
         CodeTasks.Add(newTask);
+        StateHasChanged();
     }
 }

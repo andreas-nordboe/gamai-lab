@@ -297,3 +297,5 @@ src/GamAILab.WebApi/GamAILabWebApiDb.db
 **/.DS_Store
 ._.DS_Store
 **/._.DS_Store
+src/.DS_Store
+src/GamAILab.WebApi/GamAILabWebApiDb.db

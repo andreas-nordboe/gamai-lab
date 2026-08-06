@@ -37,7 +37,7 @@
         <MudTd DataLabel="Name">@context.Name</MudTd>
         <MudTd DataLabel="Background">@context.Background</MudTd>
         <MudTd DataLabel="Action">
-            <MudButton Class="mr-2" EndIcon="@Icons.Material.Filled.ArrowRight" Color="Color.Primary" Variant="Variant.Filled" OnClick="@(() => OnAIPersonaClicked(context))">
+            <MudButton Class="mr-2" Disabled="_personaSimulationIsRunning" EndIcon="@Icons.Material.Filled.ArrowRight" Color="Color.Primary" Variant="Variant.Filled" OnClick="@(() => OnAIPersonaClicked(context))">
                 Run Code Simulation
             </MudButton>
             <MudButton Class="mr-2" EndIcon="@Icons.Material.Filled.Edit" Color="Color.Info" Variant="Variant.Filled" OnClick="@(() => EditAIPersonaClicked(context))">

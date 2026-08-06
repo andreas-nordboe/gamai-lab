@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using GamAILab.Shared.Models.AICodeEvaluation;
 using GamAILab.Shared.Models.AIHallucinationChecker;
 using GamAILab.Shared.Models.AIHallucinationChecker.DTOs;
@@ -9,6 +10,8 @@ namespace GamAILab.Shared.Models.CodeSubmission;
 
 public class CodeSubmissionResult
 {
+    [Key]
+    public int Id { get; set; }
     public int SubmissionId { get; set; }
     public int AttemptNumber { get; set; }
     public CodeTask CodeTask { get; set; } = null!; // TODO mask internal fields from response (seen by client)

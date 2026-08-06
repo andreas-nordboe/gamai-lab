@@ -2,6 +2,7 @@
 using GamAILab.Shared.Models.AICodeEvaluation;
 using GamAILab.Shared.Models.AIHallucinationChecker;
 using GamAILab.Shared.Models.AIPersonaSimulation;
+using GamAILab.Shared.Models.AIPersonaSimulation.DTOs;
 using GamAILab.Shared.Models.CodeSubmission;
 using GamAILab.Shared.Models.Game;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -21,7 +22,9 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
     public DbSet<LearnerGameProgress> LearnerGameProgresses => Set<LearnerGameProgress>();
     public DbSet<CustomData> CustomData => Set<CustomData>();
     public DbSet<GameObjective> GameObjectives => Set<GameObjective>();
+    public DbSet<AIPersonaSimulationResponse> AIPersonaSimulationResponses => Set<AIPersonaSimulationResponse>();
 
+    
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);

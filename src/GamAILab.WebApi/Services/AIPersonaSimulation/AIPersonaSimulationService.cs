@@ -74,40 +74,13 @@ public class AIPersonaSimulationService : IAIPersonaSimulationService
         var simulationId = Guid.NewGuid();
         
         List<AIPersona> personaList = [];
-
-        // 2. Loop through AI persona list from request and load their attributes (personas could have their own userIds) 
-        
-        // 3. Run prompts where AI Personas attempts to solve the tasks
-        /*
-        foreach (var persona in personaList)
-        {
-            if (persona is null)
-            {
-                throw new InvalidOperationException("Persona was not found");
-            }
-            
-            // 4. Give AI personas testing instructions for the specified code task and output their code attempt
-            var personaCodeAttempt = await AttemptToSolveCodeTaskAsPersonaAsync(persona, codeTask, cancellationToken);
-            
-            
-            var codeSubmission = new CodeSubmissionRequest
-            {
-                CodeTaskId = codeTask.Id,
-                Code = personaCodeAttempt
-            };
-            
-            // 5. Run code attempt for each persona 
-            var codeSubmissionAttempt = await _codeSubmissionService.SubmitCodeAsync(codeSubmission,  persona.UserId, cancellationToken);
-            
-            // 6. Store learning outcomes and struggles for each persona in the database (should be done automatically via CodeSubmissionService, but it might require adjustments for persona-type users)
-            
-            
-        }*/
         
         var requestedPersonaIds = request.PersonaIds
             .Distinct()
             .ToList();
 
+        // 2. Loop through AI persona list from request and load their attributes (personas could have their own userIds)
+        // using single db query
         var personas = await _dbContext.AIPersonas
             .AsNoTracking()
             .Where(persona => requestedPersonaIds.Contains(persona.Id))
@@ -121,15 +94,20 @@ public class AIPersonaSimulationService : IAIPersonaSimulationService
 
             try
             {
+                // 3. Run prompts where AI Personas attempts to solve the tasks
+                // 4. Give AI personas testing instructions for the specified code task and output their code attempt
+                // 5. Run code attempt for each persona 
                 var attemptedCode = await AttemptToSolveCodeTaskAsPersonaAsync(
                     persona,
                     codeTask,
                     cancellationToken);
+                
+                _logger.LogInformation($"AI Persona code: {attemptedCode}");
 
                 var submissionRequest = new CodeSubmissionRequest
                 {
                     CodeTaskId = codeTask.Id,
-                    Code = attemptedCode
+                    Code = "def add(a, b):\\n    return a + b"//attemptedCode
                 };
 
                 var submissionResult =
@@ -172,23 +150,29 @@ public class AIPersonaSimulationService : IAIPersonaSimulationService
                 });
             }
         }
-
-        
-        // 7. (Later) Potentially use LLM model service to reason over where learner personas start to struggle or lose focus  
-        
         
         var completedAt = DateTime.UtcNow;
-
-        return new AIPersonaSimulationResponse
+        
+        var simulationResult = new AIPersonaSimulationResponse
         {
+            PersonasUsed = personas,
             SimulationId = simulationId,
             CodeTaskId = codeTask.Id,
-            //CodeTaskTitle = codeTask.Title,
+            CodeTaskTitle = codeTask.Title,
             LlmModelUsed = _llmModelUsed,
             StartedAt = startedAt,
             CompletedAt = completedAt,
-            PersonaResults = personaResults
+            PersonaResults = personaResults,
         };
+        
+        // 6. Store learning outcomes and struggles for each persona in the database (should be done automatically via CodeSubmissionService, but it might require adjustments for persona-type users)
+        _dbContext.AIPersonaSimulationResponses.Add(simulationResult);
+        //await _dbContext.SaveChangesAsync(cancellationToken);
+        
+        // 7. (Later) Potentially use LLM model service to reason over where learner personas start to struggle or lose focus  
+        // TODO also: ensure personas respond with struggles and learning outcomes (using a single/the same prompt?)
+        
+        return simulationResult;
     }
 
     public async Task CreateAIPersona(AIPersona aiPersona, CancellationToken cancellationToken)
@@ -309,8 +293,8 @@ public class AIPersonaSimulationService : IAIPersonaSimulationService
         var promptRequest = new ChatRequest
         {
             Model = _llmModelUsed,
-            Format = CodeAttemptJsonSchema, // TODO specify format similarly to other services
-            Stream = false, // I don't think ther0+78e is a need for streaming here
+            Format = CodeAttemptJsonSchema, 
+            Stream = false, // I don't think there is a need for streaming here
             Think =  false, // I need to experiment with this one
             KeepAlive = "30m", // prevent reloading model when requests are happening concurrently
             Options = new()
