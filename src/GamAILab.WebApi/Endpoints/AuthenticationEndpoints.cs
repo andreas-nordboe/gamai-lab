@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using System.Text;
+using System.Text.Json;
 using GamAILab.Shared.Models;
 using GamAILab.Shared.Models.Authentication;
 using GamAILab.WebApi.Data;
@@ -19,8 +20,8 @@ public static class AuthenticationEndpoints
         var group = app.MapGroup("/api/auth")
             .WithTags("Authentication");
 
-        group.MapPost("register", RegisterAsync);
-        group.MapPost("login", LoginAsync);
+        group.MapPost("register", RegisterAsync).AllowAnonymous();
+        group.MapPost("login", LoginAsync).AllowAnonymous();
         
         // Will be used later for admins to change user privileges 
         group.MapPost("update-user-role", UpdateUserRoleAsync)
@@ -101,7 +102,7 @@ public static class AuthenticationEndpoints
             Email = request.Email,
             //DisplayName = request // TODO add username later
         };
-            
+        
         IdentityResult identityResult = await userManager.CreateAsync(user, request.Password);
         if (!identityResult.Succeeded)
         {

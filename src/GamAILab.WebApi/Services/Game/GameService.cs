@@ -17,16 +17,36 @@ public class GameService : IGameService
     
     // Learner game progress
 
-    public async Task<List<LearnerGameProgress>> LoadLearnerGameProgress(string userId)
+    public async Task<LearnerGameProgressRequest> LoadLearnerGameProgress(string userId)
     {
         ValidateUser(userId);
         
-        return await _dbContext.LearnerGameProgresses
+        var progress = await _dbContext.LearnerGameProgresses
             .AsNoTracking()
-            .Where(prog => prog.UserId == userId)
-            .ToListAsync();
-        
-        
+            .Where(p => p.UserId == userId)
+            .Select(p => new LearnerGameProgressRequest
+            {
+                Level = p.Level,
+                Currency = p.Currency,
+                //LastUpdated = p.LastUpdated,
+                Achievements = p.Achievements
+                    .Select(a => new AchievementRequest
+                    {
+                        AchievementId = a.AchievementId,
+                        Title = a.Title,
+                        Description = a.Description
+                    })
+                    .ToList()
+            })
+            .SingleOrDefaultAsync();
+
+        return progress ?? new LearnerGameProgressRequest
+        {
+            Level = 1,
+            Currency = 0,
+            Achievements = [],
+            //LastUpdated = null
+        };
     }
     
     public async Task SaveLearnerGameProgress(string userId, LearnerGameProgressRequest learnerGameProgress)
