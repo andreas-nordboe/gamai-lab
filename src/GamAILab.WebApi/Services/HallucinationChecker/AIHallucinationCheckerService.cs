@@ -195,7 +195,7 @@ public class AIHallucinationCheckerService : IAIHallucinationCheckerService
             if (!response.IsConsistent && conflictedClaims.Count == 0)
             {
                 // add a reason for audiing even when the LLM did not return a list of conflicted claims
-                conflictedClaims.Add(response.Summary.Trim());
+                //conflictedClaims.Add(response.Summary.Trim());
             }
 
             var status = response.IsConsistent
@@ -251,7 +251,7 @@ public class AIHallucinationCheckerService : IAIHallucinationCheckerService
 
         try
         {
-            return JsonSerializer.Deserialize<JsonElement>(evidence, JsonSerialiserOptions);
+            return JsonSerializer.Deserialize<ExpectedResultType>(evidence, JsonSerialiserOptions);
         }
         catch (Exception e)
         {

@@ -12,5 +12,7 @@ public sealed class AICodeEvaluationTest
     [JsonPropertyName("arguments")]
     public required List<int> Arguments { get; set; }
     [JsonPropertyName("expectedResult")]
-    public required JsonElement ExpectedResult { get; init; }
+    public required string ExpectedResult { get; init; }
+
+    public ExpectedResultType ExpectedResultType { get; set; }
 }

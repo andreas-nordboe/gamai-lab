@@ -24,7 +24,12 @@ public class AICodeEvaluationService : IAICodeEvaluationService
         UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
         RespectNullableAnnotations = true,
         RespectRequiredConstructorParameters =  true,
-        //WriteIndented = true
+        
+        // Handles the newer ExpectedResult type (replaces JsonElement for EF Core)
+        Converters =
+        {
+            new JsonStringEnumConverter<ExpectedResultType>(JsonNamingPolicy.CamelCase, allowIntegerValues: false)
+        }
     };
     
     
@@ -74,15 +79,26 @@ public class AICodeEvaluationService : IAICodeEvaluationService
                         "type": "integer"
                      }
                    },
-                    "expectedResult": {
-                      "type": "integer"
+                   "expectedResult": {
+                      "type": "string"
+                    },
+                    "expectedResultType": {
+                      "type": "string",
+                      "enum": [
+                        "null",
+                        "string",
+                        "boolean",
+                        "number",
+                        "json"
+                      ]
                     }
                   },
                   "required": [
                     "name",
                     "functionName",
                     "arguments",
-                    "expectedResult"
+                    "expectedResult",
+                    "expectedResultType"
                   ]
                 }
               }
@@ -191,7 +207,8 @@ public class AICodeEvaluationService : IAICodeEvaluationService
         return new AICodeEvaluationPlan
         {
             Id = Guid.NewGuid().ToString("N"),
-            CodeTask = codeTaskContext,
+            CodeTaskId = codeTaskContext.Id,
+            CodeTaskVersion = codeTaskContext.Version,
             Criteria = evaluationPlanOutput.Criteria,
             CommonMistakes = evaluationPlanOutput.CommonMistakes,
             FeedbackInstructions = evaluationPlanOutput.FeedbackInstructions,
@@ -199,7 +216,9 @@ public class AICodeEvaluationService : IAICodeEvaluationService
             Tests = evaluationPlanOutput.Tests,
             ModelUsed = _llmModelUsed, // TODO get from appsettings (eventually move to options)
             InitiatedAt = initiatedAt,
-            PlanningDuration = Stopwatch.GetElapsedTime(startTime)
+            PlanningDuration = Stopwatch.GetElapsedTime(startTime),
+            PromptVersion = "1.0",
+            SchemaVersion = "1.0"
         };
     }
 
@@ -248,9 +267,48 @@ public class AICodeEvaluationService : IAICodeEvaluationService
                 throw new InvalidOperationException($"Test '{test.Name}' has no input");
             }
 
-            if (test.ExpectedResult.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
-            {
-                throw new InvalidOperationException($"Test '{test.Name}' has no expected output");
+            // if (test.ExpectedResult.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
+            // {
+            //     throw new InvalidOperationException($"Test '{test.Name}' has no expected output");
+            // }
+
+            switch (test.ExpectedResultType)
+            {   
+                case ExpectedResultType.Null:
+                    break;
+                
+                case ExpectedResultType.Boolean:
+                    if (!bool.TryParse(test.ExpectedResult, out _))
+                    {
+                        throw new InvalidOperationException($"Test with name: {test.Name} contains invalid boolean expected result: {test.ExpectedResult}");
+                    }
+                    break;
+                
+                case ExpectedResultType.String:
+                    // this could also be a valid expected result..
+                    break;
+                
+                case ExpectedResultType.Number:
+                    if (!double.TryParse(test.ExpectedResult, out _))
+                    {
+                        throw new InvalidOperationException($"Test with name: {test.Name} contains invalid number expected result: {test.ExpectedResult}");
+                    }
+                    break;
+                
+                case ExpectedResultType.Json:
+                    try
+                    {
+                        JsonDocument.Parse(test.ExpectedResult);
+                    }
+                    catch (JsonException jsonException)
+                    {
+                        throw new InvalidOperationException($"Test with name: {test.Name} contains invalid JSON expected result: {test.ExpectedResult}");
+                    }
+                    break;
+                
+                default:
+                    throw new InvalidOperationException($"Test expected result type is invalid/not supported");
+                    break;
             }
         }
         

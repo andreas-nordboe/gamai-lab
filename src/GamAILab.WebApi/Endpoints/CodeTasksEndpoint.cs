@@ -55,6 +55,17 @@ public static class CodeTasksEndpoint
             .Produces<bool>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound).RequireAuthorization("RequireAdmin");
         
+        // Re-generate code evaluation plan
+        group.MapPut("/re-generate-code-evaluation-plan/{codeTaskId:int}",
+                async Task<Results<Ok<CodeTask>, NotFound>> (ICodeTaskService codeTaskService, int codeTaskId) =>
+                {
+                    var codeTasks = await codeTaskService.ReGenerateCodeEvaluationPlanAsync(codeTaskId);
+
+                    return TypedResults.Ok(codeTasks);
+                }).WithName("ReGenerateCodeEvaluationPlan")
+            .Produces<List<CodeTask>>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status404NotFound).RequireAuthorization("RequireAdmin");
+        
         return app;
     }
 }

@@ -19,6 +19,7 @@ public partial class CodeTaskManagement : ComponentBase
 
     private async Task OnAddTaskClicked()
     {
+        // Setup code defaults
         var newCodeTask = new CodeTask()
         {
             Title = string.Empty,

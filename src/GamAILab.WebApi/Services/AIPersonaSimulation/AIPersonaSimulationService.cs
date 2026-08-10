@@ -103,15 +103,17 @@ public class AIPersonaSimulationService : IAIPersonaSimulationService
                     cancellationToken);
                 
                 _logger.LogInformation($"AI Persona code: {attemptedCode}");
+                
+                // Replace newlines with spaces
 
                 var submissionRequest = new CodeSubmissionRequest
                 {
                     CodeTaskId = codeTask.Id,
-                    Code = """"
-                           def add(a, b):
-                               return a + b
-                           """"
-                    //Code = attemptedCode
+                    // Code = """"
+                    //        def add(a, b):
+                    //            return a + b
+                    //        """"
+                    Code = attemptedCode
                 };
 
                 var submissionResult =
@@ -313,6 +315,7 @@ public class AIPersonaSimulationService : IAIPersonaSimulationService
                         Treat the persona as it would behave as a human learner.
                         Always follow the provided JSON Schema exactly.
                         Do not output text outside the JSON object.
+                        The code will be executed so do not return newLine characters that could result in execution errors.
                         Do not use any other formats than JSON.
                     """),
                 

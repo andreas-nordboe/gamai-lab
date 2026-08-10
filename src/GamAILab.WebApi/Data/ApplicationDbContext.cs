@@ -34,5 +34,9 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
             .WithOne(codeSubmission => codeSubmission.AICodeTaskFeedback)
             .HasForeignKey<AICodeTaskFeedback>(feedback => feedback.CodeSubmissionId)
             .OnDelete(DeleteBehavior.Cascade);
+        
+        builder.Entity<AICodeEvaluationPlan>()
+            .ComplexCollection(plan => plan.Tests)
+            .ToJson();
     }
 }

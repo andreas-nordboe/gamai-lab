@@ -7,21 +7,46 @@ namespace GamAILab.WebApi.Services.CodeTasks;
 public class CodeTaskService : ICodeTaskService
 {
     private readonly ApplicationDbContext _dbContext;
+    private readonly ILogger<CodeTaskService> _logger;
+    private readonly IAICodeEvaluationService _aiCodeEvaluationService;
     
-    public CodeTaskService(ApplicationDbContext dbContext)
+    public CodeTaskService(ApplicationDbContext dbContext, IAICodeEvaluationService aiCodeEvaluationService, ILogger<CodeTaskService> logger)
     {
         _dbContext = dbContext;
+        _aiCodeEvaluationService = aiCodeEvaluationService;
+        _logger = logger;
     }
     
     public async Task AddCodeTask(CodeTask codeTask)
     {
+        // Generate code evaluation plan
+        try
+        {
+            var codeEvaluationPlan = await _aiCodeEvaluationService.GenerateEvaluationPlanAsync(codeTask);
+
+            if (codeEvaluationPlan is null)
+            {
+                throw new ArgumentNullException(nameof(codeEvaluationPlan));
+            }
+            
+            codeTask.AiCodeEvaluationPlan = codeEvaluationPlan;
+        }
+        catch (Exception e)
+        {
+            throw new InvalidOperationException("Failed to generate evaluation plan for code task", e);
+        }
+        
+        codeTask.CreatedAt = DateTime.Now;
+        
         _dbContext.CodeTasks.Add(codeTask);
         await _dbContext.SaveChangesAsync();
     }
 
     public async Task<CodeTask?> GetCodeTaskById(int codeTaskId)
     {
-        return await _dbContext.CodeTasks.FindAsync(codeTaskId);
+        return await _dbContext.CodeTasks
+            .Include(x => x.AiCodeEvaluationPlan)
+            .FirstOrDefaultAsync(x => x.Id == codeTaskId);
     }
 
     public async Task<List<CodeTask>> GetAllCodeTasks()
@@ -82,10 +107,36 @@ public class CodeTaskService : ICodeTaskService
         }
         else
         {
+            codeTask.Version++;
             _dbContext.CodeTasks.Update(codeTask);
         }
         
         await _dbContext.SaveChangesAsync();
         return codeTask;
+    }
+
+    public async Task<CodeTask?> ReGenerateCodeEvaluationPlanAsync(int codeTaskId)
+    {
+        var existingCodeTask = await GetCodeTaskById(codeTaskId);
+        
+        // Verify that the code task exists
+        if (existingCodeTask is null)
+        {
+            throw new InvalidOperationException("Code task was not found while re-generating evaluation plan");
+        }
+        
+        var newCodeEvaluationPlan = await _aiCodeEvaluationService.GenerateEvaluationPlanAsync(existingCodeTask);
+        existingCodeTask.AiCodeEvaluationPlan = newCodeEvaluationPlan;
+
+        // Increment code task version for auditability 
+        // as different code evaluation plans can easily skew measured outputs
+        // and this should ensure consistency across the final report analysis
+        // TODO (remember to mention this as an argument in the report)
+        existingCodeTask.Version++;
+        
+        _dbContext.CodeTasks.Update(existingCodeTask);
+        await _dbContext.SaveChangesAsync();
+        
+        return existingCodeTask;
     }
 }

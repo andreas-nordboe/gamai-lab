@@ -7,5 +7,5 @@ public sealed class AICodeEvaluationPlanOutput
     public required List<string> CommonMistakes { get; init; }
     public required string FeedbackInstructions { get; init; }
     public required string Language { get; init; }
-    public required IReadOnlyList<AICodeEvaluationTest> Tests { get; init; }
+    public required List<AICodeEvaluationTest> Tests { get; init; }
 }

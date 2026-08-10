@@ -43,9 +43,9 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddApiEndpoints();
 
 // Feature services
+builder.Services.AddScoped<IAICodeEvaluationService, AICodeEvaluationService>();
 builder.Services.AddScoped<ICodeTaskService, CodeTaskService>();
 builder.Services.AddScoped<ICodeSubmissionService,  CodeSubmissionService>();
-builder.Services.AddScoped<IAICodeEvaluationService, AICodeEvaluationService>();
 builder.Services.AddScoped<IAIHallucinationCheckerService, AIHallucinationCheckerService>();
 builder.Services.AddSingleton<ICodeExecutionService, CodeExecutionService>();
 builder.Services.AddSingleton<IAIFeedbackService, AIFeedbackService>();
