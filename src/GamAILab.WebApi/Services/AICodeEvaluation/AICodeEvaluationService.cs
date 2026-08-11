@@ -7,6 +7,7 @@ using GamAILab.WebApi.Services.LLMService;
 using System.Text.Json.Serialization;
 using OllamaSharp.Models.Chat;
 using System.Text.Json.Serialization.Metadata;
+using GamAILab.Shared.Models.CodeExecution;
 
 namespace GamAILab.WebApi.Services;
 
@@ -28,7 +29,7 @@ public class AICodeEvaluationService : IAICodeEvaluationService
         // Handles the newer ExpectedResult type (replaces JsonElement for EF Core)
         Converters =
         {
-            new JsonStringEnumConverter<ExpectedResultType>(JsonNamingPolicy.CamelCase, allowIntegerValues: false)
+            new JsonStringEnumConverter(JsonNamingPolicy.CamelCase, allowIntegerValues: false)
         }
     };
     
@@ -39,79 +40,130 @@ public class AICodeEvaluationService : IAICodeEvaluationService
     // This manual schema mapping seems to generate more reliable responses, although the model may change over time and would therefore need to be updated   
     private static readonly JsonNode EvaluationPlanSchema = JsonNode.Parse(
         """
-          {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "criteria": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
-              },
-              "commonMistakes": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
-              },
-              "feedbackInstructions": {
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "criteria": {
+              "type": "array",
+              "items": {
                 "type": "string"
-              },
-              "language": {
+              }
+            },
+            "commonMistakes": {
+              "type": "array",
+              "items": {
                 "type": "string"
-              },
-              "tests": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "properties": {
-                    "name": {
-                      "type": "string"
-                    },
-                    "functionName": {
-                      "type": "string"
-                    },
-                    "arguments": {
-                     "type": "array",
-                     "items": {
-                        "type": "integer"
-                     }
-                   },
-                   "expectedResult": {
-                      "type": "string"
-                    },
-                    "expectedResultType": {
-                      "type": "string",
-                      "enum": [
-                        "null",
-                        "string",
-                        "boolean",
-                        "number",
-                        "json"
+              }
+            },
+            "feedbackInstructions": {
+              "type": "string"
+            },
+            "language": {
+              "type": "string"
+            },
+            "tests": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "testType": {
+                    "type": "string",
+                    "enum": [
+                      "functionReturn",
+                      "standardOutput",
+                      "standardInputOutput",
+                      "expectedException"
+                    ]
+                  },
+                  "functionName": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "arguments": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "null",
+                            "string",
+                            "boolean",
+                            "number",
+                            "json"
+                          ]
+                        },
+                        "value": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "value"
                       ]
                     }
                   },
-                  "required": [
-                    "name",
-                    "functionName",
-                    "arguments",
-                    "expectedResult",
-                    "expectedResultType"
-                  ]
-                }
+                  "standardInput": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "expectedResult": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "expectedResultType": {
+                    "type": "string",
+                    "enum": [
+                      "null",
+                      "string",
+                      "boolean",
+                      "number",
+                      "json"
+                    ]
+                  },
+                  "exception": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "name",
+                  "testType",
+                  "functionName",
+                  "arguments",
+                  "standardInput",
+                  "expectedResult",
+                  "expectedResultType",
+                  "exception"
+                ]
               }
-            },
-            "required": [
-              "criteria",
-              "commonMistakes",
-              "feedbackInstructions",
-              "language",
-              "tests"
-            ]
-          }
-        """)!;
+            }
+          },
+          "required": [
+            "criteria",
+            "commonMistakes",
+            "feedbackInstructions",
+            "language",
+            "tests"
+          ]
+        }
+        """
+    )!;
     
     public AICodeEvaluationService(ILLMService llmService, ILogger<AICodeEvaluationService> logger, IConfiguration configuration)
     {
@@ -138,10 +190,8 @@ public class AICodeEvaluationService : IAICodeEvaluationService
             Generate an evaluation plan for the included programming task.
             
             The evaluation plan will be used to evaluate code in an isolated {{codeLanguage}} execution environment.
-            
             Return only JSON. Do not include any explanations, other formats such as markdown or code fences.
-            
-            The JSON output must conform exactly to this schema
+            The JSON output must conform exactly to this schema.
             
             {{schemaJson}}
 
@@ -272,45 +322,79 @@ public class AICodeEvaluationService : IAICodeEvaluationService
             //     throw new InvalidOperationException($"Test '{test.Name}' has no expected output");
             // }
 
-            switch (test.ExpectedResultType)
-            {   
-                case ExpectedResultType.Null:
+            switch (test.TestType)
+            {
+                case CodeTestType.FunctionReturn:
+                    if (string.IsNullOrWhiteSpace(test.FunctionName))
+                        throw new InvalidOperationException($"Test '{test.Name}' does not have a function name");
+
+                    ValidateExpectedResult(test);
                     break;
-                
-                case ExpectedResultType.Boolean:
-                    if (!bool.TryParse(test.ExpectedResult, out _))
-                    {
-                        throw new InvalidOperationException($"Test with name: {test.Name} contains invalid boolean expected result: {test.ExpectedResult}");
-                    }
+
+                case CodeTestType.StandardOutput:
+                    if (test.ExpectedResult is null)
+                        throw new InvalidOperationException($"Test '{test.Name}' does not have a expected output");
                     break;
-                
-                case ExpectedResultType.String:
-                    // this could also be a valid expected result..
+
+                case CodeTestType.StandardOutputAndInput:
+                    if (test.ExpectedResult is null)
+                        throw new InvalidOperationException($"Test '{test.Name}' does not have expected output");
                     break;
-                
-                case ExpectedResultType.Number:
-                    if (!double.TryParse(test.ExpectedResult, out _))
-                    {
-                        throw new InvalidOperationException($"Test with name: {test.Name} contains invalid number expected result: {test.ExpectedResult}");
-                    }
+
+                case CodeTestType.ExpectedException:
+                    if (string.IsNullOrWhiteSpace(test.FunctionName))
+                        throw new InvalidOperationException($"Test '{test.Name}' does not have a function name");
+
+                    if (string.IsNullOrWhiteSpace(test.ExpectedResult))
+                        throw new InvalidOperationException($"Test '{test.Name}' does not have a expected exception");
                     break;
-                
-                case ExpectedResultType.Json:
-                    try
-                    {
-                        JsonDocument.Parse(test.ExpectedResult);
-                    }
-                    catch (JsonException jsonException)
-                    {
-                        throw new InvalidOperationException($"Test with name: {test.Name} contains invalid JSON expected result: {test.ExpectedResult}");
-                    }
-                    break;
-                
+
                 default:
-                    throw new InvalidOperationException($"Test expected result type is invalid/not supported");
-                    break;
+                    throw new InvalidOperationException($"Test type: {test.TestType} is not supported");
             }
         }
         
+    }
+
+    private static void ValidateExpectedResult(AICodeEvaluationTest aiCodeEvaluationTest)
+    {
+        switch (aiCodeEvaluationTest.ExpectedResultType)
+        {   
+            case ExpectedResultType.Null:
+                break;
+                
+            case ExpectedResultType.Boolean:
+                if (!bool.TryParse(aiCodeEvaluationTest.ExpectedResult, out _))
+                {
+                    throw new InvalidOperationException($"Test with name: {aiCodeEvaluationTest.Name} contains invalid boolean expected result: {aiCodeEvaluationTest.ExpectedResult}");
+                }
+                break;
+                
+            case ExpectedResultType.String:
+                // this could also be a valid expected result..
+                break;
+                
+            case ExpectedResultType.Number:
+                if (!double.TryParse(aiCodeEvaluationTest.ExpectedResult, out _))
+                {
+                    throw new InvalidOperationException($"Test with name: {aiCodeEvaluationTest.Name} contains invalid number expected result: {aiCodeEvaluationTest.ExpectedResult}");
+                }
+                break;
+                
+            case ExpectedResultType.Json:
+                try
+                {
+                    JsonDocument.Parse(aiCodeEvaluationTest.ExpectedResult);
+                }
+                catch (JsonException jsonException)
+                {
+                    throw new InvalidOperationException($"Test with name: {aiCodeEvaluationTest.Name} contains invalid JSON expected result: {aiCodeEvaluationTest.ExpectedResult}");
+                }
+                break;
+                
+            default:
+                throw new InvalidOperationException($"Test expected result type is invalid/not supported");
+                break;
+        }
     }
 }

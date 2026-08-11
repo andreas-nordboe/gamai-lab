@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using GamAILab.Shared.Models.AICodeEvaluation;
 using GamAILab.Shared.Models.CodeExecution;
 
@@ -12,7 +13,12 @@ public class CodeExecutionService : ICodeExecutionService
     
     // TODO I might change these later, its to prevent many containers from starting together (which will be important for AI persona testing later)
     private static readonly SemaphoreSlim CodeExecutions = new SemaphoreSlim(4, 4);
-    private static readonly JsonSerializerOptions JsonSerializerOptions = new(JsonSerializerDefaults.Web);
+
+    private static readonly JsonSerializerOptions JsonSerializerOptions = new(JsonSerializerDefaults.Web)
+    {
+        Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase, allowIntegerValues: false) }
+    };
+    
     private readonly ILogger<CodeExecutionService> _logger;
 
 public CodeExecutionService(ILogger<CodeExecutionService> logger)
