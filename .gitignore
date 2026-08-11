@@ -375,3 +375,4 @@ src/GamAILab_Game/GamAILab/Plugins/**/Intermediate/*
 
 # Cache files for the editor to use
 src/GamAILab_Game/GamAILab/DerivedDataCache/*
+src/GamAILab.WebApi/GamAILabWebApiDb.db
