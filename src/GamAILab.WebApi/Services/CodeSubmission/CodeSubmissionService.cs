@@ -17,7 +17,7 @@ public class CodeSubmissionService : ICodeSubmissionService
 {
     private readonly ApplicationDbContext _dbContext;
     private readonly ICodeTaskService _codeTaskService;
-    private readonly IAICodeEvaluationService _aiCodeEvaluationService;
+    //private readonly IAICodeEvaluationService _aiCodeEvaluationService;
     private readonly ICodeExecutionService _codeExecutionService;
     private readonly IAIFeedbackService _aiFeedbackService;
     private readonly IAIHallucinationCheckerService _aiHallucinationCheckerService;
@@ -25,11 +25,11 @@ public class CodeSubmissionService : ICodeSubmissionService
     private readonly ILogger<CodeSubmissionService> _logger;
 
 
-    public CodeSubmissionService(ApplicationDbContext dbContext, ICodeTaskService codeTaskService, IAICodeEvaluationService aiCodeEvaluationService, ICodeExecutionService codeExecutionService, ILogger<CodeSubmissionService> logger, IAIFeedbackService aiFeedbackService, IAIHallucinationCheckerService iaiHallucinationCheckerService, IGameService gameService)
+    public CodeSubmissionService(ApplicationDbContext dbContext, ICodeTaskService codeTaskService/*, IAICodeEvaluationService aiCodeEvaluationService*/, ICodeExecutionService codeExecutionService, ILogger<CodeSubmissionService> logger, IAIFeedbackService aiFeedbackService, IAIHallucinationCheckerService iaiHallucinationCheckerService, IGameService gameService)
     {
         _dbContext = dbContext;
         _codeTaskService = codeTaskService;
-        _aiCodeEvaluationService = aiCodeEvaluationService;
+        //_aiCodeEvaluationService = aiCodeEvaluationService;
         _codeExecutionService = codeExecutionService;
         _logger = logger;
         _aiFeedbackService = aiFeedbackService;
@@ -59,7 +59,7 @@ public class CodeSubmissionService : ICodeSubmissionService
         // 2. Request task information
         var codeTask = await _codeTaskService.GetCodeTaskById(codeSubmission.CodeTaskId);
 
-        // 3. Generate an evaluation plan that includes task information (id, description, constraints..)
+    
         if (codeTask is null)
         {
             throw new KeyNotFoundException("CodeTask was not found");
@@ -69,21 +69,25 @@ public class CodeSubmissionService : ICodeSubmissionService
         _dbContext.CodeSubmissions.Add(submission);
         await _dbContext.SaveChangesAsync();
 
-        var evaluationPlan = await _aiCodeEvaluationService.GenerateEvaluationPlanAsync(codeTask, cancellationToken);
+        //var evaluationPlan = await _aiCodeEvaluationService.GenerateEvaluationPlanAsync(codeTask, cancellationToken);
+        if (codeTask.AiCodeEvaluationPlan is null)
+        {
+            throw new KeyNotFoundException($"Code evaluation plan was not found for task with id {codeTask.Id}");
+        }
         
         // 4. Execute code in isolated docker container (Docker code runner)
-        var codeExecution = await _codeExecutionService.ExecuteCodeAsync(submission.Code, evaluationPlan, cancellationToken);
+        var codeExecution = await _codeExecutionService.ExecuteCodeAsync(submission.Code, codeTask.AiCodeEvaluationPlan, cancellationToken);
         
         _logger.LogInformation(JsonSerializer.Serialize(codeExecution));
         
         // 5. Send code to AIFeedbackService (I need to look into latency here and possibly feed back partial information or notify the learner)
-        var aiFeedback = await _aiFeedbackService.GenerateCodeTaskFeedbackAsync(codeTask, submission, evaluationPlan, codeExecution, cancellationToken);
+        var aiFeedback = await _aiFeedbackService.GenerateCodeTaskFeedbackAsync(codeTask, submission, codeTask.AiCodeEvaluationPlan, codeExecution, cancellationToken);
         
         aiFeedback.CodeSubmissionId = submission.Id;
         aiFeedback.CodeSubmission = submission;
         
         // 6. Verify feedback using AI Hallucination service
-        var hallucinationCheckResult = await _aiHallucinationCheckerService.CheckAIFeedbackConsistencyAsync(codeTask, submission, evaluationPlan, codeExecution, aiFeedback, cancellationToken);
+        var hallucinationCheckResult = await _aiHallucinationCheckerService.CheckAIFeedbackConsistencyAsync(codeTask, submission, codeTask.AiCodeEvaluationPlan, codeExecution, aiFeedback, cancellationToken);
             
         _dbContext.AICodeTaskFeedbacks.Add(aiFeedback);
         _dbContext.AIHallucinationCheckResults.Add(hallucinationCheckResult);

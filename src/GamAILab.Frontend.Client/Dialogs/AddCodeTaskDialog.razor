@@ -5,7 +5,15 @@
     <DialogContent>
         <MudButton Class="my-2" OnClick="OnAddExampleClicked" Variant="Variant.Filled" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Add">Add Example</MudButton>
         <MudButton Class="my-2" OnClick="OnAddConstraintClicked" Variant="Variant.Filled" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Add">Add Constraint</MudButton>
-
+        <MudButton Class="my-2" OnClick="OnRegenerateCodePlanClicked" Variant="Variant.Filled" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Add">Add Constraint</MudButton>
+        @* Code evaluation plans are generated during creation. However, educators may want to re-generate these *@
+        @if (IsEditing)
+        {
+            <MudButton Class="my-2" Variant="Variant.Filled" EndIcon="@Icons.Material.Filled.RotateRight" OnClick="GenerateCodeEvaluationPlanClicked">
+                Re-Generate Code Evaluation Plan
+            </MudButton>
+        }
+        
         <MudTextField Class="my-4" Label="Title" @bind-Value="CodeTask.Title" Variant="Variant.Outlined"/>
         <MudTextField Class="my-4" Lines="5" Label="Description" @bind-Value="CodeTask.Description" Variant="Variant.Outlined"/>
         <MudTextField Lines="5" Class="my-4" Label="Default Code" @bind-Value="CodeTask.DefaultCode" Variant="Variant.Outlined"/>
@@ -26,10 +34,9 @@
         }
         else
         {
-            <MudText Class="my-2">There are no examples, click the add button first</MudText>
+            <MudText Typo="Typo.subtitle1" Class="my-2">There are no examples, click the add button first</MudText>
         }
-
-
+        
         <MudText>Constraints</MudText>
         @if (CodeTask.Constraints.Count > 0)
         {
@@ -46,7 +53,7 @@
         }
         else
         {
-            <MudText Class="my-2">There are no constraints, click the add button first</MudText>
+            <MudText Typo="Typo.subtitle1" Class="my-2">There are no constraints, click the add button first</MudText>
         }
         <MudSelect Class="my-2" T="CodeTaskDifficulty" Label="Difficulty" @bind-Value="CodeTask.Difficulty" Variant="Variant.Outlined">
             @foreach (var difficulty in Enum.GetValues<CodeTaskDifficulty>())
@@ -57,7 +64,23 @@
             }
         </MudSelect>
         <MudTextField Class="my-2" Label="Currency Reward" @bind-Value="CodeTask.CurrencyReward" Variant="Variant.Outlined"/>
-        @* TODO Show timestamps for createdAt and updatedAt if the task already exists *@
+        @if (IsEditing)
+        {
+            <MudStack Class="my-2" Spacing="2">
+                <MudText >@CodeTask.CreatedAt</MudText>
+                <MudText>@CodeTask.UpdatedAt</MudText>
+            </MudStack>
+        }
+        
+        <MudText>
+            <b>Code Evaluation Plan</b>
+        </MudText>
+        
+        @if (CodeTask.AiCodeEvaluationPlan is not null)
+        {
+            @DisplayCodeEvaluationPlan(CodeTask)
+        }
+        
     </DialogContent>
     <DialogActions>
         <MudButton EndIcon="@Icons.Material.Filled.Save" Color="@Color.Success" Variant="Variant.Filled" OnClick="SaveCodeTask">Save</MudButton>

@@ -8,4 +8,5 @@ public interface ICodeTasksService
     Task<CodeTask> GetCodeTaskAsync(int codeTaskId);
     Task<bool> DeleteCodeTask(int codeTaskId);
     Task<CodeTask?> AddOrUpdateCodeTask(CodeTask codeTask);
+    Task<CodeTask?> ReGenerateCodeEvaluationPlanAsync(int codeTaskId);
 }

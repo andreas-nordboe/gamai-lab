@@ -1,9 +1,12 @@
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
 namespace GamAILab.Shared.Models.CodeExecution;
 
 public class CodeExecutionResult
 {
+    [Key] 
+    public int Id { get; set; }
     public bool DidComplete { get; init; }
     public bool TimedOut { get; init; }
     public bool EveryTestPassed { get; init; } 

@@ -45,4 +45,15 @@ public class CodeTasksService : ICodeTasksService
         
         return await addOrUpdateCodeTask.Content.ReadFromJsonAsync<CodeTask>();
     }
+    
+    
+    public async Task<CodeTask?> ReGenerateCodeEvaluationPlanAsync(int codeTaskId)
+    {
+        // It looks a bit unconventional to use a query parameter and sending an empty body, however PUT is still also more appropriate for this operation
+        var response = await _httpClient.PutAsync($"api/code-tasks/re-generate-code-evaluation-plan/{codeTaskId}", null);
+        if (!response.IsSuccessStatusCode)
+            return null;
+        
+        return await response.Content.ReadFromJsonAsync<CodeTask>();
+    }
 }

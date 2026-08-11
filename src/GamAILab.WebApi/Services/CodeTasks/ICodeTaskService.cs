@@ -10,4 +10,5 @@ public interface ICodeTaskService
     public Task<bool> DeleteCodeTaskById(int codeTaskId);
     public Task SeedCodeTasks();
     public Task<CodeTask> AddOrUpdateCodeTask(CodeTask codeTask);
+    public Task<CodeTask?> ReGenerateCodeEvaluationPlanAsync(int codeTaskId);
 }

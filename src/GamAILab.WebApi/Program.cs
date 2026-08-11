@@ -6,6 +6,7 @@ using GamAILab.WebApi;
 using GamAILab.WebApi.Data;
 using GamAILab.WebApi.Endpoints;
 using GamAILab.WebApi.Services;
+using GamAILab.WebApi.Services.AIPersonaSimulation;
 using GamAILab.WebApi.Services.CodeExecution;
 using GamAILab.WebApi.Services.CodeTasks;
 using GamAILab.WebApi.Services.Game;
@@ -42,13 +43,16 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddApiEndpoints();
 
 // Feature services
+builder.Services.AddScoped<IAICodeEvaluationService, AICodeEvaluationService>();
 builder.Services.AddScoped<ICodeTaskService, CodeTaskService>();
 builder.Services.AddScoped<ICodeSubmissionService,  CodeSubmissionService>();
-builder.Services.AddScoped<IAICodeEvaluationService, AICodeEvaluationService>();
 builder.Services.AddScoped<IAIHallucinationCheckerService, AIHallucinationCheckerService>();
 builder.Services.AddSingleton<ICodeExecutionService, CodeExecutionService>();
-builder.Services.AddSingleton<IAIFeedbackService, AIFeedbackService>(); // TODO make scoped?
+builder.Services.AddSingleton<IAIFeedbackService, AIFeedbackService>();
 builder.Services.AddScoped<IGameService, GameService>();
+builder.Services.AddScoped<IAIPersonaSimulationService, AIPersonaSimulationService>();
+builder.Services.AddScoped<ILearningEngagementService, LearningLearningEngagementService>();
+
 
 builder.Services.AddAuthentication(options =>
 {
@@ -109,9 +113,10 @@ using (var scope = app.Services.CreateScope())
         }
     }
 
-    // Seed root admin user
+    // Seeding for empty initialisations
     if (app.Environment.IsDevelopment())
     {
+        // Seed root admin user
         var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
         
         // Note to self: I've moved these to a secrets.json for development (.NET user secrets)
@@ -148,11 +153,17 @@ using (var scope = app.Services.CreateScope())
                 }
             }
         }
+        
+        // Seed code tasks
+        var codeTaskService = services.GetRequiredService<ICodeTaskService>();
+        await codeTaskService.SeedCodeTasks();
+
+        // Seed AI personas
+        var aiPersonaSimulationService = services.GetRequiredService<IAIPersonaSimulationService>();
+        await aiPersonaSimulationService.SeedAIPersonas();
     }
     
-    // Seed tasks
-    var codeTaskService = services.GetRequiredService<ICodeTaskService>();
-    await codeTaskService.SeedCodeTasks();
+   
 }
 
 // Map endpoints (TODO refactor this into using a separate endpoint handler later)
@@ -161,6 +172,7 @@ app.MapAuthenticationEndpoints();
 app.MapCodeTaskEndpoints();
 app.MapCodeExecutionEndpoints();
 app.MapGameProgressEndpoints();
+app.MapPersonaEvaluationEndpoints();
 
 if (!app.Environment.IsDevelopment())
 {

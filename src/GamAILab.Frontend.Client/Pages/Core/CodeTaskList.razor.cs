@@ -72,7 +72,11 @@ public partial class CodeTaskList : ComponentBase
     
     private async Task EditCodeTaskClicked(CodeTask codeTask)
     {
-        var parameters = new DialogParameters<AddCodeTaskDialog> { { x => x.CodeTask, codeTask } };
+        var parameters = new DialogParameters<AddCodeTaskDialog>
+        {
+            { x => x.CodeTask, codeTask  },
+            { x => x.IsEditing, true }
+        };
         var options = new DialogOptions { CloseOnEscapeKey = true, FullWidth =  true, MaxWidth = MaxWidth.Medium, CloseButton = true };
         
         var dialog = await DialogService.ShowAsync<AddCodeTaskDialog>($"Edit Code Task with ID: {codeTask.Id}", parameters, options);
@@ -91,5 +95,6 @@ public partial class CodeTaskList : ComponentBase
     public void AddTaskToList(CodeTask newTask)
     {
         CodeTasks.Add(newTask);
+        StateHasChanged();
     }
 }

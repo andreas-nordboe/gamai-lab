@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using GamAILab.Shared.Models.AICodeEvaluation;
 
 namespace GamAILab.Shared.Models;
 
@@ -16,4 +17,5 @@ public class CodeTask
     public int CurrencyReward { get; set; } = 10; // Default reward of 10 in case I forget to set it while creating the task
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
+    public AICodeEvaluationPlan? AiCodeEvaluationPlan { get; set; }
 }

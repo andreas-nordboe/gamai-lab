@@ -14,6 +14,8 @@ public class AICodeEvaluationService : IAICodeEvaluationService
 {
     private readonly ILLMService _llmService;
     private readonly  ILogger<AICodeEvaluationService> _logger;
+    private readonly IConfiguration _configuration;
+    private readonly string _llmModelUsed;
     
     // https://learn.microsoft.com/en-us/dotnet/api/system.text.json.schema.jsonschemaexporter.getjsonschemaasnode?view=net-11.0-pp
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
@@ -22,8 +24,14 @@ public class AICodeEvaluationService : IAICodeEvaluationService
         UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
         RespectNullableAnnotations = true,
         RespectRequiredConstructorParameters =  true,
-        //WriteIndented = true
+        
+        // Handles the newer ExpectedResult type (replaces JsonElement for EF Core)
+        Converters =
+        {
+            new JsonStringEnumConverter<ExpectedResultType>(JsonNamingPolicy.CamelCase, allowIntegerValues: false)
+        }
     };
+    
     
     // TODO saving this automated schema generation for later
     //private static readonly JsonNode EvaluationPlanSchema = JsonOptions.GetJsonSchemaAsNode(typeof(AICodeEvaluationPlan), SchemaOptions);
@@ -71,15 +79,26 @@ public class AICodeEvaluationService : IAICodeEvaluationService
                         "type": "integer"
                      }
                    },
-                    "expectedResult": {
-                      "type": "integer"
+                   "expectedResult": {
+                      "type": "string"
+                    },
+                    "expectedResultType": {
+                      "type": "string",
+                      "enum": [
+                        "null",
+                        "string",
+                        "boolean",
+                        "number",
+                        "json"
+                      ]
                     }
                   },
                   "required": [
                     "name",
                     "functionName",
                     "arguments",
-                    "expectedResult"
+                    "expectedResult",
+                    "expectedResultType"
                   ]
                 }
               }
@@ -94,10 +113,12 @@ public class AICodeEvaluationService : IAICodeEvaluationService
           }
         """)!;
     
-    public AICodeEvaluationService(ILLMService llmService, ILogger<AICodeEvaluationService> logger)
+    public AICodeEvaluationService(ILLMService llmService, ILogger<AICodeEvaluationService> logger, IConfiguration configuration)
     {
         _llmService = llmService;
         _logger = logger;
+        _configuration = configuration;
+        _llmModelUsed = _configuration["Ollama:Model"];
     }
 
     public async Task<AICodeEvaluationPlan> GenerateEvaluationPlanAsync(CodeTask codeTaskContext, CancellationToken cancellationToken = default)
@@ -131,7 +152,7 @@ public class AICodeEvaluationService : IAICodeEvaluationService
 
         var promptRequest = new ChatRequest
         {
-            Model = "gemma4",
+            Model = _llmModelUsed,
             Format = EvaluationPlanSchema,
             Stream = false, // I don't think there is a need for streaming here
             Think =  false, // I need to experiment with this one
@@ -186,15 +207,18 @@ public class AICodeEvaluationService : IAICodeEvaluationService
         return new AICodeEvaluationPlan
         {
             Id = Guid.NewGuid().ToString("N"),
-            CodeTask = codeTaskContext,
+            CodeTaskId = codeTaskContext.Id,
+            CodeTaskVersion = codeTaskContext.Version,
             Criteria = evaluationPlanOutput.Criteria,
             CommonMistakes = evaluationPlanOutput.CommonMistakes,
             FeedbackInstructions = evaluationPlanOutput.FeedbackInstructions,
             Language = codeLanguage,
             Tests = evaluationPlanOutput.Tests,
-            ModelUsed = "gemma4", // TODO get from appsettings (eventually move to options)
+            ModelUsed = _llmModelUsed, // TODO get from appsettings (eventually move to options)
             InitiatedAt = initiatedAt,
-            PlanningDuration = Stopwatch.GetElapsedTime(startTime)
+            PlanningDuration = Stopwatch.GetElapsedTime(startTime),
+            PromptVersion = "1.0",
+            SchemaVersion = "1.0"
         };
     }
 
@@ -243,9 +267,48 @@ public class AICodeEvaluationService : IAICodeEvaluationService
                 throw new InvalidOperationException($"Test '{test.Name}' has no input");
             }
 
-            if (test.ExpectedResult.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
-            {
-                throw new InvalidOperationException($"Test '{test.Name}' has no expected output");
+            // if (test.ExpectedResult.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
+            // {
+            //     throw new InvalidOperationException($"Test '{test.Name}' has no expected output");
+            // }
+
+            switch (test.ExpectedResultType)
+            {   
+                case ExpectedResultType.Null:
+                    break;
+                
+                case ExpectedResultType.Boolean:
+                    if (!bool.TryParse(test.ExpectedResult, out _))
+                    {
+                        throw new InvalidOperationException($"Test with name: {test.Name} contains invalid boolean expected result: {test.ExpectedResult}");
+                    }
+                    break;
+                
+                case ExpectedResultType.String:
+                    // this could also be a valid expected result..
+                    break;
+                
+                case ExpectedResultType.Number:
+                    if (!double.TryParse(test.ExpectedResult, out _))
+                    {
+                        throw new InvalidOperationException($"Test with name: {test.Name} contains invalid number expected result: {test.ExpectedResult}");
+                    }
+                    break;
+                
+                case ExpectedResultType.Json:
+                    try
+                    {
+                        JsonDocument.Parse(test.ExpectedResult);
+                    }
+                    catch (JsonException jsonException)
+                    {
+                        throw new InvalidOperationException($"Test with name: {test.Name} contains invalid JSON expected result: {test.ExpectedResult}");
+                    }
+                    break;
+                
+                default:
+                    throw new InvalidOperationException($"Test expected result type is invalid/not supported");
+                    break;
             }
         }
         

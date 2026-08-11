@@ -2,13 +2,21 @@
 
 <MudTable Class="mx-4 my-4" Items="CodeTasks" Hover="true" Breakpoint="Breakpoint.Sm" Loading="@_isLoadingCodeTasks" LoadingProgressColor="Color.Info">
     <HeaderContent>
+        <MudTh>Id</MudTh>
         <MudTh>Title</MudTh>
         <MudTh>Description</MudTh>
+        <MudTh>Updated At</MudTh>
+        <MudTh>Created At</MudTh>
+        <MudTh>Version</MudTh>
         <MudTh>Action</MudTh>
     </HeaderContent>
     <RowTemplate>
+        <MudTd DataLabel="Id">@context.Id</MudTd>
         <MudTd DataLabel="Title">@context.Title</MudTd>
         <MudTd DataLabel="Description">@context.Description</MudTd>
+        <MudTd DataLabel="Created At">@context.CreatedAt</MudTd>
+        <MudTd DataLabel="Updated At">@context.UpdatedAt</MudTd>
+        <MudTd DataLabel="Version">@context.Version</MudTd>
         <MudTd DataLabel="Action">
             <MudButton Class="mr-2" EndIcon="@Icons.Material.Filled.ArrowRight" Color="Color.Primary" Variant="Variant.Filled" OnClick="@(() => OnTaskClicked(context))">
                 Start Code Task
