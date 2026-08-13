@@ -198,6 +198,16 @@ public class AICodeEvaluationService : IAICodeEvaluationService
             Programming task:
             
             {{codeTaskJson}}
+            
+            Choose an appropriate 'testType' for each test:
+            
+            - 'functionReturn' tests a function by calling it and comparing the return value.
+            - 'standardOutput' executes the code and compares the printed output.
+            - 'standardInputOutput' provides values through 'input()' and compares the printed output.
+            - 'expectedException' executes the function and verifies that it raises and exception.
+            
+            A programming task may also, when appropriate, include multiple test types.
+            'expectedResult' must always use literal numbers, not expressions or mathematical formulas, for example "5" instead of "4 - 3 - 2".
         """;
 
         var promptRequest = new ChatRequest
@@ -271,10 +281,15 @@ public class AICodeEvaluationService : IAICodeEvaluationService
             SchemaVersion = "1.0"
         };
     }
-
-    // TODO This logic could potentially be written into a 
+    
+    
     private static void ValidateAICodeEvaluationOutput(AICodeEvaluationPlanOutput output, string codeLanguage)
     {
+        if (output == null)
+        {
+            throw new InvalidOperationException("No code evaluation output does not exist");
+        }
+        
         if(output.Criteria.Count == 0 || output.Criteria.Any(string.IsNullOrWhiteSpace))
         {
             throw new InvalidOperationException("No evaluation criteria was provided");
@@ -311,16 +326,11 @@ public class AICodeEvaluationService : IAICodeEvaluationService
             {
                 throw new InvalidOperationException("A code evaluation test has no name");
             }
-            
-            if (string.IsNullOrWhiteSpace(test.FunctionName))
-            {
-                throw new InvalidOperationException($"Test '{test.Name}' has no input");
-            }
 
-            // if (test.ExpectedResult.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
-            // {
-            //     throw new InvalidOperationException($"Test '{test.Name}' has no expected output");
-            // }
+            if (test.ExpectedResult == null)
+            {
+                throw new InvalidOperationException($"Test '{test.Name}' has no expected result");
+            }
 
             switch (test.TestType)
             {

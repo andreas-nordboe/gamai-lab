@@ -13,5 +13,5 @@ public sealed class CodeExecutionRunnerResponse
     [JsonPropertyName("fatalError")]
     public string? FatalError { get; set; }
     [JsonPropertyName("testOutputs")]
-    public List<CodeTestResult> TestsOutputs { get; init; } = [];
+    public List<CodeTestResult> TestsOutputs { get; set; } = [];
 }

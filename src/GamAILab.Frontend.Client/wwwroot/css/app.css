@@ -118,3 +118,8 @@ code {
     height: 420px;
     width: 100%;
 }
+
+.monaco-editor-feedback {
+    height: 220px;
+    width: 100%;
+}

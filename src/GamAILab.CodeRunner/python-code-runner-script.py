@@ -100,8 +100,8 @@ def parse_value(value):
     raise ValueError(f"{type} is unsupported")
    
 def execute_script(standard_input=None):
-    stdout = io.StringIO()
-    stderr = io.StringIO()
+    standard_output = io.StringIO()
+    standard_error = io.StringIO()
 
     input_text = "\n".join(standard_input or [])
     if input_text:
@@ -115,13 +115,13 @@ def execute_script(standard_input=None):
         with open("/workspace/code_submission.py", encoding="utf-8") as learner_file:
             source = learner_file.read()
 
-        with (contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr)):
+        with (contextlib.redirect_stdout(standard_output), contextlib.redirect_stderr(standard_error)):
             exec( compile(source, "/workspace/code_submission.py", "exec"), {"__name__": "__main__"} )
 
     finally:
         sys.stdin = stdin_old
 
-    return stdout.getvalue(), stderr.getvalue()
+    return standard_output.getvalue(), standard_error.getvalue()
     
 # print type tasks
 def run_standard_output_test(test):
@@ -220,14 +220,21 @@ def run_exception_test(learner_code, test):
 def main():
     with open("/workspace/tests.json", encoding="utf-8") as test_file:
         tests = json.load(test_file)
-        stdout = io.StringIO()
-        stderr = io.StringIO()
+        standard_output = io.StringIO()
+        standard_error = io.StringIO()
         output = []
         fatal_error = None
 
-        with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+        with contextlib.redirect_stdout(standard_output), contextlib.redirect_stderr(standard_error):
             try:
                 learner_code = None
+                
+                # there was an issue that prevented prints from working during code exectuion (that has no tests)
+                if not tests:
+                    exec_standard_output, execution_standard_error = execute_script()
+                    
+                    standard_output.write(exec_standard_output)
+                    standard_error.write(execution_standard_error)
                 
                 for test in tests:
                     test_type = test["testType"]
@@ -240,7 +247,7 @@ def main():
             except BaseException as exception:
                 fatal_error = f"{type(exception).__name__}: {exception}"
 
-    print (json.dumps({"didComplete": fatal_error is None,  "standardOutput": stdout.getvalue(),  "standardError": stderr.getvalue(), "fatalError": fatal_error, "testOutputs": output
+    print (json.dumps({"didComplete": fatal_error is None,  "standardOutput": standard_output.getvalue(),  "standardError": standard_error.getvalue(), "fatalError": fatal_error, "testOutputs": output
     }))
 
 if __name__ == "__main__":
