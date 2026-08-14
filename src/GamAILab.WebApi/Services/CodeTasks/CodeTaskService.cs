@@ -70,33 +70,101 @@ public class CodeTaskService : ICodeTaskService
     // the educator monitoring/management system
     public async Task SeedCodeTasks()
     {
-        var codeTaskPythonAdding = new CodeTask
+        List<CodeTask> codeTasks = [];
+
+        codeTasks.Add(new CodeTask
         {
-            Title = "Adding two numbers in Python",
-            Description = "Adding two numbers in Python",
-            DefaultCode = "def add(a, b):\n    # write python code here",
+            Title = "Using a function to add two numbers in Python",
+            Description = "Create a Python function that accepts two numbers and return the sum of those numbers.",
+            DefaultCode = """
+                          def add(a, b):
+                            # write python code here
+                            
+                          # change
+                          print((
+                          """,
             Examples = new List<string>
             {
-                "add(5,5) should return 10"
+                "add(5,5) should return 10",
+                "add(4,8) should return 12",
+                "add(-2,1) should return -1",
             },
             Constraints = new List<string>
             {
-                "- The function must be called add",
-                "- It must return the answer (10)",
-                "- Do not use input",
-                "- Do not only print the output/result"
+                "The function must be called add",
+                "The function must return a numbered answer (for example 10)",
+                "Do not use input()",
+                "Do not only print the output/result",
+                "The function must only accept 2 arguments"
             },
             Difficulty = CodeTaskDifficulty.Beginner,
-            CreatedAt =  DateTime.Now
-        };
-        
-        var taskExists = await _dbContext.CodeTasks.AnyAsync(p => p.Id == codeTaskPythonAdding.Id);
-        if (!taskExists)
+            CreatedAt = DateTime.Now,
+            CurrencyReward = 10
+        });
+
+        codeTasks.Add(new CodeTask
         {
-            return;
-        }
+            Title = "Using a function to subtract three numbers in Python",
+            Description =
+                "Create a Python function that accepts three numbers, subtracts and return the sum of those numbers.",
+            DefaultCode = """
+                          def subtract(a, b, c):
+                              # write python code here
+                          """,
+            Examples = new List<string>
+            {
+                "subtract(10,5) should return 5",
+                "subtract(2,1) should return 1",
+                "subtract(-2,5) should return -7",
+            },
+            Constraints = new List<string>
+            {
+                "The function must be called subtract",
+                "The function must return a numbered answer (for example 10)",
+                "Do not use input()",
+                "Do not only print the output/result",
+                "The function must only accept 3 arguments"
+            },
+            Difficulty = CodeTaskDifficulty.Beginner,
+            CreatedAt = DateTime.Now
+        });
         
-        await AddCodeTask(codeTaskPythonAdding);
+        // Testing standard output code task type
+        
+        codeTasks.Add(new CodeTask
+        {
+            Title = "Printing welcome messages to the console",
+            Description =
+                "Write the following in so it prints to the Python output console: Hello GamAI Lab!",
+            DefaultCode = """
+                          # write python code here
+                          """,
+            Examples = new List<string>
+            {
+                "Output: Hello GamAI Lab!",
+            },
+            Constraints = new List<string>
+            {
+                "Output must match the following exactly: Hello GamAI Lab!",
+                "Do not use input()",
+                "The Python code must not include a function",
+                "Do not only print any additional text"
+            },
+            Difficulty = CodeTaskDifficulty.Beginner,
+            CreatedAt = DateTime.Now
+        });
+        
+
+        foreach (var codeTask in codeTasks)
+        {
+            // checks if task exists before adding it 
+            if (await _dbContext.CodeTasks.AnyAsync(task => task.Title == codeTask.Title))
+            {
+                continue;
+            }
+            
+            await AddCodeTask(codeTask);
+        }
     }
 
     public async Task<CodeTask> AddOrUpdateCodeTask(CodeTask codeTask)

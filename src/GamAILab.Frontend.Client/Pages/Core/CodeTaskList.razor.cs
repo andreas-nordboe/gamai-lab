@@ -8,8 +8,7 @@ namespace GamAILab.Frontend.Client.Pages.Core;
 
 public partial class CodeTaskList : ComponentBase
 {
-    [Parameter] 
-    public List<CodeTask?> CodeTasks { get; set; } = new List<CodeTask?>();
+    [Parameter] public List<CodeTask?> CodeTasks { get; set; } = [];
     [Inject] public ICodeTasksService CodeTasksService { get; set; }
     [Inject] public NavigationManager NavigationManager { get; set; }
     private bool _isLoadingCodeTasks;

@@ -7,9 +7,14 @@ public partial class CodeEditorPanel : ComponentBase
 {
     private StandaloneCodeEditor? _codeEditor;
     
-    [Parameter] public string EditorId { get; set; } = Guid.NewGuid().ToString();
-    [Parameter] public bool ReadOnly { get; set; }
-    [Parameter] public string DefaultCode { get; set; } = string.Empty;
+    [Parameter] 
+    public string EditorId { get; set; } = Guid.NewGuid().ToString();
+    [Parameter] 
+    public bool ReadOnly { get; set; }
+    [Parameter] 
+    public string DefaultCode { get; set; } = string.Empty;
+    [Parameter] 
+    public string CssClass { get; set; } = "monaco-editor"; // in App.css
 
     public async Task<string> GetCodeAsync()
     {

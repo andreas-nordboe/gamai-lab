@@ -325,14 +325,21 @@ public class AIPersonaSimulationService : IAIPersonaSimulationService
 
         // Send request to LLM
         var evaluationResponse = await _llmService.ChatAsync(promptRequest, cancellationToken);
-
+        
         if (string.IsNullOrWhiteSpace(evaluationResponse))
         {
             throw new InvalidOperationException("AI learner persona returned an empty response");
         }
         
-        _logger.LogInformation($"AI persona {aiPersona.Id} attempted to solve code task and returned {evaluationResponse}");
+        var codeResponse = JsonSerializer.Deserialize<AIPersonaCodeResponse>(evaluationResponse, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-        return evaluationResponse;
+        if (codeResponse is null || string.IsNullOrEmpty(codeResponse.Code))
+        {
+            throw new InvalidOperationException("AI persona code response is invalid");
+        }
+        
+        _logger.LogInformation($"AI persona {aiPersona.Name} attempted to solve code task and returned {evaluationResponse}");
+
+        return codeResponse.Code;
     }
 }

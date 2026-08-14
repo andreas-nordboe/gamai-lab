@@ -9,6 +9,9 @@
 <MudLayout>
     <AuthorizeView>
         <MudAppBar Color="Color.Primary" Elevation="1">
+            <MudIcon Icon="@Icons.Material.Rounded.Games"></MudIcon>
+            <MudText Class="mx-2">/</MudText>
+            <MudIcon Icon="@Icons.Material.Filled.Code"></MudIcon>
             <MudText Typo="Typo.h5" Class="ml-2" Style="font-weight: 900">GamAI Lab</MudText>
             <MudSpacer/>
 
@@ -29,7 +32,7 @@
                     </AuthorizeView>
                 </ChildContent>
             </AuthorizeView>
-            
+
             <MudSpacer/>
             <MudIconButton Icon="@Icons.Material.TwoTone.Logout" OnClick="LogoutUserAsync" Color="Color.Inherit" Edge="Edge.End"/>
         </MudAppBar>

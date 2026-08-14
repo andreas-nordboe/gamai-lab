@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using GamAILab.Shared.Models.AICodeEvaluation;
 using GamAILab.Shared.Models.CodeExecution;
 
@@ -12,7 +13,12 @@ public class CodeExecutionService : ICodeExecutionService
     
     // TODO I might change these later, its to prevent many containers from starting together (which will be important for AI persona testing later)
     private static readonly SemaphoreSlim CodeExecutions = new SemaphoreSlim(4, 4);
-    private static readonly JsonSerializerOptions JsonSerializerOptions = new(JsonSerializerDefaults.Web);
+
+    private static readonly JsonSerializerOptions JsonSerializerOptions = new(JsonSerializerDefaults.Web)
+    {
+        Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase, allowIntegerValues: false) }
+    };
+    
     private readonly ILogger<CodeExecutionService> _logger;
 
 public CodeExecutionService(ILogger<CodeExecutionService> logger)
@@ -169,7 +175,22 @@ private async Task<CodeExecutionResult> ExecuteCode(string learnerCode, AICodeEv
 
         try
         {
-            runnerResponse = JsonSerializer.Deserialize<CodeExecutionRunnerResponse>(dockerContainerOutput, JsonSerializerOptions) 
+            string parsedJson = dockerContainerOutput;
+
+            // check if the string is valid using the initial bracket
+            if (!string.IsNullOrWhiteSpace(parsedJson) && !parsedJson.Trim().StartsWith("{"))
+            {
+                // find start and end of json string then 
+                int jsonStart = dockerContainerError.IndexOf('{');
+                int jsonEnd = dockerContainerError.IndexOf('}');
+
+                if (jsonStart != -1 && jsonEnd > jsonStart)
+                {
+                    parsedJson = dockerContainerOutput.Substring(jsonStart, jsonEnd - jsonStart);
+                }
+            }
+            
+            runnerResponse = JsonSerializer.Deserialize<CodeExecutionRunnerResponse>(parsedJson, JsonSerializerOptions) 
                 ?? throw new JsonException("Docker container could not be deserialised or was null");
         }
         catch (JsonException e)
