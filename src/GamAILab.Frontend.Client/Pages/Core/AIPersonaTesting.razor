@@ -4,25 +4,34 @@
 @using Microsoft.AspNetCore.Authorization
 @attribute [Authorize(Roles = "Admin")]
 
+<MudText Typo="Typo.h3" Class="mx-2 mb-2">
+    <b>AI persona Simulation</b>
+</MudText>
+
+
 <MudButton Class="mt-4 ml-4 mr-2" Disabled="_personaSimulationIsRunning" OnClick="@OnRunAIPersonaSimulationClicked" Variant="Variant.Filled" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Start">Run AI Persona Simulation</MudButton>
 <MudButton Class="mt-4 ml-4" OnClick="@OnAddAIPersonaClicked" Variant="Variant.Filled" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Add">Add AI Persona</MudButton>
 
-<MudSelect Class="my-2 mx-2 mt-4" T="CodeTask" Label="Selected Code Task" @bind-Value="@SelectedCodeTask" Variant="Variant.Outlined">
-    @if (CodeTasks is not null)
-    {
-        @foreach (var codeTask in CodeTasks)
+
+
+<MudStack Spacing="2">
+    <MudSelect Class="my-2 mx-4 mt-4" T="CodeTask" Label="Selected Code Task" @bind-Value="@SelectedCodeTask" Variant="Variant.Outlined">
+        @if (CodeTasks is not null)
         {
-            if (codeTask is not null)
+            @foreach (var codeTask in CodeTasks)
             {
-                <!-- CRITICAL FIX: Changed T from "int" to "CodeTask" and Value from codeTask.Id to codeTask -->
-                <MudSelectItem T="CodeTask" Value="codeTask">
-                    @codeTask.Title
-                </MudSelectItem>
+                if (codeTask is not null)
+                {
+                    <!-- CRITICAL FIX: Changed T from "int" to "CodeTask" and Value from codeTask.Id to codeTask -->
+                    <MudSelectItem T="CodeTask" Value="codeTask">
+                        @codeTask.Title
+                    </MudSelectItem>
+                }
             }
         }
-    }
-</MudSelect>
-<MudNumericField Class="my-2 mx-2" @bind-Value="_executionCounts" Min="0" Max="10" Label="Execution Count" Variant="Variant.Outlined" />
+    </MudSelect>
+    <MudNumericField Class="my-2 mx-4" @bind-Value="_executionCounts" Min="0" Max="10" Label="Execution Count" Variant="Variant.Outlined" />
+</MudStack>
 
 
 <MudTable Class="mx-4 my-4" T="AIPersona" MultiSelection="true" @bind-SelectedItems="SelectedAIPersonas" Items="AIPersonas" Hover="true" Breakpoint="Breakpoint.Sm" Loading="@_isLoadingAIPersonas" LoadingProgressColor="Color.Info">
@@ -50,7 +59,10 @@
     </RowTemplate>
 </MudTable>
 
-<MudText Class="mx-2 mb-2">Code Simulation Results</MudText>
+<MudText Typo="Typo.h3" Class="mx-2 mb-2">
+    <b>Code Simulation Result</b>
+</MudText>
+
 @if (string.IsNullOrWhiteSpace(_simulationResults))
 {
     <MudText>

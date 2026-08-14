@@ -79,11 +79,14 @@ public class CodeTaskService : ICodeTaskService
             DefaultCode = """
                           def add(a, b):
                             # write python code here
+                            
+                          # change
+                          print((
                           """,
             Examples = new List<string>
             {
                 "add(5,5) should return 10",
-                "add(4,8) should return 9",
+                "add(4,8) should return 12",
                 "add(-2,1) should return -1",
             },
             Constraints = new List<string>

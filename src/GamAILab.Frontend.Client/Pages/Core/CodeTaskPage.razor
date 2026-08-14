@@ -29,11 +29,11 @@ else if(_codeTask is null)
                 </MudText>
                 
                 <MudText><strong>Examples:</strong></MudText>
-                @if (_codeTask?.Constraints is not null)
+                @if (_codeTask?.Examples is not null)
                 {
-                    foreach (var constraint in _codeTask?.Constraints!)
+                    foreach (var constraint in _codeTask?.Examples!)
                     {
-                        <MudText>@constraint</MudText>
+                        <MudText >@constraint</MudText>
                     }
                 }
                 
@@ -42,7 +42,7 @@ else if(_codeTask is null)
                 {
                     if (_codeTask.Constraints.Any())
                     {
-                        <MudText><strong>Requirements:</strong></MudText>
+                        <MudText Class="my-2"><strong>Requirements:</strong></MudText>
                     
                         foreach (var constraint in _codeTask?.Constraints!)
                         {
@@ -55,7 +55,7 @@ else if(_codeTask is null)
             <MudText Typo="Typo.h5" Class="mb-2">Progress</MudText>
 
             <MudPaper Outlined="true" Class="pa-4 progress-container">
-                <MudText Typo="Typo.h5" Class="mb-2"><b>Attempts: </b>5</MudText>
+                <MudText Typo="Typo.h5" Class="my-2"><b>Attempts: </b>0</MudText>
                 <MudText Typo="Typo.h5" Class="mb-2"><b>Hints used: </b>0</MudText>
                 
                 <MudStack Spacing="2" Class="mt-4"  Row="true" Justify="Justify.Center">
