@@ -1,49 +1,32 @@
-﻿services:
+﻿version: '3.8'
+
+services:
   gamai-lab-webapi:
     image: gamai-lab-webapi
     build:
       context: .
       dockerfile: gamai-lab-webapi/Dockerfile
+    ports: 
+    - "5270:8080"
+    volumes:
+      - gamai_lab_data:/app/data
+    environment:
+        ASPNETCORE_URLS: http://+:8080
+        ASPNETCORE_ENVIRONMENT: Development
 
   gamailab.frontend:
     image: gamailab.frontend
     build:
       context: .
       dockerfile: GamAILab.Frontend/Dockerfile
-
-  gamailab.frontend.client:
-    image: gamailab.frontend.client
-    build:
-      context: .
-      dockerfile: GamAILab.Frontend.Client/GamAILab.Frontend.Client/Dockerfile
-
-  gamailab.frontend.client.client:
-    image: gamailab.frontend.client.client
-    build:
-      context: .
-      dockerfile: GamAILab.Frontend.Client/GamAILab.Frontend.Client.Client/Dockerfile
-
-  gamailab.frontend.client-1:
-    image: gamailab.frontend.client-1
-    build:
-      context: .
-      dockerfile: GamAILab.Frontend.Client/GamAILab.Frontend.Client/Dockerfile
-
-  gamailab.frontend.client.client-1:
-    image: gamailab.frontend.client.client-1
-    build:
-      context: .
-      dockerfile: GamAILab.Frontend.Client/GamAILab.Frontend.Client.Client/Dockerfile
-
-  webapplication1:
-    image: webapplication1
-    build:
-      context: .
-      dockerfile: WebApplication1/Dockerfile
-
-  gamailab.frontend.client-2:
-    image: gamailab.frontend.client-2
-    build:
-      context: .
-      dockerfile: GamAILab.Frontend.Client/Dockerfile
+    ports: 
+    - "5123:8080"
+    volumes:
+      - gamai_lab_data:/app/data
+    environment:
+        ASPNETCORE_URLS: http://+:8080
+        ASPNETCORE_ENVIRONMENT: Development
+        
+volumes:
+  gamai_lab_data:
 
