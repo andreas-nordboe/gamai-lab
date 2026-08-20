@@ -19,7 +19,6 @@ public class CodeSubmissionService : ICodeSubmissionService
         
         if (!response.IsSuccessStatusCode)
         {
-            // TODO parse HTTP error codes 
             throw new HttpRequestException("An internal error occured");
         }
         

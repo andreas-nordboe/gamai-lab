@@ -91,7 +91,8 @@ private async Task<CodeExecutionResult> ExecuteCode(string learnerCode, AICodeEv
     var codeExecutionId = Guid.NewGuid().ToString("N"); // Digits should be fine as I'll use it consistently
     var containerName = $"gamai-lab-code-runner-{codeExecutionId}"; // TODO append code languages here later
     
-    var tempDirectory = Path.Combine(Path.GetTempPath(), $"gamai-code-executon-{codeExecutionId}");
+    var workspaceName = $"execution-{codeExecutionId}"; // TODO append code languages here later
+    var tempDirectory = Path.Combine("/code-runner-workspaces", workspaceName);
     
     Directory.CreateDirectory(tempDirectory);
 
@@ -109,7 +110,7 @@ private async Task<CodeExecutionResult> ExecuteCode(string learnerCode, AICodeEv
 
         using var dockerInstance = new Process
         {
-            StartInfo = CreateDockerInstanceStartInfo(containerName, tempDirectory )
+            StartInfo = CreateDockerInstanceStartInfo(containerName, workspaceName)
         };
         
         _logger.LogInformation($"Executing code in docker container {containerName} with code {learnerCode} and tests {testsJsonFormat}");
@@ -155,6 +156,8 @@ private async Task<CodeExecutionResult> ExecuteCode(string learnerCode, AICodeEv
         
         var dockerContainerOutput = await standardOutput;
         var dockerContainerError = await standardError;
+
+        _logger.LogInformation("Docker runner exited with code '{ExitCode}' stdout '{Stdout}' stderrr '{Stderr}'", dockerInstance.ExitCode, dockerContainerOutput, dockerContainerError);
 
         if (dockerInstance.ExitCode != 0)
         {
@@ -281,10 +284,11 @@ private static ProcessStartInfo CreateDockerInstanceStartInfo(string containerNa
         "--tmpfs",
         "/tmp:rw,noexec,nosuid,size=16m",
         "--mount",
-        $"type=bind," +
-        $"source={Path.GetFullPath(tempDirectory)}," +
-        "target=/workspace," +
-        "readonly",
+        $"type=volume," +
+        $"source=gamai_lab_code_runner_workspaces," +
+        $"target=/workspace," +
+        $"volume-subpath={tempDirectory}," +
+        $"readonly",
         DockerImage);
 
     return startInfo;
