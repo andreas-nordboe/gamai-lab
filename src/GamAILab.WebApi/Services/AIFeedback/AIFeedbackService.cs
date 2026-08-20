@@ -143,7 +143,7 @@ public class AIFeedbackService : IAIFeedbackService
         
         var promptRequest = new ChatRequest
         {
-            Model = "gemma4", // TODO make part of task
+            Model = _llmModelUsed, // TODO possibly make part of task (configurable from the frontend)
             Format = AIFeedbackSchema,
             Stream = false,
             Think =  false,
