@@ -13,7 +13,9 @@ public static class CodeExecutionEndpoint
     {
         var group = app.MapGroup("/api/code-execution")
             .WithTags("CodeExecution");
-        group.MapPost("/execute", ExecuteCodeAsync);
+        group.MapPost("/execute", ExecuteCodeAsync).WithName("ExecuteCode")
+            .Produces<CodeExecutionResponse>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status404NotFound).RequireAuthorization();;
         return app;
     }
 
@@ -24,7 +26,7 @@ public static class CodeExecutionEndpoint
         ILoggerFactory loggerFactory,
         CancellationToken cancellationToken)
     {
-        // TODO potentially store code execution for traceability
+        // TODO it would be important to store code execution for traceability
 
         return Results.Ok(await codeExecutionService.ExecuteCodeNoTests(codeExecutionRequest.Code, cancellationToken));
     }

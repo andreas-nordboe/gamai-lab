@@ -3,6 +3,12 @@
 @attribute [Authorize(Roles = "Admin")]
 
 <MudButton Class="mt-4 ml-4" OnClick="@OnAddTaskClicked" Variant="Variant.Filled" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Add">Add Code Task</MudButton>
+<MudButton Class="mt-4 ml-4" OnClick="@OnDownloadTasksClicked" Variant="Variant.Filled" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Download">Export Code Tasks Json</MudButton>
+<MudTooltip Text="Used for hallucination checker">
+    <MudButton Class="mt-4 ml-4" OnClick="@OnDownloadCodeEvaluationExamplesClicked" Variant="Variant.Filled" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Download" >Export Task Examples</MudButton>
+</MudTooltip>
+<MudButton Class="mt-4 ml-4" OnClick="@OnGenerateCodeTaskClicked" Variant="Variant.Filled" Color="Color.Primary" EndIcon="@Icons.Material.Filled.AutoAwesome">Generate Code Task</MudButton>
+
 
 @*Shows code task management but enables performing code task CRUD operations as an administrator *@
 <CodeTaskList @ref="_taskListRef" CanModifyTasks="true" />

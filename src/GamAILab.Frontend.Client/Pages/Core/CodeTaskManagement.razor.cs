@@ -1,7 +1,10 @@
+using System.Text.Encodings.Web;
+using System.Text.Json;
 using GamAILab.Frontend.Client.Dialogs;
 using GamAILab.Frontend.Client.Services;
 using GamAILab.Shared.Models;
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 using MudBlazor;
 
 namespace GamAILab.Frontend.Client.Pages.Core;
@@ -14,6 +17,8 @@ public partial class CodeTaskManagement : ComponentBase
     public IDialogService DialogService { get; set; }
     [Inject]
     public ISnackbar Snackbar { get; set; }
+    [Inject]
+    public IJSRuntime JSRuntime { get; set; }
     private CodeTaskList? _taskListRef;
 
 
@@ -50,5 +55,68 @@ public partial class CodeTaskManagement : ComponentBase
                 _taskListRef?.AddTaskToList(updateCodeTask);
             }
         }
+    }
+    
+    private async Task OnDownloadTasksClicked()
+    {
+        // Fetch again to get a fresh list that includes 
+        var codeTasks = await CodeTasksService.ExportCodeTasksAsync();
+        if (codeTasks.Any())
+        {
+            var json = JsonSerializer.Serialize(codeTasks, new JsonSerializerOptions 
+            {
+                WriteIndented = true,
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping // fixes malformed characters issue (like ')
+            });
+            
+            var bytes = System.Text.Encoding.UTF8.GetBytes(json);
+            await using var stream = new MemoryStream(bytes);
+            using var streamReference = new DotNetStreamReference(stream);
+            
+            await JSRuntime.InvokeVoidAsync("downloadFile", $"code-tasks.json", streamReference);
+        }
+    }
+    
+    // Downloads verified code evaluation examples (different format that has less information for the hallucination checker)
+    private async Task OnDownloadCodeEvaluationExamplesClicked()
+    {
+        // Fetch again to get a fresh list that includes 
+        var codeTasks = await CodeTasksService.ExportVerifiedCodeTaskExamplesAsync();
+        if (codeTasks.Any())
+        {
+            var json = JsonSerializer.Serialize(codeTasks, new JsonSerializerOptions 
+            {
+                WriteIndented = true,
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping // fixes malformed characters issue (like ')
+            });
+            
+            Console.WriteLine(json);
+            
+            var bytes = System.Text.Encoding.UTF8.GetBytes(json);
+            await using var stream = new MemoryStream(bytes);
+            using var streamReference = new DotNetStreamReference(stream);
+            
+            await JSRuntime.InvokeVoidAsync("downloadFile", $"verified-code-evaluations.json", streamReference);
+        }
+    }
+    
+    private async Task OnGenerateCodeTaskClicked()
+    {
+        var options = new DialogOptions { CloseOnEscapeKey = true, FullWidth =  true, MaxWidth = MaxWidth.Medium, CloseButton = true };
+        
+        var dialog = await DialogService.ShowAsync<GenerateCodeTaskDialog>("Generate Code Task", options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled && result.Data is CodeTask codeTask) 
+        {
+            var generatedCodeTask = await CodeTasksService.AddOrUpdateCodeTask(codeTask);
+            if (generatedCodeTask is not null)
+            {
+                _taskListRef?.AddTaskToList(generatedCodeTask);
+                Snackbar.Add("Successfully generated and saved code task", Severity.Success);
+                StateHasChanged();
+            }
+        }
+        
     }
 }

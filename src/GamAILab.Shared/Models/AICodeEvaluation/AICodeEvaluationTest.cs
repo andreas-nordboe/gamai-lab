@@ -20,7 +20,7 @@ public sealed class AICodeEvaluationTest
     public required List<string> StandardInput { get; init; } = [];
 
     [JsonPropertyName("expectedResult")]
-    public required string ExpectedResult { get; init; }
+    public required string? ExpectedResult { get; init; }
 
     [JsonPropertyName("expectedResultType")]
     public ExpectedResultType ExpectedResultType { get; set; }

@@ -1,14 +1,18 @@
 using System.Text.Json;
 using GamAILab.Shared.Models.AICodeEvaluation;
+using GamAILab.Shared.Models.AICodeEvaluation.DTOs;
+using GamAILab.Shared.Models.AICodeEvaluation.Hints;
 using GamAILab.Shared.Models.AIHallucinationChecker;
 using GamAILab.Shared.Models.CodeSubmission;
 using GamAILab.Shared.Models.Game.DTOs;
 using GamAILab.WebApi.Data;
+using GamAILab.WebApi.Hubs;
 using GamAILab.WebApi.Services.CodeExecution;
 using GamAILab.WebApi.Services.CodeTasks;
 using GamAILab.WebApi.Services.Game;
 using GamAILab.WebApi.Services.HallucinationChecker;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
 namespace GamAILab.WebApi.Services;
@@ -23,9 +27,9 @@ public class CodeSubmissionService : ICodeSubmissionService
     private readonly IAIHallucinationCheckerService _aiHallucinationCheckerService;
     private readonly IGameService _gameService;
     private readonly ILogger<CodeSubmissionService> _logger;
+    private readonly IHubContext<CodeEvaluationHub> _hubContext;
 
-
-    public CodeSubmissionService(ApplicationDbContext dbContext, ICodeTaskService codeTaskService/*, IAICodeEvaluationService aiCodeEvaluationService*/, ICodeExecutionService codeExecutionService, ILogger<CodeSubmissionService> logger, IAIFeedbackService aiFeedbackService, IAIHallucinationCheckerService iaiHallucinationCheckerService, IGameService gameService)
+    public CodeSubmissionService(ApplicationDbContext dbContext, ICodeTaskService codeTaskService/*, IAICodeEvaluationService aiCodeEvaluationService*/, ICodeExecutionService codeExecutionService, ILogger<CodeSubmissionService> logger, IAIFeedbackService aiFeedbackService, IAIHallucinationCheckerService iaiHallucinationCheckerService, IGameService gameService, IHubContext<CodeEvaluationHub> hubContext)
     {
         _dbContext = dbContext;
         _codeTaskService = codeTaskService;
@@ -35,12 +39,14 @@ public class CodeSubmissionService : ICodeSubmissionService
         _aiFeedbackService = aiFeedbackService;
         _aiHallucinationCheckerService = iaiHallucinationCheckerService;
         _gameService = gameService;
+        _hubContext = hubContext;
     }
 
-    public async Task<CodeSubmissionResult> SubmitCodeAsync(CodeSubmissionRequest codeSubmission, string? userId, CancellationToken cancellationToken = default)
+    public async Task<CodeSubmissionResult> SubmitCodeAsync(CodeSubmissionRequest codeSubmission, string? userId, bool updateGameProgress = true, CancellationToken cancellationToken = default)
     {
         // 1. Store attempted code submission and request task to database
-        
+        await BroadcastWebSocketStatus(userId, codeSubmission.CodeTaskId, CodeEvaluationStep.SubmissionInitiated, "Executing your code");
+
         // Retrieve previous task submissions to increment attempts/for timestamps
         var previousAttempts = await _dbContext.CodeSubmissions
             .CountAsync(submission => submission.CodeTaskId == codeSubmission.CodeTaskId 
@@ -51,14 +57,13 @@ public class CodeSubmissionService : ICodeSubmissionService
         {
             UserId = userId,
             CodeTaskId = codeSubmission.CodeTaskId,
-            Code = codeSubmission.Code,
+            Code = codeSubmission.CodeAttempt,
             Attempts = previousAttempts + 1,
             SubmittedAt = DateTime.UtcNow
         };
         
         // 2. Request task information
         var codeTask = await _codeTaskService.GetCodeTaskById(codeSubmission.CodeTaskId);
-
     
         if (codeTask is null)
         {
@@ -76,20 +81,23 @@ public class CodeSubmissionService : ICodeSubmissionService
         }
         
         // 4. Execute code in isolated docker container (Docker code runner)
+        await BroadcastWebSocketStatus(userId, codeSubmission.CodeTaskId, CodeEvaluationStep.ExecutingCode, "Executing your code");
         var codeExecution = await _codeExecutionService.ExecuteCodeAsync(submission.Code, codeTask.AiCodeEvaluationPlan, cancellationToken);
         
         _logger.LogInformation(JsonSerializer.Serialize(codeExecution));
         
+        
         // 5. Send code to AIFeedbackService (I need to look into latency here and possibly feed back partial information or notify the learner)
+        await BroadcastWebSocketStatus(userId, codeSubmission.CodeTaskId, CodeEvaluationStep.GeneratingAIFeedback, "An AI is evaluating the code and generating feedback");
         var aiFeedback = await _aiFeedbackService.GenerateCodeTaskFeedbackAsync(codeTask, submission, codeTask.AiCodeEvaluationPlan, codeExecution, cancellationToken);
         
         aiFeedback.CodeSubmissionId = submission.Id;
         aiFeedback.CodeSubmission = submission;
         
         // 6. Verify feedback using AI Hallucination service
+        await BroadcastWebSocketStatus(userId, codeSubmission.CodeTaskId, CodeEvaluationStep.RunningHallucinationChecker, "A hallucination checker is verifying the AI-generated consistency against your code execution results");
         var hallucinationCheckResult = await _aiHallucinationCheckerService.CheckAIFeedbackConsistencyAsync(codeTask, submission, codeTask.AiCodeEvaluationPlan, codeExecution, aiFeedback, cancellationToken);
-            
-        _dbContext.AICodeTaskFeedbacks.Add(aiFeedback);
+        
         _dbContext.AIHallucinationCheckResults.Add(hallucinationCheckResult);
         await _dbContext.SaveChangesAsync(cancellationToken);
         
@@ -102,11 +110,14 @@ public class CodeSubmissionService : ICodeSubmissionService
         // checks if feedback was verified by hallucination checker BEFORE granting task completion
         if (didCodeExecutionPassCompletion && aiFeedback.TaskOutcome == CodeTaskOutcome.Correct && hallucinationCheckResult.Status == HallucinationCheckerStatus.IsConsistent)
         {
+            await BroadcastWebSocketStatus(userId, codeSubmission.CodeTaskId, CodeEvaluationStep.UpdatingGameProgress, "Your code passed the test requirements, well done! Updating your game progress.");
             updatedLearnerGameProgress = await _gameService.GrantCodeTaskCompletionRewardsAsync(userId!, codeTask, cancellationToken);
             _logger.LogInformation($"Updated game progress for learner with id {userId} after completing task {codeTask.Id}");
         }
         
         // TODO Later: Adaptive learning (possibly in a separate service)
+        
+        await BroadcastWebSocketStatus(userId, codeSubmission.CodeTaskId, CodeEvaluationStep.Finished, "Your code passed the test requirements, well done! Updating your game progress.");
         
         // 8. Return results to the client
         return new CodeSubmissionResult
@@ -115,7 +126,7 @@ public class CodeSubmissionService : ICodeSubmissionService
             CodeTask = codeTask,
             AttemptNumber = submission.Attempts,
             CodeExecution = codeExecution,
-            SubmittedCode =  codeSubmission.Code,
+            SubmittedCode =  codeSubmission.CodeAttempt,
             ExecutionDuration = codeExecution.ExecutionDuration,
             AIFeedback = new AICodeTaskFeedbackDTO
             {
@@ -131,5 +142,43 @@ public class CodeSubmissionService : ICodeSubmissionService
             HallucinationCheck = hallucinationCheckResult,
             GameProgress = updatedLearnerGameProgress
         };
+    }
+
+    public async Task<CodeTaskLearnerProgress?> LoadCodeTaskProgress(string? userId, int codeTaskId, CancellationToken cancellationToken = default)
+    {
+        var doesCodeTaskExist = await _dbContext.CodeTasks.AnyAsync(x => x.Id == codeTaskId, cancellationToken);
+
+        if (!doesCodeTaskExist)
+        {
+            return null;
+        }
+
+        var attempts = await _dbContext.CodeSubmissions.CountAsync(x => x.UserId == userId && x.CodeTaskId == codeTaskId, cancellationToken);
+        var hintChatLogs = await _dbContext.AICodeHintChatLogs
+        .Where(x => x.UserId == userId && x.CodeTaskId == codeTaskId)
+        .OrderBy(x => x.CreatedAt) // TODO I'll potentially change this later
+        .ToListAsync(cancellationToken);
+
+        return new CodeTaskLearnerProgress
+        {
+            Attempts = attempts,
+            HintsUsed = hintChatLogs.Count(x => x.ChatLogRole == AICodeHintChatLogRole.AIAssistant),
+            ChatLogs = hintChatLogs
+        };
+    }
+
+    private Task BroadcastWebSocketStatus(string? userId, int codeTaskId, CodeEvaluationStep codeEvaluationStep, string message)
+    {
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Task.CompletedTask;
+        }
+
+        return _hubContext.Clients.User(userId).SendAsync("CodeEvaluationStatusChanged", new CodeEvaluationStatus
+        {
+            CodeTaskId = codeTaskId,
+            CodeEvaluationStep = codeEvaluationStep,
+            Message = message,
+        });
     }
 }

@@ -8,7 +8,7 @@ public class AIPersonaSimulationResponse
     [Key]
     [JsonIgnore]
     public int Id { get; set; }
-    public List<AIPersona> PersonasUsed { get; set; }
+    public List<AIPersona> PersonasUsed { get; set; } = [];
     public long ExecutionTimeInMilliseconds { get; set; }
     public Guid SimulationId { get; init; } // TODO could potentially be string for parsing issues
     public int CodeTaskId { get; init; }
@@ -23,4 +23,9 @@ public class AIPersonaSimulationResponse
     public int SuccessfulPersonasCount => PersonaResults.Count(result => result.DidSucceed);
     public int FailedPersonasCount => PersonaResults.Count(result => !result.DidSucceed);
     public long DurationInMilliseconds => Math.Max(0, (long)(CompletedAt - StartedAt).TotalMilliseconds);
+    // for classroom simulations tables (results section for the report)
+    public Guid? ClassroomSimulationId { get; set; }
+    public int SimulationTimeStepIndex { get; set; }
+    public int SimulatedMinute { get; set; }
+    public int AttemptNumber { get; set; } = 1;
 }

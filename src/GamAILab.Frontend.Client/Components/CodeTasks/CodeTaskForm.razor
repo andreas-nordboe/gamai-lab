@@ -1,0 +1,113 @@
+@using GamAILab.Shared.Models
+<MudButton Class="my-2" OnClick="OnAddExampleClicked" Variant="Variant.Filled" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Add">Add Example</MudButton>
+<MudButton Class="my-2" OnClick="OnAddConstraintClicked" Variant="Variant.Filled" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Add">Add Constraint</MudButton>
+<MudButton Class="my-2" OnClick="OnRegenerateCodePlanClicked" Variant="Variant.Filled" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Add">Add Constraint</MudButton>
+@* Code evaluation plans are generated during creation. However, educators may want to re-generate these *@
+@if (IsEditing)
+{
+    <MudButton Class="my-2" Variant="Variant.Filled" EndIcon="@Icons.Material.Filled.RotateRight" OnClick="GenerateCodeEvaluationPlanClicked">
+        Re-Generate Code Evaluation Plan
+    </MudButton>
+}
+
+<MudTextField Class="my-4" Label="Title" @bind-Value="CodeTask.Title" Variant="Variant.Outlined"/>
+<MudTextField Class="my-4" Lines="5" Label="Description" @bind-Value="CodeTask.Description" Variant="Variant.Outlined"/>
+<MudTextField Lines="5" Class="my-4" Label="Default Code" @bind-Value="CodeTask.DefaultCode" Variant="Variant.Outlined"/>
+
+<MudText>Examples</MudText>
+@if (CodeTask.Examples.Count > 0)
+{
+    @for (var i = 0; i < CodeTask.Examples.Count; i++)
+    {
+        var index = i;
+
+        <MudStack Row="true" AlignItems="AlignItems.Center">
+            <MudTextField Class="flex-grow-1" Label="@($"Example {index + 1}")" @bind-Value="CodeTask.Examples[index]" Variant="Variant.Outlined" />
+
+            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => RemoveExample(index))" aria-label="Remove example" />
+        </MudStack>
+    }
+}
+else
+{
+    <MudText Typo="Typo.subtitle1" Class="my-2">There are no examples, click the add button first</MudText>
+}
+
+<MudText>Constraints</MudText>
+@if (CodeTask.Constraints.Count > 0)
+{
+    @for (var i = 0; i < CodeTask.Constraints.Count; i++)
+    {
+        var index = i;
+
+        <MudStack Row="true" AlignItems="AlignItems.Center">
+            <MudTextField Class="flex-grow-1" Label="@($"Constraint {index + 1}")" @bind-Value="CodeTask.Constraints[index]"  Variant="Variant.Outlined" />
+
+            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => RemoveConstraint(index))" aria-label="Remove constraint" />
+        </MudStack>
+    }
+}
+else
+{
+    <MudText Typo="Typo.subtitle1" Class="my-2">There are no constraints, click the add button first</MudText>
+}
+<MudSelect Class="my-2" T="CodeTaskDifficulty" Label="Difficulty" @bind-Value="CodeTask.Difficulty" Variant="Variant.Outlined">
+    @foreach (var difficulty in Enum.GetValues<CodeTaskDifficulty>())
+    {
+        <MudSelectItem T="CodeTaskDifficulty" Value="difficulty">
+            @difficulty
+        </MudSelectItem>
+    }
+</MudSelect>
+<MudTextField Class="my-2" Label="Currency Reward" @bind-Value="CodeTask.CurrencyReward" Variant="Variant.Outlined"/>
+@if (IsEditing)
+{
+    <MudStack Class="my-2" Spacing="2">
+        <MudText >@CodeTask.CreatedAt</MudText>
+        <MudText>@CodeTask.UpdatedAt</MudText>
+    </MudStack>
+}
+
+<MudText>
+    <b>Code Evaluation Plan</b>
+</MudText>
+
+@if (CodeTask.AiCodeEvaluationPlan is not null)
+{
+    <MudCard>
+        <MudCardContent>
+            <MudText Typo="Typo.h6">AI Code Evaluation Plan</MudText>
+
+            <MudText Class="mt-3"><b>Criteria</b></MudText>
+            @foreach (var item in CodeTask.AiCodeEvaluationPlan.Criteria)
+            {
+                <MudText>• @item</MudText>
+            }
+
+            <MudText Class="mt-3"><b>Common Mistakes</b></MudText>
+            @foreach (var item in CodeTask.AiCodeEvaluationPlan.CommonMistakes)
+            {
+                <MudText>• @item</MudText>
+            }
+
+            <MudText Class="mt-3"><b>Feedback Instructions</b></MudText>
+            <MudText>@CodeTask.AiCodeEvaluationPlan.FeedbackInstructions</MudText>
+            <MudText Class="mt-3"><b>Tests</b></MudText>
+            <MudTable Items="@CodeTask.AiCodeEvaluationPlan.Tests" Dense="true">
+                <HeaderContent>
+                    <MudTh>Name</MudTh>
+                    <MudTh>Function</MudTh>
+                    <MudTh>Expected</MudTh>
+                </HeaderContent>
+
+                <RowTemplate>
+                    <MudTd>@context.Name</MudTd>
+                    <MudTd>@context.FunctionName</MudTd>
+                    <MudTd>@context.ExpectedResult</MudTd>
+                </RowTemplate>
+            </MudTable>
+        </MudCardContent>
+    </MudCard>
+    
+    
+}

@@ -356,5 +356,8 @@ struct FNPCData : public FTableRowBase
     // TODO add dialogue/rewards/achievements that can be used in DataTables
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FDataTableRowHandle Dialogue;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    int32 StartsCodeTask;
 };
 

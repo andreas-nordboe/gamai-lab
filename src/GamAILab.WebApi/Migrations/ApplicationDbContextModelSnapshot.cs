@@ -71,7 +71,6 @@ namespace GamAILab.WebApi.Migrations
                                 .HasJsonPropertyName("exception");
 
                             b1.Property<string>("ExpectedResult")
-                                .IsRequired()
                                 .HasJsonPropertyName("expectedResult");
 
                             b1.Property<int>("ExpectedResultType")
@@ -190,6 +189,37 @@ namespace GamAILab.WebApi.Migrations
                     b.ToTable("AICodeTaskFeedbackDTO");
                 });
 
+            modelBuilder.Entity("GamAILab.Shared.Models.AICodeEvaluation.Hints.AICodeHintChatLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("ChatLogRole")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("CodeTaskId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("HintLevel")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AICodeHintChatLogs");
+                });
+
             modelBuilder.Entity("GamAILab.Shared.Models.AIHallucinationChecker.HallucinationCheckResult", b =>
                 {
                     b.Property<int>("Id")
@@ -202,6 +232,9 @@ namespace GamAILab.WebApi.Migrations
                     b.Property<string>("ConflictedClaims")
                         .IsRequired()
                         .HasColumnType("TEXT");
+
+                    b.Property<double>("ConsistencyScore")
+                        .HasColumnType("REAL");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
@@ -219,6 +252,9 @@ namespace GamAILab.WebApi.Migrations
                     b.Property<string>("Summary")
                         .IsRequired()
                         .HasColumnType("TEXT");
+
+                    b.Property<int>("TotalCheckedClaims")
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
@@ -276,6 +312,32 @@ namespace GamAILab.WebApi.Migrations
                     b.ToTable("AIPersonas");
                 });
 
+            modelBuilder.Entity("GamAILab.Shared.Models.AIPersonaSimulation.AIPersonaCodeResponse", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("EngagementScore")
+                        .HasColumnType("INTEGER");
+
+                    b.PrimitiveCollection<string>("LearningOutcomes")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.PrimitiveCollection<string>("Struggles")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AIPersonaCodeResponse");
+                });
+
             modelBuilder.Entity("GamAILab.Shared.Models.AIPersonaSimulation.AIPersonaSimulationResult", b =>
                 {
                     b.Property<int>("Id")
@@ -285,14 +347,28 @@ namespace GamAILab.WebApi.Migrations
                     b.Property<int?>("AIPersonaSimulationResponseId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("CodeAttempt")
+                    b.Property<Guid>("ClassroomSessionId")
                         .HasColumnType("TEXT");
+
+                    b.Property<int>("CodeAttemptId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("EngagementScore")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("ErrorMessage")
                         .HasColumnType("TEXT");
 
+                    b.PrimitiveCollection<string>("LearningOutcomes")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("PersonaId")
                         .HasColumnType("INTEGER");
+
+                    b.PrimitiveCollection<string>("Struggles")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
                     b.Property<int?>("SubmissionResultId")
                         .HasColumnType("INTEGER");
@@ -300,6 +376,8 @@ namespace GamAILab.WebApi.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AIPersonaSimulationResponseId");
+
+                    b.HasIndex("CodeAttemptId");
 
                     b.HasIndex("PersonaId");
 
@@ -313,6 +391,12 @@ namespace GamAILab.WebApi.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
+
+                    b.Property<int>("AttemptNumber")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid?>("ClassroomSimulationId")
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("CodeTaskId")
                         .HasColumnType("INTEGER");
@@ -331,15 +415,50 @@ namespace GamAILab.WebApi.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("SimulatedMinute")
+                        .HasColumnType("INTEGER");
+
                     b.Property<Guid>("SimulationId")
                         .HasColumnType("TEXT");
+
+                    b.Property<int>("SimulationTimeStepIndex")
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("StartedAt")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
-                    b.ToTable("AIPersonaSimulationResponses");
+                    b.HasIndex("ClassroomSimulationId");
+
+                    b.ToTable("AIPersonaSimulations");
+                });
+
+            modelBuilder.Entity("GamAILab.Shared.Models.Analysis.ClassroomSimulation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("InitiatedByUserId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("LearnerCount")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("StartedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ClassroomSimulations");
                 });
 
             modelBuilder.Entity("GamAILab.Shared.Models.CodeExecution.CodeExecutionResult", b =>
@@ -361,7 +480,6 @@ namespace GamAILab.WebApi.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("FatalError")
-                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("StandardError")
@@ -377,7 +495,7 @@ namespace GamAILab.WebApi.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("CodeExecutionResult");
+                    b.ToTable("CodeExecutions");
                 });
 
             modelBuilder.Entity("GamAILab.Shared.Models.CodeExecution.CodeTestResult", b =>
@@ -456,9 +574,6 @@ namespace GamAILab.WebApi.Migrations
                     b.Property<TimeSpan>("ExecutionDuration")
                         .HasColumnType("TEXT");
 
-                    b.Property<int?>("GameProgressId")
-                        .HasColumnType("INTEGER");
-
                     b.Property<int>("HallucinationCheckId")
                         .HasColumnType("INTEGER");
 
@@ -476,8 +591,6 @@ namespace GamAILab.WebApi.Migrations
                     b.HasIndex("CodeExecutionId");
 
                     b.HasIndex("CodeTaskId");
-
-                    b.HasIndex("GameProgressId");
 
                     b.HasIndex("HallucinationCheckId");
 
@@ -584,44 +697,6 @@ namespace GamAILab.WebApi.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("CustomData");
-                });
-
-            modelBuilder.Entity("GamAILab.Shared.Models.Game.DTOs.AchievementRequest", b =>
-                {
-                    b.Property<string>("AchievementId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int?>("LearnerGameProgressRequestId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Title")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("AchievementId");
-
-                    b.HasIndex("LearnerGameProgressRequestId");
-
-                    b.ToTable("AchievementRequest");
-                });
-
-            modelBuilder.Entity("GamAILab.Shared.Models.Game.DTOs.LearnerGameProgressRequest", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("Currency")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("Level")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("LearnerGameProgressRequest");
                 });
 
             modelBuilder.Entity("GamAILab.Shared.Models.Game.GameObjective", b =>
@@ -918,6 +993,12 @@ namespace GamAILab.WebApi.Migrations
                         .WithMany("PersonaResults")
                         .HasForeignKey("AIPersonaSimulationResponseId");
 
+                    b.HasOne("GamAILab.Shared.Models.AIPersonaSimulation.AIPersonaCodeResponse", "CodeAttempt")
+                        .WithMany()
+                        .HasForeignKey("CodeAttemptId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("GamAILab.Shared.Models.AIPersonaSimulation.AIPersona", "Persona")
                         .WithMany()
                         .HasForeignKey("PersonaId")
@@ -928,9 +1009,18 @@ namespace GamAILab.WebApi.Migrations
                         .WithMany()
                         .HasForeignKey("SubmissionResultId");
 
+                    b.Navigation("CodeAttempt");
+
                     b.Navigation("Persona");
 
                     b.Navigation("SubmissionResult");
+                });
+
+            modelBuilder.Entity("GamAILab.Shared.Models.AIPersonaSimulation.DTOs.AIPersonaSimulationResponse", b =>
+                {
+                    b.HasOne("GamAILab.Shared.Models.Analysis.ClassroomSimulation", null)
+                        .WithMany("SimulationResponses")
+                        .HasForeignKey("ClassroomSimulationId");
                 });
 
             modelBuilder.Entity("GamAILab.Shared.Models.CodeExecution.CodeTestResult", b =>
@@ -960,10 +1050,6 @@ namespace GamAILab.WebApi.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("GamAILab.Shared.Models.Game.DTOs.LearnerGameProgressRequest", "GameProgress")
-                        .WithMany()
-                        .HasForeignKey("GameProgressId");
-
                     b.HasOne("GamAILab.Shared.Models.AIHallucinationChecker.HallucinationCheckResult", "HallucinationCheck")
                         .WithMany()
                         .HasForeignKey("HallucinationCheckId")
@@ -975,8 +1061,6 @@ namespace GamAILab.WebApi.Migrations
                     b.Navigation("CodeExecution");
 
                     b.Navigation("CodeTask");
-
-                    b.Navigation("GameProgress");
 
                     b.Navigation("HallucinationCheck");
                 });
@@ -993,13 +1077,6 @@ namespace GamAILab.WebApi.Migrations
                     b.HasOne("GamAILab.Shared.Models.Game.LearnerGameProgress", null)
                         .WithMany("Achievements")
                         .HasForeignKey("LearnerGameProgressId");
-                });
-
-            modelBuilder.Entity("GamAILab.Shared.Models.Game.DTOs.AchievementRequest", b =>
-                {
-                    b.HasOne("GamAILab.Shared.Models.Game.DTOs.LearnerGameProgressRequest", null)
-                        .WithMany("Achievements")
-                        .HasForeignKey("LearnerGameProgressRequestId");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -1060,6 +1137,11 @@ namespace GamAILab.WebApi.Migrations
                     b.Navigation("PersonasUsed");
                 });
 
+            modelBuilder.Entity("GamAILab.Shared.Models.Analysis.ClassroomSimulation", b =>
+                {
+                    b.Navigation("SimulationResponses");
+                });
+
             modelBuilder.Entity("GamAILab.Shared.Models.CodeExecution.CodeExecutionResult", b =>
                 {
                     b.Navigation("CodeTests");
@@ -1073,11 +1155,6 @@ namespace GamAILab.WebApi.Migrations
             modelBuilder.Entity("GamAILab.Shared.Models.CodeTask", b =>
                 {
                     b.Navigation("AiCodeEvaluationPlan");
-                });
-
-            modelBuilder.Entity("GamAILab.Shared.Models.Game.DTOs.LearnerGameProgressRequest", b =>
-                {
-                    b.Navigation("Achievements");
                 });
 
             modelBuilder.Entity("GamAILab.Shared.Models.Game.LearnerGameProgress", b =>

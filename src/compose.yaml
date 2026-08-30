@@ -22,8 +22,12 @@
           RootAdminUser__Email: ${ROOT_ADMIN_EMAIL}
           RootAdminUser__Password: ${ROOT_ADMIN_PASSWORD}
           Jwt__SecretKey: ${JWT_SECRET_KEY}
+          Jwt__ExpirationTimeInMins: ${JWT_EXPIRY_TIME_IN_MINS}
           Ollama__BaseUrl: http://ollama_service_provider:11434
           Ollama__Model: ${OLLAMA_MODEL}
+          CodeExecutions__MaxConcurrentExecutions: ${CODE_EXECUTIONS_MAX_CONCURRENT_EXECUTIONS}
+          CodeEvaluation__UseVerifiedCodeEvaluations: ${HALLUCINATION_USE_VERIFIED_CODE_EVALUATIONS}
+          CodeEvaluation__MaxVerifiedCodeEvaluations: ${HALLUCINATION_MAX_VERIFIED_CODE_EVALUATIONS}
   
     gamailab.frontend:
       image: gamailab.frontend

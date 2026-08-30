@@ -5,10 +5,13 @@ using Scalar.AspNetCore;
 using GamAILab.WebApi;
 using GamAILab.WebApi.Data;
 using GamAILab.WebApi.Endpoints;
+using GamAILab.WebApi.Hubs;
 using GamAILab.WebApi.Services;
 using GamAILab.WebApi.Services.AIPersonaSimulation;
+using GamAILab.WebApi.Services.Analysis;
 using GamAILab.WebApi.Services.CodeExecution;
 using GamAILab.WebApi.Services.CodeTasks;
+using GamAILab.WebApi.Services.EducatorMonitoring;
 using GamAILab.WebApi.Services.Game;
 using GamAILab.WebApi.Services.HallucinationChecker;
 using GamAILab.WebApi.Services.LLMService;
@@ -26,7 +29,10 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy(FrontendClientPolicy, policy =>
     {
-        policy .WithOrigins("http://localhost:5123").AllowAnyHeader().AllowAnyMethod();
+        policy.WithOrigins("http://localhost:5123")
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
     });
     
 });
@@ -42,17 +48,28 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()   
     .AddApiEndpoints();
 
+builder.Services.AddSingleton<SemaphoreSlim>(sp =>
+{
+    var configuration = sp.GetRequiredService<IConfiguration>();
+
+    var maxExecutions = configuration.GetValue<int>("CodeExecutions:MaxConcurrentExecutions");
+
+    return new SemaphoreSlim(maxExecutions, maxExecutions);
+});
+
 // Feature services
 builder.Services.AddScoped<IAICodeEvaluationService, AICodeEvaluationService>();
 builder.Services.AddScoped<ICodeTaskService, CodeTaskService>();
 builder.Services.AddScoped<ICodeSubmissionService,  CodeSubmissionService>();
 builder.Services.AddScoped<IAIHallucinationCheckerService, AIHallucinationCheckerService>();
-builder.Services.AddSingleton<ICodeExecutionService, CodeExecutionService>();
-builder.Services.AddSingleton<IAIFeedbackService, AIFeedbackService>();
+builder.Services.AddScoped<ICodeExecutionService, CodeExecutionService>();
+builder.Services.AddScoped<IAIFeedbackService, AIFeedbackService>();
 builder.Services.AddScoped<IGameService, GameService>();
 builder.Services.AddScoped<IAIPersonaSimulationService, AIPersonaSimulationService>();
 builder.Services.AddScoped<ILearningEngagementService, LearningLearningEngagementService>();
-
+builder.Services.AddScoped<IAnalysisService, AnalysisService>();
+builder.Services.AddScoped<IEducatorMonitoringService, EducatorMonitoringService>();
+builder.Services.AddScoped<VerifiedCodeEvaluationsService>();
 
 builder.Services.AddAuthentication(options =>
 {
@@ -64,6 +81,21 @@ builder.Services.AddAuthentication(options =>
     options.TokenValidationParameters.ValidIssuer = builder.Configuration["Jwt:Issuer"];
     options.TokenValidationParameters.ValidAudience = builder.Configuration["Jwt:Audience"];
     options.TokenValidationParameters.IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SecretKey"]!));
+    
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            var jwtToken = context.Request.Query["access_token"];
+            var httpPah = context.HttpContext.Request.Path;
+
+            if (!string.IsNullOrEmpty(jwtToken) && httpPah.StartsWithSegments("/hubs"))
+            {
+                context.Token = jwtToken;
+            }
+            return Task.CompletedTask;
+        }
+    };
 });
 
 
@@ -72,7 +104,18 @@ builder.Services.AddAuthorizationBuilder()
 {
     policy.RequireAuthenticatedUser();
     policy.RequireRole(UserRole.Admin);
+}).AddPolicy("RequireResearcher", policy =>
+{
+    policy.RequireAuthenticatedUser();
+    // I could potentially call this RequirePlatformManager or something similar as its for educators and admins too
+    policy.RequireRole(UserRole.Educator, UserRole.Researcher, UserRole.Admin);
+}).AddPolicy("RequireLearner", policy =>
+{
+    policy.RequireAuthenticatedUser();
+    // Allows authorised learnes, educators, admins and researchers to access the APIs that have this policy
+    policy.RequireRole(UserRole.Educator, UserRole.Researcher, UserRole.Learner, UserRole.Admin);
 });
+
 
 builder.Services.AddHttpClient<ILLMService, LLMService>((provider, client) =>
 {
@@ -85,6 +128,9 @@ builder.Services.AddHttpClient<ILLMService, LLMService>((provider, client) =>
     // I might adjust this later
     client.Timeout = TimeSpan.FromMinutes(5);
 });
+
+// SignalR WebSocket
+builder.Services.AddSignalR();
 
 var app = builder.Build();
 
@@ -155,24 +201,34 @@ using (var scope = app.Services.CreateScope())
         }
         
         // Seed code tasks
-        var codeTaskService = services.GetRequiredService<ICodeTaskService>();
-        await codeTaskService.SeedCodeTasks();
+        var seedCodeTasks = builder.Configuration.GetValue<bool>("Seed:ExampleCodeTasks");
+        if (seedCodeTasks)
+        {
+            var codeTaskService = services.GetRequiredService<ICodeTaskService>();
+            await codeTaskService.SeedCodeTasks();
+        }
 
         // Seed AI personas
-        var aiPersonaSimulationService = services.GetRequiredService<IAIPersonaSimulationService>();
-        await aiPersonaSimulationService.SeedAIPersonas();
+        var seedAIPersonas = builder.Configuration.GetValue<bool>("Seed:AIPersonas");
+        if (seedAIPersonas)
+        {
+            var aiPersonaSimulationService = services.GetRequiredService<IAIPersonaSimulationService>();
+            await aiPersonaSimulationService.SeedAIPersonas();
+        }
+        
     }
     
    
 }
 
-// Map endpoints (TODO refactor this into using a separate endpoint handler later)
+// Maps REST API HTTP endpoints
 app.MapCodeSubmissionEndpoint();
 app.MapAuthenticationEndpoints();
 app.MapCodeTaskEndpoints();
 app.MapCodeExecutionEndpoints();
 app.MapGameProgressEndpoints();
 app.MapPersonaEvaluationEndpoints();
+app.MapAnalysisEndpoints();
 
 if (!app.Environment.IsDevelopment())
 {
@@ -184,6 +240,9 @@ app.UseCors(FrontendClientPolicy);
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapHub<EducatorMonitoringHub>("/hubs/educator-monitoring");
+app.MapHub<CodeEvaluationHub>("/hubs/code-evaluation");
 
 // For testing API
 app.MapGet("/self", (ClaimsPrincipal claimsPrincipal) =>

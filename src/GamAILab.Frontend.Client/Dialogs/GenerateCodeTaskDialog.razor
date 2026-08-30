@@ -1,0 +1,53 @@
+@using GamAILab.Frontend.Client.Components.CodeTasks
+@using GamAILab.Shared.Models
+@inject IDialogService DialogService
+
+<MudDialog>
+    <DialogContent>
+        
+        <MudText Typo="Typo.body1" Class="mb-3">
+            Enter code task description and game story context here or leave empty to generate a generic code task.
+        </MudText>
+
+        <MudTextField T="string"@bind-Value="_codeTaskDescription"Label="Code Task Description" Placeholder="For example: Multiplying numbers or iterating over strings" Variant="Variant.Outlined" Lines="4" FullWidth="true"  Class="mb-3" />
+        <MudTextField T="string"@bind-Value="_codeTaskGameStory"Label="Code Task Game Story Context" Placeholder="For example: Sorting lab equipment using robotic arms" Variant="Variant.Outlined" Lines="4" FullWidth="true"  Class="mb-3" />
+        
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.AutoAwesome" OnClick="OnGenerateCodeTaskClicked" Disabled="_isGeneratingCodeTask">
+            @if (_isGeneratingCodeTask)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                <MudText>Generating Code Task</MudText>
+            }
+            else if (_generatedCodeTask is not null)
+            {
+                <MudText>Regenerate Code Task</MudText>
+            }
+            else
+            {
+                <MudText>Generate Code Task</MudText>
+            }
+        </MudButton>
+        
+        @if (_generatedCodeTask is not null)
+        {
+            <MudDivider Class="my-4" />
+
+            <MudText Typo="Typo.h6" Class="mb-3">
+                Generated Code Task
+            </MudText>
+            
+            <MudText Typo="Typo.body2" Class="mb-3">
+                Please verify the generated code task information and make desired modifications before saving it.
+            </MudText>
+
+            <MudPaper Outlined="true" Class="pa-4">
+                <CodeTaskForm CodeTask="@_generatedCodeTask"/>
+            </MudPaper>
+        }
+
+    </DialogContent>
+    <DialogActions>
+        <MudButton EndIcon="@Icons.Material.Filled.Save" Color="@Color.Primary" Disabled="@(_generatedCodeTask is null)" Variant="Variant.Filled" OnClick="OnSaveGeneratedCodeTaskClicked">Save Generated Code Task</MudButton>
+        <MudButton EndIcon="@Icons.Material.Filled.Close" Color="@Color.Primary" Variant="Variant.Outlined" OnClick="Cancel">Cancel</MudButton>
+    </DialogActions>
+</MudDialog>

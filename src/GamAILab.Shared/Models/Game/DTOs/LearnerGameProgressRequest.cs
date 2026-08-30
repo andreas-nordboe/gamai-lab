@@ -1,7 +1,9 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace GamAILab.Shared.Models.Game.DTOs;
 
+[NotMapped]
 public class LearnerGameProgressRequest
 {
     [Key] 

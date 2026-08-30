@@ -21,9 +21,12 @@ public partial class AIPersonaTesting : ComponentBase
     public CodeTask? SelectedCodeTask { get; set; } 
     private bool _isLoadingAIPersonas;
     private int _executionCounts = 1;
+    private int _minutesPerClassroomSimulationStep = 5;
+    private int _maxRetriesPerTask = 1;
     private bool _personaSimulationIsRunning;
-
-    private string _simulationResults; // TODO for temporary debugging during development only: replace with proper dialog summary later
+    private AIPersonaSimulationResponse? _simulationResult;
+    private Guid? _classroomSimulationId;
+    public IReadOnlyCollection<CodeTask?> SelectedCodeTasks { get; set; } = Array.Empty<CodeTask?>();
     
     [Inject] private IDialogService DialogService { get; set; }
     [Inject] public ISnackbar Snackbar { get; set; }
@@ -89,8 +92,7 @@ public partial class AIPersonaTesting : ComponentBase
             var codeSimulation = await AIPersonaSimulationService.RunAIPersonaCodeEvaluationSimulationAsync(request);
             if (codeSimulation is not null)
             {
-                // TODO display output temporarily (presenting for supervisor tomorrow) 
-                _simulationResults = JsonSerializer.Serialize(codeSimulation);
+                _simulationResult = codeSimulation;
                 StateHasChanged();
                 
                 var parameters = new DialogParameters<CodeTaskFeedbackDialog>
@@ -199,8 +201,7 @@ public partial class AIPersonaTesting : ComponentBase
             var codeSimulation = await AIPersonaSimulationService.RunAIPersonaCodeEvaluationSimulationAsync(request);
             if (codeSimulation is not null)
             {
-                // TODO display output temporarily (presenting for supervisor tomorrow) 
-                _simulationResults = JsonSerializer.Serialize(codeSimulation);
+                _simulationResult = codeSimulation;
                 StateHasChanged();
             }
         }
@@ -243,6 +244,67 @@ public partial class AIPersonaTesting : ComponentBase
                 AIPersonas.Add(updateAiPersona);
                 Snackbar.Add("Successfully added AI persona", Severity.Success);
             }
+        }
+    }
+
+    private async Task OnGenerateAIPersonaClicked()
+    {
+        var options = new DialogOptions { CloseOnEscapeKey = true, FullWidth =  true, MaxWidth = MaxWidth.Medium, CloseButton = true };
+        
+        var dialog = await DialogService.ShowAsync<GenerateAIPersonaDialog>("Generate AI Persona", options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled && result.Data is AIPersona updatedAIPersona) 
+        {
+            var updateAiPersona = await AIPersonaSimulationService.AddOrUpdateAIPersona(updatedAIPersona);
+            if (updateAiPersona is not null)
+            {
+                AIPersonas.Add(updateAiPersona);
+                Snackbar.Add("Successfully generated and saved AI persona", Severity.Success);
+            }
+        }
+        
+    }
+    
+    private async Task OnRunClassroomSimulationClicked()
+    {
+        if (_personaSimulationIsRunning)
+            return;
+        
+        if (SelectedCodeTasks.Count == 0)
+        {
+            Snackbar.Add("Failed to run simulation. Select one or more classroom simulation code tasks first.", Severity.Error);
+            return;
+        }
+
+        try
+        {
+            var personaIds = SelectedAIPersonas.Where(x => x is not null)
+                .Select(x => x!.Id)
+                .ToList();
+            _classroomSimulationId = Guid.NewGuid();
+            
+            _personaSimulationIsRunning = true;
+            
+            _classroomSimulationId = Guid.NewGuid();
+            StateHasChanged(); // forces educator dashboard below to update properly!!
+            await Task.Yield();
+
+            var request = new ClassroomSimulationRequest
+            {
+                ClassroomSimulationId = _classroomSimulationId.Value,
+                PersonaIds = personaIds,
+                // I could potentially add multiple tasks per simulation, but one should work for the report
+                CodeTaskIds = SelectedCodeTasks.Where(x =>x is not null).Select(x => x.Id).ToList(),
+                MinutesEveryStep = _minutesPerClassroomSimulationStep,
+                MaxRetriesPerTask = _maxRetriesPerTask
+            };
+
+            await AIPersonaSimulationService.RunClassroomSimulationAsync(request);
+        }
+        finally
+        {
+            _personaSimulationIsRunning = false;
         }
     }
 }

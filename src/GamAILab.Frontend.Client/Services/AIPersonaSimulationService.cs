@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using GamAILab.Shared.Models;
 using GamAILab.Shared.Models.AIPersonaSimulation;
 using GamAILab.Shared.Models.AIPersonaSimulation.DTOs;
+using GamAILab.Shared.Models.Analysis;
 
 namespace GamAILab.Frontend.Client.Services;
 
@@ -22,6 +23,15 @@ public class AIPersonaSimulationService : IAIPersonaSimulationService
             return null;
         
         return await addOrUpdateAiPersona.Content.ReadFromJsonAsync<AIPersonaSimulationResponse>();
+    }
+    
+    public async Task<List<AIPersonaSimulationResponse>?> RunClassroomSimulationAsync(ClassroomSimulationRequest request, CancellationToken cancellationToken = default)
+    {
+        var addOrUpdateAiPersona = await _httpClient.PostAsJsonAsync($"api/ai-personas/run-classroom-simulation", request);
+        if (!addOrUpdateAiPersona.IsSuccessStatusCode)
+            return null;
+        
+        return await addOrUpdateAiPersona.Content.ReadFromJsonAsync<List<AIPersonaSimulationResponse>?>();
     }
 
     public async Task<List<AIPersona>> ListAIPersonasAsync()
@@ -54,5 +64,35 @@ public class AIPersonaSimulationService : IAIPersonaSimulationService
             return null;
         
         return await addOrUpdateAiPersona.Content.ReadFromJsonAsync<AIPersona>();
+    }
+
+    public async Task<AIPersona?> GenerateAIPersonaAsync(string aiPersonaDescription)
+    {
+        var addOrUpdateAiPersona = await _httpClient.PostAsJsonAsync($"api/ai-personas/generate", new GenerateAIPersonaRequest
+        {
+            Description = aiPersonaDescription
+        });
+        if (!addOrUpdateAiPersona.IsSuccessStatusCode)
+            return null;
+        
+        return await addOrUpdateAiPersona.Content.ReadFromJsonAsync<AIPersona>();
+    }
+    
+    public async Task<List<ClassroomSimulation>> ListClassroomSimulationsAsync()
+    {
+        return await _httpClient.GetFromJsonAsync<List<ClassroomSimulation>>("api/ai-personas/classroom-simulations") ?? [];
+    }
+    
+    public async Task<ClassroomSimulation?> GetClassroomSimulationByIdAsync(Guid classroomId, CancellationToken cancellationToken = default)
+    {
+        var classroomSimulation = await _httpClient.GetAsync($"api/ai-personas/classroom-simulations/{classroomId}");
+        
+        if (classroomSimulation.StatusCode == HttpStatusCode.NotFound)
+            return null;
+
+        if (!classroomSimulation.IsSuccessStatusCode)
+            return null;
+
+        return await classroomSimulation.Content.ReadFromJsonAsync<ClassroomSimulation>(cancellationToken);
     }
 }

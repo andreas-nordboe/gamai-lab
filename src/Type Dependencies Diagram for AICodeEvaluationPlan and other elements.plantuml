@@ -1,0 +1,126 @@
+@startuml
+
+!theme plain
+top to bottom direction
+skinparam linetype ortho
+
+rectangle AICodeEvaluationPlan
+rectangle AICodeEvaluationPlanOutput
+rectangle AICodeEvaluationTest
+rectangle AICodeFeedbackResponse
+rectangle AICodeTaskFeedback
+rectangle AICodeTaskFeedbackDTO
+rectangle AIPersona
+rectangle AIPersonaAnalysisSummaryResponse
+rectangle AIPersonaCodeResponse
+rectangle AIPersonaMemoryState
+rectangle AIPersonaSimulation
+rectangle AIPersonaSimulationRequest
+rectangle AIPersonaSimulationResponse
+rectangle AIPersonaSimulationResult
+rectangle AIPersonaSolveAttemptRequest
+rectangle Achievement
+rectangle AchievementRequest
+rectangle AuthenticationResponse
+rectangle AuthenticationUserResponse
+rectangle ClassroomSimulation
+rectangle ClassroomSimulationRequest
+rectangle ClassroomSimulationStatus
+rectangle CodeExecutionRequest
+rectangle CodeExecutionResponse
+rectangle CodeExecutionResult
+rectangle CodeExecutionRunnerResponse
+rectangle CodeSubmission
+rectangle CodeSubmissionRequest
+rectangle CodeSubmissionResult
+rectangle CodeTask
+rectangle CodeTaskDifficulty
+rectangle CodeTaskOutcome
+rectangle CodeTestResult
+rectangle CodeTestType
+rectangle CodeTestValue
+rectangle CustomData
+rectangle CustomDataRequest
+rectangle EvaluationPlanSchema
+rectangle ExpectedResultType
+rectangle GameObjective
+rectangle GameObjectiveRequest
+rectangle GenerateAIPersonaRequest
+rectangle GenerateCodeTaskRequest
+rectangle HallucinationCheckResult
+rectangle HallucinationCheckerDTO
+rectangle HallucinationCheckerResponse
+rectangle HallucinationCheckerStatus
+rectangle LearnerEngagementLiveUpdate
+rectangle LearnerGameProgress
+rectangle LearnerGameProgressRequest
+rectangle LoginRequest
+rectangle RegisterRequest
+rectangle User
+rectangle UserRole
+rectangle VerifiedCodeEvaluationExample
+rectangle VerifiedCodeEvaluationFeedbackResponse
+
+AICodeEvaluationPlan                    -[#3574f0,plain]->>  AICodeEvaluationTest                   
+AICodeEvaluationPlanOutput              -[#3574f0,plain]->>  AICodeEvaluationTest                   
+AICodeEvaluationTest                    -[#955ae0,plain]->>  CodeTestType                           
+AICodeEvaluationTest                    -[#3574f0,plain]->>  CodeTestType                           
+AICodeEvaluationTest                    -[#3574f0,plain]->>  CodeTestValue                          
+AICodeEvaluationTest                    -[#3574f0,plain]->>  ExpectedResultType                     
+AICodeEvaluationTest                    -[#955ae0,plain]->>  ExpectedResultType                     
+AICodeTaskFeedback                      -[#955ae0,plain]->>  CodeSubmission                         
+AICodeTaskFeedback                      -[#3574f0,plain]->>  CodeSubmission                         
+AICodeTaskFeedback                      -[#3574f0,plain]->>  CodeTaskOutcome                        
+AICodeTaskFeedback                      -[#955ae0,plain]->>  CodeTaskOutcome                        
+AICodeTaskFeedbackDTO                   -[#955ae0,plain]->>  CodeTaskOutcome                        
+AICodeTaskFeedbackDTO                   -[#3574f0,plain]->>  CodeTaskOutcome                        
+AIPersona                               -[#955ae0,plain]->>  CodeTaskDifficulty                     
+AIPersona                               -[#3574f0,plain]->>  CodeTaskDifficulty                     
+AIPersonaAnalysisSummaryResponse        -[#3574f0,plain]->>  AIPersonaSimulationResponse            
+AIPersonaSimulation                     -[#3574f0,plain]->>  AIPersona                              
+AIPersonaSimulationRequest              -[#3574f0,plain]->>  AIPersonaMemoryState                   
+AIPersonaSimulationResponse             -[#3574f0,plain]->>  AIPersona                              
+AIPersonaSimulationResponse             -[#3574f0,plain]->>  AIPersonaSimulationResult              
+AIPersonaSimulationResult               -[#3574f0,plain]->>  AIPersona                              
+AIPersonaSimulationResult               -[#955ae0,plain]->>  AIPersona                              
+AIPersonaSimulationResult               -[#955ae0,plain]->>  AIPersonaCodeResponse                  
+AIPersonaSimulationResult               -[#3574f0,plain]->>  AIPersonaCodeResponse                  
+AIPersonaSimulationResult               -[#3574f0,plain]->>  CodeSubmissionResult                   
+AIPersonaSimulationResult               -[#955ae0,plain]->>  CodeSubmissionResult                   
+AuthenticationResponse                  -[#3574f0,plain]->>  AuthenticationUserResponse             
+AuthenticationResponse                  -[#955ae0,plain]->>  AuthenticationUserResponse             
+ClassroomSimulation                     -[#3574f0,plain]->>  AIPersonaSimulationResponse            
+ClassroomSimulation                     -[#955ae0,plain]->>  ClassroomSimulationStatus              
+ClassroomSimulation                     -[#3574f0,plain]->>  ClassroomSimulationStatus              
+CodeExecutionResult                     -[#3574f0,plain]->>  CodeTestResult                         
+CodeExecutionRunnerResponse             -[#3574f0,plain]->>  CodeTestResult                         
+CodeSubmission                          -[#3574f0,plain]->>  AICodeTaskFeedback                     
+CodeSubmission                          -[#955ae0,plain]->>  AICodeTaskFeedback                     
+CodeSubmissionResult                    -[#955ae0,plain]->>  AICodeTaskFeedbackDTO                  
+CodeSubmissionResult                    -[#3574f0,plain]->>  AICodeTaskFeedbackDTO                  
+CodeSubmissionResult                    -[#3574f0,plain]->>  CodeExecutionResult                    
+CodeSubmissionResult                    -[#955ae0,plain]->>  CodeExecutionResult                    
+CodeSubmissionResult                    -[#3574f0,plain]->>  CodeTask                               
+CodeSubmissionResult                    -[#955ae0,plain]->>  CodeTask                               
+CodeSubmissionResult                    -[#3574f0,plain]->>  HallucinationCheckResult               
+CodeSubmissionResult                    -[#955ae0,plain]->>  HallucinationCheckResult               
+CodeSubmissionResult                    -[#955ae0,plain]->>  LearnerGameProgressRequest             
+CodeSubmissionResult                    -[#3574f0,plain]->>  LearnerGameProgressRequest             
+CodeTask                                -[#3574f0,plain]->>  AICodeEvaluationPlan                   
+CodeTask                                -[#955ae0,plain]->>  AICodeEvaluationPlan                   
+CodeTask                                -[#3574f0,plain]->>  CodeTaskDifficulty                     
+CodeTask                                -[#955ae0,plain]->>  CodeTaskDifficulty                     
+CodeTestValue                           -[#3574f0,plain]->>  ExpectedResultType                     
+CodeTestValue                           -[#955ae0,plain]->>  ExpectedResultType                     
+GenerateCodeTaskRequest                 -[#3574f0,plain]->>  CodeTaskDifficulty                     
+GenerateCodeTaskRequest                 -[#955ae0,plain]->>  CodeTaskDifficulty                     
+HallucinationCheckResult                -[#3574f0,plain]->>  AICodeTaskFeedback                     
+HallucinationCheckResult                -[#955ae0,plain]->>  AICodeTaskFeedback                     
+HallucinationCheckResult                -[#3574f0,plain]->>  HallucinationCheckerStatus             
+HallucinationCheckResult                -[#955ae0,plain]->>  HallucinationCheckerStatus             
+HallucinationCheckerDTO                 -[#955ae0,plain]->>  HallucinationCheckerStatus             
+HallucinationCheckerDTO                 -[#3574f0,plain]->>  HallucinationCheckerStatus             
+LearnerGameProgress                     -[#3574f0,plain]->>  Achievement                            
+LearnerGameProgress                     -[#3574f0,plain]->>  CodeTask                               
+LearnerGameProgressRequest              -[#3574f0,plain]->>  AchievementRequest                     
+@enduml

@@ -12,6 +12,7 @@ RUN find /app/publish -maxdepth 3 -type f | head -100
 
 FROM nginx:alpine AS final
 COPY --from=build /app/publish/wwwroot /usr/share/nginx/html
+COPY GamAILab.Frontend.Client/nginx.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80
 
 ENTRYPOINT ["nginx", "-g", "daemon off;"]

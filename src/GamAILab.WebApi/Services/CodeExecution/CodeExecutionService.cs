@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using GamAILab.Shared.Models.AICodeEvaluation;
 using GamAILab.Shared.Models.CodeExecution;
+using GamAILab.WebApi.Data;
 
 namespace GamAILab.WebApi.Services.CodeExecution;
 
@@ -12,7 +13,8 @@ public class CodeExecutionService : ICodeExecutionService
     private static readonly TimeSpan Timeout = TimeSpan.FromSeconds(30);
     
     // TODO I might change these later, its to prevent many containers from starting together (which will be important for AI persona testing later)
-    private static readonly SemaphoreSlim CodeExecutions = new SemaphoreSlim(4, 4);
+    private readonly SemaphoreSlim CodeExecutions;
+    private readonly ApplicationDbContext _dbContext;
 
     private static readonly JsonSerializerOptions JsonSerializerOptions = new(JsonSerializerDefaults.Web)
     {
@@ -21,9 +23,11 @@ public class CodeExecutionService : ICodeExecutionService
     
     private readonly ILogger<CodeExecutionService> _logger;
 
-public CodeExecutionService(ILogger<CodeExecutionService> logger)
+public CodeExecutionService(ILogger<CodeExecutionService> logger, ApplicationDbContext dbContext, SemaphoreSlim codeExecutions)
 {
     _logger = logger;
+    _dbContext = dbContext;
+    CodeExecutions = codeExecutions;
 }
 
 public async Task<CodeExecutionResult> ExecuteCodeAsync(string learnerCode, AICodeEvaluationPlan codeEvaluationPlan,
@@ -33,7 +37,12 @@ public async Task<CodeExecutionResult> ExecuteCodeAsync(string learnerCode, AICo
 
     try
     {
-        return await ExecuteCode(learnerCode, codeEvaluationPlan, true, cancellationToken);
+        var result = await ExecuteCode(learnerCode, codeEvaluationPlan, true, cancellationToken);
+        
+        _dbContext.CodeExecutions.Add(result);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        return result;
     }
     finally
     {

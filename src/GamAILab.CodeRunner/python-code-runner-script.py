@@ -4,9 +4,15 @@ import importlib.util
 import io
 import traceback
 import sys
+import os
+from pathlib import Path
+
+WORKSPACE = Path(os.environ.get("CODE_RUNNER_WORKSPACE", "/workspace"))
+SUBMISSION_PATH = WORKSPACE / "code_submission.py"
+LOCAL_TEST_PATH = WORKSPACE / "tests.json"
 
 def load_learner_code():
-    loc = importlib.util.spec_from_file_location("learner_code", "/workspace/code_submission.py")
+    loc = importlib.util.spec_from_file_location("learner_code", SUBMISSION_PATH)
 
     if loc is None or loc.loader is None:
         raise ImportError("Could not find learner code")
@@ -112,11 +118,11 @@ def execute_script(standard_input=None):
     try:
         sys.stdin = io.StringIO(input_text)
 
-        with open("/workspace/code_submission.py", encoding="utf-8") as learner_file:
+        with open(SUBMISSION_PATH, encoding="utf-8") as learner_file:
             source = learner_file.read()
 
         with (contextlib.redirect_stdout(standard_output), contextlib.redirect_stderr(standard_error)):
-            exec( compile(source, "/workspace/code_submission.py", "exec"), {"__name__": "__main__"} )
+            exec( compile(source, SUBMISSION_PATH, "exec"), {"__name__": "__main__"} )
 
     finally:
         sys.stdin = stdin_old
@@ -136,8 +142,13 @@ def run_standard_output_test(test):
     try:
         actual_output, _ = execute_script()
         expected_output = test["expectedResult"]
-        output["actualResult"] = actual_output
-        output["passed"] = (actual_output.rstrip("\n") == expected_output.rstrip("\n"))
+        
+        # fixes weird issues with model evaluation
+        actual_normalised = actual_output.rstrip("\r\n")
+        expected_normalised = expected_output.rstrip("\r\n")
+        
+        output["actualResult"] = actual_normalised
+        output["passed"] = actual_normalised == expected_normalised
 
     except Exception as exception:
         output["error"] = (
@@ -159,14 +170,14 @@ def run_standard_input_output_test(test):
         actual_output, _ = execute_script(
             test.get("standardInput", [])
         )
-
         expected_output = test["expectedResult"]
+        
+        # fixes weird issues with model evaluation
+        actual_normalised = actual_output.rstrip("\r\n")
+        expected_normalised = expected_output.rstrip("\r\n")
 
-        output["actualResult"] = actual_output
-        output["passed"] = (
-            actual_output.rstrip("\n")
-            == expected_output.rstrip("\n")
-        )
+        output["actualResult"] = actual_normalised
+        output["passed"] = actual_normalised == expected_normalised
 
     except Exception as exception:
         output["error"] = (
@@ -218,7 +229,7 @@ def run_exception_test(learner_code, test):
     return output
 
 def main():
-    with open("/workspace/tests.json", encoding="utf-8") as test_file:
+    with open(LOCAL_TEST_PATH, encoding="utf-8") as test_file:
         tests = json.load(test_file)
         standard_output = io.StringIO()
         standard_error = io.StringIO()

@@ -1,6 +1,8 @@
 using System.Net.Http.Json;
+using GamAILab.Shared.Models.AICodeEvaluation.Hints;
 using GamAILab.Shared.Models.CodeExecution;
 using GamAILab.Shared.Models.CodeSubmission;
+using GamAILab.Shared.Models.Game.DTOs;
 
 namespace GamAILab.Frontend.Client.Services;
 
@@ -45,5 +47,31 @@ public class CodeSubmissionService : ICodeSubmissionService
         }
         
         return await response.Content.ReadFromJsonAsync<CodeExecutionResponse>(cancellationToken: cancellationToken) ?? throw new InvalidOperationException("The API returned an empty code execution result");
+    }
+    
+    public async Task<AICodeHintResponse> GetAICodeHintAsync(AICodeHintRequest codeSubmission, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.PostAsJsonAsync<AICodeHintRequest>("api/code-submission/code-hint", codeSubmission, cancellationToken);
+        
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new HttpRequestException("An internal error occured");
+        }
+        
+        var responseContent = await response.Content.ReadFromJsonAsync<AICodeHintResponse>(cancellationToken: cancellationToken);
+        
+        return responseContent;
+    }
+
+    public async Task<CodeTaskLearnerProgress> GetCodeTaskProgressAsync(int codeTaskId, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.GetAsync($"api/code-tasks/progress/{codeTaskId}", cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new HttpRequestException($"Code task progress failed: {response.StatusCode}");
+        }
+
+        return await response.Content.ReadFromJsonAsync<CodeTaskLearnerProgress>(cancellationToken: cancellationToken) ?? throw new InvalidOperationException("Code task progress is empty");
     }
 }

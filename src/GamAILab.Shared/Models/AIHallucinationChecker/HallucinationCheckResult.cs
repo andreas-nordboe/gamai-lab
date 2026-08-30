@@ -15,5 +15,7 @@ public class HallucinationCheckResult
     public string ConflictedClaims { get; set; } = "[]"; // empty JSON for now like in CodeExecutionEvidence should work
     public string LLMModelUsed { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
-    public long GenerationTimeInMilliseconds { get; set; } 
+    public long GenerationTimeInMilliseconds { get; set; }
+    public double ConsistencyScore { get; set; }
+    public int TotalCheckedClaims { get; set; }
 }

@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using GamAILab.Shared.Models;
@@ -74,10 +75,10 @@ public class AICodeEvaluationService : IAICodeEvaluationService
                   "testType": {
                     "type": "string",
                     "enum": [
-                      "functionReturn",
-                      "standardOutput",
-                      "standardInputOutput",
-                      "expectedException"
+                        "functionReturn",
+                        "standardOutput",
+                        "standardOutputAndInput",
+                        "expectedException"
                     ]
                   },
                   "functionName": {
@@ -122,7 +123,8 @@ public class AICodeEvaluationService : IAICodeEvaluationService
                     "type": [
                       "string",
                       "null"
-                    ]
+                    ],
+                    "minLength": 1
                   },
                   "expectedResultType": {
                     "type": "string",
@@ -193,9 +195,11 @@ public class AICodeEvaluationService : IAICodeEvaluationService
             Return only JSON. Do not include any explanations, other formats such as markdown or code fences.
             The JSON output must conform exactly to this schema.
             
+            JSON SCHEMA:
+            
             {{schemaJson}}
 
-            Programming task:
+            PROGRAMMING TASK:
             
             {{codeTaskJson}}
             
@@ -203,11 +207,11 @@ public class AICodeEvaluationService : IAICodeEvaluationService
             
             - 'functionReturn' tests a function by calling it and comparing the return value.
             - 'standardOutput' executes the code and compares the printed output.
-            - 'standardInputOutput' provides values through 'input()' and compares the printed output.
+            - 'standardOutputAndInput' provides values through 'input()' and compares the printed output.
             - 'expectedException' executes the function and verifies that it raises and exception.
-            
-            A programming task may also, when appropriate, include multiple test types.
-            'expectedResult' must always use literal numbers, not expressions or mathematical formulas, for example "5" instead of "4 - 3 - 2".
+            - A programming task may also include multiple test types when appropriate.
+            - The 'expectedResult' parameter must always use literal numbers, not expressions or mathematical formulas, for example "5" instead of "4 - 3 - 2".
+            - If 'expectedResultType' is a 'number' then 'expectedResult' must NEVER be empty, whitespace or null.
         """;
 
         var promptRequest = new ChatRequest
@@ -227,9 +231,9 @@ public class AICodeEvaluationService : IAICodeEvaluationService
                 new Message(ChatRole.System,
                 """
                     You are to generate machine-readable code evaluation plans.
-                    Always follow the provided JSON Schema exactly.
-                    Do not output text outside the JSON object.
-                    Do not use any other formats than JSON.
+                    - Always follow the provided JSON Schema exactly.
+                    - Do not output text outside the JSON object.
+                    - Do not use any other formats than JSON.
                 """),
                 
                 new Message(ChatRole.User, prompt)
@@ -327,10 +331,11 @@ public class AICodeEvaluationService : IAICodeEvaluationService
                 throw new InvalidOperationException("A code evaluation test has no name");
             }
 
-            if (test.ExpectedResult == null)
-            {
-                throw new InvalidOperationException($"Test '{test.Name}' has no expected result");
-            }
+            // 
+            // if (test.ExpectedResult == null)
+            // {
+            //     throw new InvalidOperationException($"Test '{test.Name}' has no expected result");
+            // }
 
             switch (test.TestType)
             {
@@ -344,21 +349,32 @@ public class AICodeEvaluationService : IAICodeEvaluationService
                 case CodeTestType.StandardOutput:
                     if (test.ExpectedResult is null)
                         throw new InvalidOperationException($"Test '{test.Name}' does not have a expected output");
+                    if (test.ExpectedResultType != ExpectedResultType.String)
+                        throw new InvalidOperationException(
+                            $"StandardOutput test '{test.Name}' must use string type");
                     break;
 
                 case CodeTestType.StandardOutputAndInput:
                     if (test.ExpectedResult is null)
                         throw new InvalidOperationException($"Test '{test.Name}' does not have expected output");
+                    if (test.ExpectedResultType != ExpectedResultType.String)
+                        throw new InvalidOperationException(
+                            $"StandardOutputAndInput test '{test.Name}' must use string type");
                     break;
 
                 case CodeTestType.ExpectedException:
                     if (string.IsNullOrWhiteSpace(test.FunctionName))
-                        throw new InvalidOperationException($"Test '{test.Name}' does not have a function name");
+                        throw new InvalidOperationException($"ExpectedException '{test.Name}' does not have a function name");
 
-                    if (string.IsNullOrWhiteSpace(test.ExpectedResult))
-                        throw new InvalidOperationException($"Test '{test.Name}' does not have a expected exception");
+                    if (string.IsNullOrWhiteSpace(test.Exception))
+                        throw new InvalidOperationException($"ExpectedException '{test.Name}' does not have a expected exception");
+                    
+                    if (test.ExpectedResultType != ExpectedResultType.Null)
+                        throw new InvalidOperationException(
+                            $"ExpectedException '{test.Name}' must use null as type ");
+                    
                     break;
-
+                
                 default:
                     throw new InvalidOperationException($"Test type: {test.TestType} is not supported");
             }
@@ -371,12 +387,16 @@ public class AICodeEvaluationService : IAICodeEvaluationService
         switch (aiCodeEvaluationTest.ExpectedResultType)
         {   
             case ExpectedResultType.Null:
+                if (aiCodeEvaluationTest.ExpectedResult is not null)
+                {
+                    throw new InvalidOperationException($"Test with name: {aiCodeEvaluationTest.Name} has a value but the type is null, expected result: {aiCodeEvaluationTest.ExpectedResult}");
+                }
                 break;
                 
             case ExpectedResultType.Boolean:
                 if (!bool.TryParse(aiCodeEvaluationTest.ExpectedResult, out _))
                 {
-                    throw new InvalidOperationException($"Test with name: {aiCodeEvaluationTest.Name} contains invalid boolean expected result: {aiCodeEvaluationTest.ExpectedResult}");
+                    throw new InvalidOperationException($"Test with name: {aiCodeEvaluationTest.Name} contains invalid boolean, expected result: {aiCodeEvaluationTest.ExpectedResult}");
                 }
                 break;
                 
@@ -385,9 +405,9 @@ public class AICodeEvaluationService : IAICodeEvaluationService
                 break;
                 
             case ExpectedResultType.Number:
-                if (!double.TryParse(aiCodeEvaluationTest.ExpectedResult, out _))
+                if (string.IsNullOrWhiteSpace(aiCodeEvaluationTest.ExpectedResult) ||  !double.TryParse(aiCodeEvaluationTest.ExpectedResult, NumberStyles.Float, CultureInfo.InvariantCulture, out _))
                 {
-                    throw new InvalidOperationException($"Test with name: {aiCodeEvaluationTest.Name} contains invalid number expected result: {aiCodeEvaluationTest.ExpectedResult}");
+                    throw new InvalidOperationException($"Test with name: {aiCodeEvaluationTest.Name} contains invalid number, expected result: {aiCodeEvaluationTest.ExpectedResult}");
                 }
                 break;
                 
@@ -398,7 +418,7 @@ public class AICodeEvaluationService : IAICodeEvaluationService
                 }
                 catch (JsonException jsonException)
                 {
-                    throw new InvalidOperationException($"Test with name: {aiCodeEvaluationTest.Name} contains invalid JSON expected result: {aiCodeEvaluationTest.ExpectedResult}");
+                    throw new InvalidOperationException($"Test with name: {aiCodeEvaluationTest.Name} contains invalid JSON, expected result: {aiCodeEvaluationTest.ExpectedResult}");
                 }
                 break;
                 

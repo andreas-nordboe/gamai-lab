@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using GamAILab.Frontend.Client;
 using GamAILab.Frontend.Client.Handlers;
+using GamAILab.Frontend.Client.Pages.Core;
 using GamAILab.Frontend.Client.Providers;
 using GamAILab.Frontend.Client.Services;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -18,14 +19,18 @@ var apiBaseUrl = builder.Configuration.GetConnectionString("GamAILabAPI") ?? thr
 builder.Services.AddMudServices();
 builder.Services.AddAuthorizationCore();
 builder.Services.AddBlazoredLocalStorage();
+
+// Services that communicates with the backend Web API
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<ICodeSubmissionService, CodeSubmissionService>();
 builder.Services.AddScoped<ICodeTasksService, CodeTasksService>();
 builder.Services.AddScoped<IAIPersonaSimulationService, AIPersonaSimulationService>();
-
+builder.Services.AddScoped<IAnalysisService, AnalysisService>();
+builder.Services.AddScoped<IGameService, GameService>();
 builder.Services.AddScoped<JWTAuthenticationStateProvider>();
 builder.Services.AddTransient<AuthenticationStateProvider>(provider => provider.GetRequiredService<JWTAuthenticationStateProvider>());
 builder.Services.AddTransient<JwtHandler>();
+builder.Services.AddScoped<EducatorMonitoringService>(); // uses async disposable interface instead (websocket)
 
 builder.Services.AddHttpClient("GamAILabAPI", client => client.BaseAddress = new Uri(apiBaseUrl)).AddHttpMessageHandler<JwtHandler>();
 

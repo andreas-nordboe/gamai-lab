@@ -2,6 +2,10 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using GamAILab.Shared.Models;
+using GamAILab.Shared.Models.AICodeEvaluation;
+using GamAILab.Shared.Models.AIPersonaSimulation.DTOs;
+using GamAILab.Shared.Models.DTOs;
+using GamAILab.Shared.Models.Game.DTOs;
 
 namespace GamAILab.Frontend.Client.Services;
 
@@ -55,5 +59,25 @@ public class CodeTasksService : ICodeTasksService
             return null;
         
         return await response.Content.ReadFromJsonAsync<CodeTask>();
+    }
+
+    public async Task<CodeTask?> GenerateCodeTaskAsync(GenerateCodeTaskRequest generateCodeTaskRequest)
+    {
+        var addOrUpdateCodeTask = await _httpClient.PostAsJsonAsync($"api/code-tasks/generate", generateCodeTaskRequest);
+       
+        if (!addOrUpdateCodeTask.IsSuccessStatusCode)
+            return null;
+        
+        return await addOrUpdateCodeTask.Content.ReadFromJsonAsync<CodeTask>();
+    }
+    
+    public async Task<List<CodeTask>> ExportCodeTasksAsync()
+    {
+        return await _httpClient.GetFromJsonAsync<List<CodeTask>>("api/code-tasks/export") ?? [];
+    }
+
+    public async Task<List<VerifiedCodeEvaluationExample>> ExportVerifiedCodeTaskExamplesAsync()
+    {
+        return await _httpClient.GetFromJsonAsync<List<VerifiedCodeEvaluationExample>>("api/code-tasks/verified-code-examples/export") ?? [];
     }
 }

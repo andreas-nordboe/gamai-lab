@@ -27,30 +27,19 @@ public static class GameProgressEndpoints
             return TypedResults.NoContent();
         })
         .WithName("SaveLearnerGameProgress")
-        .Produces(StatusCodes.Status204NoContent)
-        .Produces(StatusCodes.Status404NotFound);
-        
+        .Produces<string>(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status204NoContent).RequireAuthorization("RequireLearner");;
+
         group.MapGet("/game-progress",
-        async Task<Results<Ok<LearnerGameProgressRequest>, NotFound, UnauthorizedHttpResult>> (IGameService gameService, ClaimsPrincipal user) =>
-        {
-            if (user.Identity?.IsAuthenticated != true)
+            async Task<Results<Ok<LearnerGameProgressRequest>, NotFound>> (IGameService gameService, ClaimsPrincipal user) =>
             {
-                return TypedResults.Unauthorized();
-            }
+                var userId = user.FindFirstValue(ClaimTypes.NameIdentifier) ?? user.FindFirstValue("sub") ?? "";
+                var learnerProgress = await gameService.LoadLearnerGameProgress(userId);
 
-            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier) ?? user.FindFirstValue("sub") ?? "";
-
-            if (string.IsNullOrWhiteSpace(userId))
-            {
-                return TypedResults.Unauthorized();
-            }
-            
-            var learnerProgress = await gameService.LoadLearnerGameProgress(userId);
-
-            return learnerProgress is null ? TypedResults.NotFound() : TypedResults.Ok(learnerProgress);
-        }).WithName("GetLearnerGameProgress")
-        .Produces<LearnerGameProgress>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status404NotFound).RequireAuthorization().RequireAuthorization();
+                return learnerProgress is null ? TypedResults.NotFound() : TypedResults.Ok(learnerProgress);
+            }).WithName("GetLearnerGameProgress")
+        .Produces<LearnerGameProgressRequest>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound).RequireAuthorization("RequireLearner");
         
         
         // Custom Data
@@ -62,7 +51,8 @@ public static class GameProgressEndpoints
             return TypedResults.Ok(customData);
         })
         .WithName("ListCustomData")
-        .Produces<List<CustomData>>(StatusCodes.Status200OK).RequireAuthorization();
+        .Produces<string>(StatusCodes.Status400BadRequest)
+        .Produces<List<CustomData>>(StatusCodes.Status200OK).RequireAuthorization("RequireLearner");
         
         
         group.MapGet("/custom-data/{key}", async Task<Results<Ok<CustomData>, NotFound, BadRequest<string>>> (string key, IGameService gameService, ClaimsPrincipal user) =>
@@ -79,7 +69,8 @@ public static class GameProgressEndpoints
         })
         .WithName("GetCustomData")
         .Produces<CustomData>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status404NotFound).RequireAuthorization();
+        .Produces<string>(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status404NotFound).RequireAuthorization("RequireLearner");
         
         group.MapPost("/custom-data", async Task<Results<NoContent, BadRequest<string>>> (IGameService gameService, ClaimsPrincipal user, CustomDataRequest customData) =>
         {
@@ -93,7 +84,7 @@ public static class GameProgressEndpoints
             return TypedResults.NoContent();
         })
         .WithName("SaveCustomData")
-        .Produces(StatusCodes.Status204NoContent).RequireAuthorization();
+        .Produces(StatusCodes.Status204NoContent).RequireAuthorization("RequireLearner");
         
         // Game Objectives
         
@@ -104,7 +95,7 @@ public static class GameProgressEndpoints
             return TypedResults.Ok(objectives);
         })
         .WithName("LoadGameObjectives")
-        .Produces<List<GameObjective>>(StatusCodes.Status200OK).RequireAuthorization();
+        .Produces<List<GameObjective>>(StatusCodes.Status200OK).RequireAuthorization("RequireLearner");
 
         group.MapGet("/objectives/{objectiveId}", async Task<Results<Ok<GameObjective>, NotFound, BadRequest<string>>> (string objectiveId, IGameService gameService, ClaimsPrincipal user) =>
         {
@@ -119,7 +110,8 @@ public static class GameProgressEndpoints
         })
         .WithName("GetGameObjective")
         .Produces<GameObjective>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status404NotFound).RequireAuthorization();
+        .Produces<string>(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status404NotFound).RequireAuthorization("RequireLearner");
         
 
         group.MapPost("/objectives", async Task<Results<NoContent, BadRequest<string>>> (IGameService gameService, ClaimsPrincipal user, GameObjectiveRequest objective) =>
@@ -134,11 +126,11 @@ public static class GameProgressEndpoints
             return TypedResults.NoContent();
         })
         .WithName("SaveGameObjective")
-        .Produces(StatusCodes.Status204NoContent).RequireAuthorization();
+        .Produces<string>(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status204NoContent).RequireAuthorization("RequireLearner");
         
         return app;
     }
-    
     
     private static string GetUserId(ClaimsPrincipal user)
     {

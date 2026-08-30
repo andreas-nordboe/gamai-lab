@@ -1,5 +1,6 @@
 ﻿@using Microsoft.AspNetCore.Components.Authorization
 @inherits LayoutComponentBase
+<PageTitle>GamAI Lab</PageTitle>
 
 <MudThemeProvider Theme="_theme" IsDarkMode="_isDarkMode"/>
 <MudPopoverProvider />
@@ -10,7 +11,7 @@
     <AuthorizeView>
         <MudAppBar Color="Color.Primary" Elevation="1">
             <MudIcon Icon="@Icons.Material.Rounded.Games"></MudIcon>
-            <MudText Class="mx-2">/</MudText>
+            <MudText Class="mx-1">/</MudText>
             <MudIcon Icon="@Icons.Material.Filled.Code"></MudIcon>
             <MudText Typo="Typo.h5" Class="ml-2" Style="font-weight: 900">GamAI Lab</MudText>
             <MudSpacer/>
@@ -28,6 +29,14 @@
                             <MudButton Class="mx-2" StartIcon="@Icons.Material.Rounded.Cases" href="code-task-management" Color="Color.Inherit">Code Task Management</MudButton>
                             <MudButton Class="mx-2" StartIcon="@Icons.Material.Rounded.Cases" href="ai-persona-testing" Color="Color.Inherit">AI Persona Code Evaluation</MudButton>
                             <MudButton Class="mx-2" StartIcon="@Icons.Material.Rounded.Cases" href="analysis" Color="Color.Inherit">Analysis & Reporting</MudButton>
+                        </ChildContent>
+                    </AuthorizeView>
+                    <AuthorizeView Roles="Educator,Admin">
+                        <ChildContent Context="educatorAdmin">
+                            <MudButton Class="mx-2" StartIcon="@Icons.Material.Rounded.Cases" href="code-task-management" Color="Color.Inherit">Code Task Management</MudButton>
+                            <MudButton Class="mx-2" StartIcon="@Icons.Material.Rounded.Cases" href="ai-persona-testing" Color="Color.Inherit">AI Persona Code Evaluation</MudButton>
+                            <MudButton Class="mx-2" StartIcon="@Icons.Material.Rounded.Cases" href="analysis" Color="Color.Inherit">Analysis & Reporting</MudButton>
+                            <MudButton Class="mx-2" StartIcon="@Icons.Material.Rounded.Monitor" href="educator-monitoring" Color="Color.Inherit">Educator Monitoring</MudButton>
                         </ChildContent>
                     </AuthorizeView>
                 </ChildContent>

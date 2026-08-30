@@ -1,6 +1,43 @@
 @page "/analysis"
-<h3>Analysis & Reporting</h3>
+@using GamAILab.Shared.Models.AIPersonaSimulation.DTOs
 
-@code {
-    
-}
+<MudButton Class="mt-4 ml-4" OnClick="@OnExportAnalysisReportClicked" Disabled="!AnalysisSummary.Any()" Variant="Variant.Filled" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Download">Export Analysis Report</MudButton>
+
+
+<MudTable Class="mx-4 my-4" T="AIPersonaSimulationResponse" MultiSelection="true" @bind-SelectedItems="SelectedAnalysisSummaries" Items="AnalysisSummary" Hover="true" Breakpoint="Breakpoint.Sm" Loading="@_isLoadingSummaries" LoadingProgressColor="Color.Info">
+    <HeaderContent>
+        <MudTh>Simulation Id</MudTh>
+        <MudTh>AI Personas Used</MudTh>
+        <MudTh>Code Task</MudTh>
+        <MudTh>LLM Model Used</MudTh>
+        <MudTh>Outcomes</MudTh>
+        <MudTh>Duration</MudTh>
+        <MudTh>Completed At</MudTh>
+        <MudTh>Actions</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Simulation Id">@context.Id</MudTd>
+        <MudTd DataLabel="AI Personas">
+            @{
+                var names = context.PersonasUsed.Select(x => x.Name).ToList();
+                var namesList = string.Join(", ", names.Take(3));
+            }
+            @namesList
+            @if (names.Count > 3) @*the bar got a bit too long during testing that messed up the UI layout*@
+            {
+                <span> +@(names.Count - 3) more</span>
+            }
+        </MudTd>
+        <MudTd DataLabel="Code Task">@context.CodeTaskTitle</MudTd>
+        <MudTd DataLabel="LLM Model">@context.LlmModelUsed</MudTd>
+        <MudTd DataLabel="Outcomes">@context.SuccessfulPersonasCount</MudTd>
+        <MudTd DataLabel="Duration">@context.DurationInMilliseconds ms</MudTd>
+        <MudTd DataLabel="Completed At">@context.CompletedAt</MudTd>
+        <MudTd DataLabel="Action">
+            <MudButton Class="mr-2" EndIcon="@Icons.Material.Filled.ArrowRight" Color="Color.Primary" Variant="Variant.Filled" OnClick="@(() => OnExportSelectedAnalysisReportClicked(context))">
+                Download Analysis Report
+            </MudButton>
+            
+        </MudTd>
+    </RowTemplate>
+</MudTable>

@@ -16,5 +16,5 @@ public class AIPersona
     public CodeTaskDifficulty AssignedDifficulty { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
-    // TODO learning capabilities (previous skills), background and difficulties, traits?
+    // TODO possibly add these learning capabilities (previous skills), traits?
 }

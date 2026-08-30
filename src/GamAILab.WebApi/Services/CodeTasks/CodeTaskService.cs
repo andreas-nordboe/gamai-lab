@@ -1,6 +1,13 @@
+using System.Text.Encodings.Web;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using GamAILab.Shared.Models;
+using GamAILab.Shared.Models.AIPersonaSimulation;
+using GamAILab.Shared.Models.DTOs;
 using GamAILab.WebApi.Data;
+using GamAILab.WebApi.Services.LLMService;
 using Microsoft.EntityFrameworkCore;
+using OllamaSharp.Models.Chat;
 
 namespace GamAILab.WebApi.Services.CodeTasks;
 
@@ -9,31 +16,38 @@ public class CodeTaskService : ICodeTaskService
     private readonly ApplicationDbContext _dbContext;
     private readonly ILogger<CodeTaskService> _logger;
     private readonly IAICodeEvaluationService _aiCodeEvaluationService;
+    private readonly ILLMService _llmService;
+    private string _llmModelUsed;
     
-    public CodeTaskService(ApplicationDbContext dbContext, IAICodeEvaluationService aiCodeEvaluationService, ILogger<CodeTaskService> logger)
+    public CodeTaskService(ApplicationDbContext dbContext, IAICodeEvaluationService aiCodeEvaluationService, ILogger<CodeTaskService> logger, ILLMService llmService, IConfiguration configuration)
     {
         _dbContext = dbContext;
         _aiCodeEvaluationService = aiCodeEvaluationService;
         _logger = logger;
+        _llmService = llmService;
+        _llmModelUsed = configuration["Ollama:Model"];
     }
     
-    public async Task AddCodeTask(CodeTask codeTask)
+    public async Task AddCodeTask(CodeTask codeTask, bool generateEvaluationPlan = true)
     {
-        // Generate code evaluation plan
-        try
+        if (generateEvaluationPlan)
         {
-            var codeEvaluationPlan = await _aiCodeEvaluationService.GenerateEvaluationPlanAsync(codeTask);
-
-            if (codeEvaluationPlan is null)
+            // Generate code evaluation plan
+            try
             {
-                throw new ArgumentNullException(nameof(codeEvaluationPlan));
-            }
+                var codeEvaluationPlan = await _aiCodeEvaluationService.GenerateEvaluationPlanAsync(codeTask);
+
+                if (codeEvaluationPlan is null)
+                {
+                    throw new ArgumentNullException(nameof(codeEvaluationPlan));
+                }
             
-            codeTask.AiCodeEvaluationPlan = codeEvaluationPlan;
-        }
-        catch (Exception e)
-        {
-            throw new InvalidOperationException("Failed to generate evaluation plan for code task", e);
+                codeTask.AiCodeEvaluationPlan = codeEvaluationPlan;
+            }
+            catch (Exception e)
+            {
+                throw new InvalidOperationException("Failed to generate evaluation plan for code task", e);
+            }
         }
         
         codeTask.CreatedAt = DateTime.Now;
@@ -68,102 +82,35 @@ public class CodeTaskService : ICodeTaskService
     // TODO These are currently hard-coded but I will create a 
     // spreadsheet import system or bake task CRUD operations into
     // the educator monitoring/management system
-    public async Task SeedCodeTasks()
+    // Ideas: Repair robot, calibrate sensors, sort lab equipment, analyse an evil AI researcher stealing literature
+
+    public async Task<List<CodeTask>> SeedCodeTasks()
     {
-        List<CodeTask> codeTasks = [];
+        try
+        {
+            var json = await File.ReadAllTextAsync("SeedAppData/CodeTasks/code-tasks.json");
 
-        codeTasks.Add(new CodeTask
-        {
-            Title = "Using a function to add two numbers in Python",
-            Description = "Create a Python function that accepts two numbers and return the sum of those numbers.",
-            DefaultCode = """
-                          def add(a, b):
-                            # write python code here
-                            
-                          # change
-                          print((
-                          """,
-            Examples = new List<string>
+            var codeTasks = JsonSerializer.Deserialize<List<CodeTask>>(json, new JsonSerializerOptions
             {
-                "add(5,5) should return 10",
-                "add(4,8) should return 12",
-                "add(-2,1) should return -1",
-            },
-            Constraints = new List<string>
-            {
-                "The function must be called add",
-                "The function must return a numbered answer (for example 10)",
-                "Do not use input()",
-                "Do not only print the output/result",
-                "The function must only accept 2 arguments"
-            },
-            Difficulty = CodeTaskDifficulty.Beginner,
-            CreatedAt = DateTime.Now,
-            CurrencyReward = 10
-        });
+                PropertyNameCaseInsensitive = true
+            }) ?? [];
 
-        codeTasks.Add(new CodeTask
-        {
-            Title = "Using a function to subtract three numbers in Python",
-            Description =
-                "Create a Python function that accepts three numbers, subtracts and return the sum of those numbers.",
-            DefaultCode = """
-                          def subtract(a, b, c):
-                              # write python code here
-                          """,
-            Examples = new List<string>
+            foreach (var codeTask in codeTasks)
             {
-                "subtract(10,5) should return 5",
-                "subtract(2,1) should return 1",
-                "subtract(-2,5) should return -7",
-            },
-            Constraints = new List<string>
-            {
-                "The function must be called subtract",
-                "The function must return a numbered answer (for example 10)",
-                "Do not use input()",
-                "Do not only print the output/result",
-                "The function must only accept 3 arguments"
-            },
-            Difficulty = CodeTaskDifficulty.Beginner,
-            CreatedAt = DateTime.Now
-        });
-        
-        // Testing standard output code task type
-        
-        codeTasks.Add(new CodeTask
-        {
-            Title = "Printing welcome messages to the console",
-            Description =
-                "Write the following in so it prints to the Python output console: Hello GamAI Lab!",
-            DefaultCode = """
-                          # write python code here
-                          """,
-            Examples = new List<string>
-            {
-                "Output: Hello GamAI Lab!",
-            },
-            Constraints = new List<string>
-            {
-                "Output must match the following exactly: Hello GamAI Lab!",
-                "Do not use input()",
-                "The Python code must not include a function",
-                "Do not only print any additional text"
-            },
-            Difficulty = CodeTaskDifficulty.Beginner,
-            CreatedAt = DateTime.Now
-        });
-        
+                if (await _dbContext.CodeTasks.AnyAsync(task => task.Title == codeTask.Title))
+                {
+                    continue;
+                }
 
-        foreach (var codeTask in codeTasks)
-        {
-            // checks if task exists before adding it 
-            if (await _dbContext.CodeTasks.AnyAsync(task => task.Title == codeTask.Title))
-            {
-                continue;
+                await AddCodeTask(codeTask, false);
             }
-            
-            await AddCodeTask(codeTask);
+
+            return codeTasks;
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Failed to seed code tasks, either files are missing or Docker can't load them from json");
+            return [];
         }
     }
 
@@ -206,5 +153,153 @@ public class CodeTaskService : ICodeTaskService
         await _dbContext.SaveChangesAsync();
         
         return existingCodeTask;
+    }
+    
+    private static readonly JsonNode CodeTaskJsonSchema = JsonNode.Parse(
+        """
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "defaultCode": {
+              "type": "string"
+            },
+            "examples": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "constraints": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "difficulty": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2
+            },
+            "currencyReward": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "required": [
+            "title",
+            "description",
+            "defaultCode",
+            "examples",
+            "constraints",
+            "difficulty",
+            "currencyReward"
+          ]
+        }
+        """)!;
+
+    public async Task<CodeTask?> GenerateCodeTaskAsync(GenerateCodeTaskRequest generateCodeTaskRequest, CancellationToken cancellationToken = default)
+    {
+        string codeTaskDescription = string.IsNullOrWhiteSpace(generateCodeTaskRequest.Description) ? "Generate a random programming task using the Python programming language." : generateCodeTaskRequest.Description;
+        string gameStory = string.IsNullOrWhiteSpace(generateCodeTaskRequest.Description) ? "Game AI Lab is robot laboratory environment where autonomous robots conduct research and experiments. This sci-fi-themed lab has various lab equipment, including advanced technical computer systems, futuristic XR headsets, and engineering tools/components . Create a code task where the player needs to solve a task in GamAI Lab." : generateCodeTaskRequest.GameStory;
+        
+        // TODO Python is hard-coded here but I'm mentioning other languages in the report
+        var prompt = $$"""
+           Generate a programming task using Python.
+           The programming task is aimed at a learner at an {{generateCodeTaskRequest.CodeTaskDifficulty.ToString()}}.
+           
+           CODE TASK GUIDANCE:
+           {{codeTaskDescription}}
+           
+           GAME CONTEXT:
+           {{gameStory}}
+           
+           Create a programming task that aligns with this game context.
+           The description must include what the player needs to solve with a short reason that explains why it fits with the game context.
+           
+           Task output MUST include:
+           - a short title
+           - a detailed description
+           - default code (this can be a brief guidance and MUST NOT reveal or contain the solution)
+           - useful examples
+           - the same difficulty that was provided
+           - a random currency reward that aligns with the educational difficulty, with a maximum deviation of 15 from the default point allocation
+           
+           Default point allocation:
+           - Beginner = 5
+           - Intermediate = 10 
+           - Advanced = 20
+           - Expert = 30
+           
+           GUIDELINES:
+           - The task must be testable to assess learners fail, partial and success outcomes 
+           - Requirements must be clearly state what the learner must do (for example: print, what a function should return, which parameters to use)
+           - Align the task to the requested difficulty.
+           - Default code may also include comments, partially incomplete functions and variables
+           - Examples must be suitable with the description and constraints.
+           - Constraints must be specific as they are later used to generate automated tests.
+           - The game story should be relevant to the task but not override the learning objective from the task itself
+           - You are allowed to be creative and whimsical with the game story setting.
+           - The JSON output must conform exactly to this schema.
+           - Do not include UserId, timestamps or other metadata.
+       """;
+        
+        var promptRequest = new ChatRequest
+        {
+            Model = _llmModelUsed,
+            Format = CodeTaskJsonSchema, 
+            Stream = false, 
+            Think =  false, 
+            KeepAlive = "30m",
+            Options = new()
+            {
+                Temperature = 0.7f // some creativity will be good for these I think, as they require less deterministic responses than task evaluations
+                                   // (0.8 is library default, but I think 0.7 is better)
+            },
+            Messages = new []
+            {
+                new Message(ChatRole.System,
+                    """
+                        You generate a programming tasks for GamAI Lab, an educational game that teaches learners the Python programming language.
+                        - Tasks must be clearly explained, fully solvable, realistic and testable. 
+                        - Do not output text or markdown outside the JSON object.
+                        - Do not use any other formats than JSON.
+                    """),
+                
+                new Message(ChatRole.User, prompt)
+            } 
+        };
+
+        // Send request to LLM
+        var generatedCodeTask = await _llmService.ChatAsync(promptRequest, cancellationToken);
+        
+        if (string.IsNullOrWhiteSpace(generatedCodeTask))
+        {
+            throw new InvalidOperationException("Generating code task returned an empty response");
+        }
+        
+        var codeTask = JsonSerializer.Deserialize<CodeTask>(generatedCodeTask, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+        if (codeTask is null)
+        {
+            throw new InvalidOperationException("Generated code task is invalid");
+        }
+        
+        // Generate plan as well
+        var codeEvaluationPlan = await _aiCodeEvaluationService.GenerateEvaluationPlanAsync(codeTask);
+        codeTask.AiCodeEvaluationPlan = codeEvaluationPlan;
+        
+        _logger.LogInformation("Raw generated AI evaluation plan: {GeneratedPlan}", codeEvaluationPlan);
+        
+        codeTask.CreatedAt = DateTime.Now;
+        codeTask.Version = 1;
+
+        return codeTask;
     }
 }

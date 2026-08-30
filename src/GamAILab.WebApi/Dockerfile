@@ -5,7 +5,7 @@ EXPOSE 8080
 EXPOSE 8081
 
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
-ARG BUILD_CONFIGURATION=Release
+ARG BUILD_CONFIGURATION=Released
 WORKDIR /src
 COPY ["GamAILab.WebApi/GamAILab.WebApi.csproj", "GamAILab.WebApi/"]
 COPY ["GamAILab.Shared/GamAILab.Shared.csproj", "GamAILab.Shared/"]

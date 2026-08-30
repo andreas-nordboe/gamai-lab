@@ -1,10 +1,11 @@
 @page "/register"
+@using GamAILab.Frontend.Client.Components
 @using Microsoft.AspNetCore.Authorization
 @attribute [AllowAnonymous]
 
 <MudContainer MaxWidth="MaxWidth.Small" Class="d-flex align-center justify-center" Style="height: 100vh">
-    <MudPaper Height="420px" Width="100%" Elevation="12" Class="px-4 py-4">
-        <MudText Align="Align.Center" Typo="Typo.h2" Style="font-weight: 900">GamAI Lab</MudText>
+    <MudPaper Height="500px" Width="100%" Elevation="12" Class="px-4 py-4">
+        <LoginHeader/>
         <MudForm>
             <MudTextField Label="Email" @bind-Value="Email" Variant="Variant.Outlined"/>
             <MudTextField Label="Password" @bind-Value="Password" Variant="Variant.Outlined" InputType="@PasswordInput" Adornment="Adornment.End" AdornmentIcon="@PasswordInputIcon" OnAdornmentClick="TogglePassword" AdornmentAriaLabel="Show Password"/>
@@ -12,6 +13,7 @@
             <MudButton Class="my-2" FullWidth="true" Color="Color.Primary" Variant="Variant.Filled" OnClick="RegisterUserAsync">Register New User</MudButton>
             <MudButton Class="my-2" FullWidth="true" Color="Color.Primary" Variant="Variant.Filled" Href="/login">Back</MudButton>
         </MudForm>
+        <LoginFooter/>
     </MudPaper>
 
 </MudContainer>
