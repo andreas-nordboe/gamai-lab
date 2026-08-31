@@ -243,6 +243,7 @@ app.UseAuthorization();
 
 app.MapHub<EducatorMonitoringHub>("/hubs/educator-monitoring");
 app.MapHub<CodeEvaluationHub>("/hubs/code-evaluation");
+app.MapHub<GameHub>("/hubs/game-hub");
 
 // For testing API
 app.MapGet("/self", (ClaimsPrincipal claimsPrincipal) =>

@@ -32,7 +32,13 @@ public partial class EducatorMonitoring : ComponentBase, IDisposable
     
     // Chart
     private string[] _timeLabels = [];
-    private double[] _engagementHistory = [];
+    private List<ChartSeries<double>> _engagementHistory = [];
+    private readonly LineChartOptions _chartOptions = new()
+    {
+        XAxisTitle = "Simulated Time",
+        YAxisTitle = "Average Engagement",
+        ShowDataMarkers = true
+    };
     
     // Status
     
@@ -269,8 +275,17 @@ public partial class EducatorMonitoring : ComponentBase, IDisposable
         .Select(x => new
         { Minute = x.Key, AverageEngagement = x.Average(y => y.EngagementScore) })
         .ToList();
-        
-        _engagementHistory = engagementHistory.Select(x => x.AverageEngagement).ToArray();
+
+        _engagementHistory =
+        [
+            new ChartSeries<double>
+            {
+                Name = "Average Engagement",
+                Data = engagementHistory
+                    .Select(x => x.AverageEngagement)
+                    .ToArray()
+            }
+        ];
         _timeLabels = engagementHistory.Select(x => $"{x.Minute} min").ToArray();
     }
 }

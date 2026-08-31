@@ -2,6 +2,8 @@ using GamAILab.Shared.Models;
 using GamAILab.Shared.Models.Game;
 using GamAILab.Shared.Models.Game.DTOs;
 using GamAILab.WebApi.Data;
+using GamAILab.WebApi.Hubs;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
 namespace GamAILab.WebApi.Services.Game;
@@ -9,10 +11,12 @@ namespace GamAILab.WebApi.Services.Game;
 public class GameService : IGameService
 {
     private readonly ApplicationDbContext _dbContext;
+    private readonly IHubContext<GameHub> _gameHubContext;
 
-    public GameService(ApplicationDbContext dbContext)
+    public GameService(ApplicationDbContext dbContext, IHubContext<GameHub> gameHubContext)
     {
         _dbContext = dbContext;
+        _gameHubContext = gameHubContext;
     }
     
     // Learner game progress
@@ -253,6 +257,8 @@ public class GameService : IGameService
 
         progress.LastUpdated = DateTime.UtcNow;
         await _dbContext.SaveChangesAsync(cancellationToken);
+        
+        await _gameHubContext.Clients.User(userId).SendAsync("CodeTaskCompleted", codeTask.Id);
 
         return new LearnerGameProgressRequest
         {

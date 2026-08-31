@@ -61,7 +61,7 @@
 @if (SelectedClassroomSimulation is not null)
     {
     
-        <MudStack Class="mx-4" Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-5">
+        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-5">
 
             <div>
                 <MudText Color="Color.Primary" Typo="Typo.h6">
@@ -238,12 +238,12 @@
 
         <MudPaper Class="pa-4" Elevation="2">
 
-            <MudText Typo="Typo.h5" Class="mb-3">Classroom Engagement</MudText>
+            <MudText Color="Color.Primary" Typo="Typo.h6" Class="mb-3">Classroom Engagement</MudText>
 
-            @if (_engagementHistory.Length > 0)
+            @if (_engagementHistory.Count > 0)
             {
                
-                <MudChart T="double" ChartType="ChartType.Line" InputData="@_engagementHistory"InputLabels="@_timeLabels"Width="100%"Height="300px" />
+                <MudChart T="double" ChartType="ChartType.Line" ChartSeries="@_engagementHistory" ChartLabels="@_timeLabels" ChartOptions="@_chartOptions" Width="100%" Height="300px" />
             }
             else
             {
