@@ -23,19 +23,25 @@ public partial class EducatorMonitoring : ComponentBase, IDisposable
     private readonly List<LearnerEngagementLiveUpdate> _learners = [];
     private List<ClassroomSimulation> ClassroomSimulations = [];
     private ClassroomSimulation? SelectedClassroomSimulation;
-    private double[] _engagementHistory = [];
-    private string[] _timeLabels = [];
+    private readonly List<LearnerEngagementLiveUpdate> _learnerEngagements = [];
     private int _totalLearnersDeclining => _learners.Count(x => x.EngagementIsDeclining);
     private double _averageEngagement => _learners.Count == 0 ? 0 : _learners.Average(x => x.EngagementScore);
-    //private int HighRiskCount => _learners.Count(x => x.EngagementDropRisk == "High");
+    private int _highRiskCount => _learners.Count(x => x.EngagementDropRiskLevel == EngagementDropRiskLevel.High);
     private Guid? _joinedClassroomId;
+    private int _passedLatestTaskCount => _learners.Count(x => x.PassedLatestCodeTask);
     
+    // Chart
+    private string[] _timeLabels = [];
+    private double[] _engagementHistory = [];
+    
+    // Status
     
     protected override async Task OnInitializedAsync()
     {
         // SignalR bindings
         EducatorMonitoringService.EngagementUpdated += OnEngagementUpdated;
         EducatorMonitoringService.ClassroomSimulationStarted += OnClassroomSimulationStarted;
+        EducatorMonitoringService.ClassroomSimulationCompleted += OnClassroomSimulationCompleted;
         await EducatorMonitoringService.StartAsync("http://localhost:5270/hubs/educator-monitoring");
         _isConnected = true;
         
@@ -81,20 +87,21 @@ public partial class EducatorMonitoring : ComponentBase, IDisposable
         };
     }
 
-    // private static Color GetRiskColor(string risk)
-    // {
-    //     return risk switch
-    //     {
-    //         "High" => Color.Error,
-    //         "Medium" => Color.Warning,
-    //         "Low" => Color.Success,
-    //         _ => Color.Default
-    //     };
-    // }
-    
+    private static Color GetEngagementRiskColor(EngagementDropRiskLevel engagementDropRiskLevel)
+    {
+        return engagementDropRiskLevel switch
+        {
+            EngagementDropRiskLevel.Low => Color.Success,
+            EngagementDropRiskLevel.Medium => Color.Warning,
+            EngagementDropRiskLevel.High => Color.Error,
+            _ => Color.Default
+        };
+    }
     
     private void OnEngagementUpdated(LearnerEngagementLiveUpdate update)
     {
+        _learnerEngagements.Add(update);
+        
         var learner = _learners.FirstOrDefault(x => x.PersonaId == update.PersonaId);
 
         if (learner is null)
@@ -108,25 +115,54 @@ public partial class EducatorMonitoring : ComponentBase, IDisposable
             learner.SimulatedMinute = update.SimulatedMinute;
             learner.Struggles = update.Struggles;
             learner.LearningOutcomes = update.LearningOutcomes;
+            learner.PredictedEngagementScore = update.PredictedEngagementScore;
+            learner.EngagementDropRiskLevel = update.EngagementDropRiskLevel;
+            learner.PassedLatestCodeTask = update.PassedLatestCodeTask;
+            learner.CurrentTaskNumber = update.CurrentTaskNumber;
+            learner.TotalTasks = update.TotalTasks;
+            learner.CurrentStepIndex = update.CurrentStepIndex;
         }
+
+        UpdateEngagementTimeline();
 
         InvokeAsync(StateHasChanged);
     }
 
     private async void OnClassroomSimulationStarted(ClassroomSimulation classroomSimulation)
     {
-        var existing = ClassroomSimulations
-            .FirstOrDefault(x => x.Id == classroomSimulation.Id);
-
-        if (existing is null)
+        // UI handler Blazor trick instead of void
+        _ = InvokeAsync(async () =>
         {
-            ClassroomSimulations.Insert(0, classroomSimulation);
+            var existing = ClassroomSimulations.FirstOrDefault(x => x.Id == classroomSimulation.Id);
+
+            if (existing is null)
+            {
+                ClassroomSimulations.Insert(0, classroomSimulation);
+            }
+
+            if (_classroomSimulationId == classroomSimulation.Id)
+            {
+                await SelectClassroomSimulationAsync(classroomSimulation);
+            }
+
+            StateHasChanged();
+        });
+    }
+    
+    private async void OnClassroomSimulationCompleted(ClassroomSimulation classroomSimulation)
+    {
+        var existing = ClassroomSimulations.FirstOrDefault(x => x.Id == classroomSimulation.Id);
+
+        if (existing is not null)
+        {
+            existing.Status = classroomSimulation.Status;
+            existing.CompletedAt = classroomSimulation.CompletedAt;
         }
 
-        // Automatically monitor if it's not monitoring yet
-        if (!_joinedClassroomId.HasValue)
+        if (SelectedClassroomSimulation?.Id == classroomSimulation.Id)
         {
-            await SelectClassroomSimulationAsync(classroomSimulation);
+            SelectedClassroomSimulation.Status = classroomSimulation.Status;
+            SelectedClassroomSimulation.CompletedAt = classroomSimulation.CompletedAt;
         }
 
         StateHasChanged();
@@ -136,6 +172,7 @@ public partial class EducatorMonitoring : ComponentBase, IDisposable
     {
         EducatorMonitoringService.EngagementUpdated -= OnEngagementUpdated;
         EducatorMonitoringService.ClassroomSimulationStarted -= OnClassroomSimulationStarted;
+        EducatorMonitoringService.ClassroomSimulationCompleted -= OnClassroomSimulationCompleted;
     }
     
     private static Color GetSimulationStatusColor(ClassroomSimulationStatus status)
@@ -162,6 +199,7 @@ public partial class EducatorMonitoring : ComponentBase, IDisposable
         
         // Clearing fixes previous UI issues
         _learners.Clear();
+        _learnerEngagements.Clear();
         _engagementHistory = [];
         _timeLabels = [];
         
@@ -188,9 +226,12 @@ public partial class EducatorMonitoring : ComponentBase, IDisposable
         }
 
         _learners.Clear();
+        _learnerEngagements.Clear();
 
         if (simulation.LearnerUpdates is not null)
         {
+            _learnerEngagements.AddRange(simulation.LearnerUpdates);
+            
             // Get the latest state for all of them
             var latestLearners = simulation.LearnerUpdates
                 .GroupBy(x => x.PersonaId)
@@ -199,26 +240,37 @@ public partial class EducatorMonitoring : ComponentBase, IDisposable
                     .First())
                 .ToList();
 
-            // this one's quite handy
-            _learners.AddRange(latestLearners); 
-            
-            var history = simulation.LearnerUpdates
-                .GroupBy(x => x.SimulatedMinute)
-                .OrderBy(x => x.Key)
-                .Select(x => new
-                {
-                    Minute = x.Key,
-                    AverageEngagement = x.Average(y => y.EngagementScore)
-                })
-                .ToList();
+            // adds bulk inserts at the end
+            _learners.AddRange(latestLearners);
 
-            _engagementHistory = history
-                .Select(x => x.AverageEngagement)
-                .ToArray();
-
-            _timeLabels = history
-                .Select(x => $"{x.Minute} min")
-                .ToArray();
+            UpdateEngagementTimeline();
         }
+    }
+    
+    private string GetSimulationButtonTitle(ClassroomSimulation simulation)
+    {
+        var selected = SelectedClassroomSimulation?.Id == simulation.Id;
+
+        if (simulation.Status == ClassroomSimulationStatus.Running)
+        {
+            return selected ? "Monitoring" : "Monitor";
+        }
+        else
+        {
+            return selected ? "Reviewing" : "Review";
+        }
+    }
+
+    private void UpdateEngagementTimeline()
+    {
+        var engagementHistory = _learnerEngagements
+        .GroupBy(x => x.SimulatedMinute)
+        .OrderBy(x => x.Key)
+        .Select(x => new
+        { Minute = x.Key, AverageEngagement = x.Average(y => y.EngagementScore) })
+        .ToList();
+        
+        _engagementHistory = engagementHistory.Select(x => x.AverageEngagement).ToArray();
+        _timeLabels = engagementHistory.Select(x => $"{x.Minute} min").ToArray();
     }
 }

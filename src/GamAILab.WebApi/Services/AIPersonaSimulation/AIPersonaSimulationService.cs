@@ -241,9 +241,11 @@ public class AIPersonaSimulationService : IAIPersonaSimulationService
             CompletedAt = completedAt,
             PersonaResults = personaResults,
             ClassroomSimulationId = request.ClassroomSimulationId,
-            SimulationTimeStepIndex = request.SimulationTimeStepIndex,
+            SimulationTimeStepIndex = request.CurrentStepIndex,
             SimulatedMinute = request.SimulatedMinute,
             AttemptNumber = request.AttemptNumber,
+            CurrentTaskNumber = request.CurrentTaskNumber,
+            TotalTasks = request.TotalTasks
         };
         
         // 6. Store learning outcomes and struggles for each persona in the database (should be done automatically via CodeSubmissionService, but it might require adjustments for persona-type users)
@@ -369,15 +371,32 @@ public class AIPersonaSimulationService : IAIPersonaSimulationService
     {
         if (persona.Id == 0)
         {
+            persona.UserId = Guid.NewGuid().ToString();
+            persona.CreatedAt = DateTime.UtcNow;
+            persona.UpdatedAt = DateTime.UtcNow;
+            
             await _dbContext.AIPersonas.AddAsync(persona);
+            await _dbContext.SaveChangesAsync();
+            return persona;
         }
-        else
+       
+        var existingPersona = await _dbContext.AIPersonas.FirstOrDefaultAsync(x => x.Id == persona.Id);
+
+        if (existingPersona is null)
         {
-            _dbContext.AIPersonas.Update(persona);
+            throw new InvalidOperationException("Did not find AI persona");
         }
-        
+
+        existingPersona.Name = persona.Name;
+        existingPersona.Background = persona.Background;
+        existingPersona.AssignedDifficulty = persona.AssignedDifficulty;
+        existingPersona.LearningCapabilities = persona.LearningCapabilities;
+        existingPersona.LearningDifficulties = persona.LearningDifficulties;
+        existingPersona.AccessibilityRequirements = persona.AccessibilityRequirements;
+        existingPersona.UpdatedAt = DateTime.UtcNow;
+    
         await _dbContext.SaveChangesAsync();
-        return persona;
+        return existingPersona;
     }
 
     public async Task<AIPersona> GenerateAIPersona(string aiPersonaDescription, CancellationToken cancellationToken = default)
@@ -529,8 +548,14 @@ public class AIPersonaSimulationService : IAIPersonaSimulationService
     
     public async Task<List<AIPersonaSimulationResponse>> RunClassroomSimulationAsync(ClassroomSimulationRequest request, string userId, CancellationToken cancellationToken = default)
     {
+        if (!request.ClassroomSimulationId.HasValue)
+        {
+            throw new ArgumentException("ClassroomSimulationId is missing");
+        }
+        
         var classroomSimulation = new ClassroomSimulation
         {
+            Id = request.ClassroomSimulationId.Value,
             InitiatedByUserId = userId,
             Status = ClassroomSimulationStatus.Running,
             StartedAt = DateTime.UtcNow,
@@ -566,10 +591,12 @@ public class AIPersonaSimulationService : IAIPersonaSimulationService
                         ExecutionCounts = 1,
                         CodeTaskId = codeTaskId,
                         PersonaIds = personasToAttemt,
-                        SimulationTimeStepIndex = currentTimeStep,
+                        CurrentStepIndex = currentTimeStep,
                         SimulatedMinute = currentTimeStep * request.MinutesEveryStep,
                         PersonaStates = personaStates,
-                        AttemptNumber = attempt + 1
+                        AttemptNumber = attempt + 1,
+                        CurrentTaskNumber = taskIndex + 1,
+                        TotalTasks = request.CodeTaskIds.Count,
                     };
                     
                     var aiPersonaSimulationAttempt = await ((IAIPersonaSimulationService)this).RunAIPersonaCodeEvaluationSimulationAsync(simulationRequest, cancellationToken);
@@ -584,6 +611,28 @@ public class AIPersonaSimulationService : IAIPersonaSimulationService
                         var personaId = personaResult.Persona.Id;
                         var taskOutcome = personaResult.SubmissionResult?.AIFeedback?.TaskOutcome;
                         
+                        
+                        // Predictions/risks for engagement etc.
+                        
+                        EngagementDropRiskLevel engagementDropRisk;
+                        var lastEngagementScore = personaStates.TryGetValue(personaId, out var lastState) ? lastState.PreviousEngagementScore : personaResult.EngagementScore;
+                        var engagementDifference = personaResult.EngagementScore - lastEngagementScore;
+                        var predictionEngagementScore =  Math.Clamp(personaResult.EngagementScore + engagementDifference, 0, 100);
+                        var predictedDrop = personaResult.EngagementScore - predictionEngagementScore;
+
+                        switch (predictedDrop)
+                        {
+                            case >= 15:
+                                engagementDropRisk = EngagementDropRiskLevel.High;
+                                break;
+                            case >= 5:
+                                engagementDropRisk = EngagementDropRiskLevel.Medium;
+                                break;
+                            default:
+                                engagementDropRisk = EngagementDropRiskLevel.Low;
+                                break;
+                        }
+                        
                         personaStates[personaResult.Persona.Id] = new AIPersonaMemoryState()
                         {
                             PreviousEngagementScore = personaResult.EngagementScore,
@@ -591,6 +640,12 @@ public class AIPersonaSimulationService : IAIPersonaSimulationService
                             PreviousLearningOutcomes = personaResult.LearningOutcomes,
                             PreviousTaskOutcome = personaResult.SubmissionResult?.AIFeedback?.TaskOutcome.ToString()
                         };
+                        
+                        var passedTask = taskOutcome == CodeTaskOutcome.Correct;
+                        personaResult.PredictedEngagementScore = predictionEngagementScore;
+                        personaResult.EngagementIsDeclining = engagementDifference < 0; // no difference, but I could also expose this on the dashboard using a input component
+                        personaResult.EngagementDropRiskLevel = engagementDropRisk;
+                        personaResult.PassedLatestCodeTask = passedTask;
 
                         var update = new LearnerEngagementLiveUpdate()
                         {
@@ -600,10 +655,17 @@ public class AIPersonaSimulationService : IAIPersonaSimulationService
                             EngagementScore = personaResult.EngagementScore,
                             SimulatedMinute = simulationRequest.SimulatedMinute,
                             Struggles = personaResult.Struggles,
-                            LearningOutcomes = personaResult.LearningOutcomes
+                            LearningOutcomes = personaResult.LearningOutcomes,
+                            EngagementIsDeclining = personaResult.EngagementIsDeclining, 
+                            EngagementDropRiskLevel = personaResult.EngagementDropRiskLevel,
+                            PredictedEngagementScore = personaResult.PredictedEngagementScore,
+                            PassedLatestCodeTask = personaResult.PassedLatestCodeTask,
+                            // UI updates only
+                            CurrentTaskNumber = simulationRequest.CurrentTaskNumber,
+                            TotalTasks = simulationRequest.TotalTasks,
+                            CurrentStepIndex = simulationRequest.CurrentStepIndex + 1,
                         };
-
-                        var passedTask = taskOutcome == CodeTaskOutcome.Correct;
+                        
                         if (!passedTask)
                         {
                             failedPersonas.Add(personaId);
@@ -624,10 +686,13 @@ public class AIPersonaSimulationService : IAIPersonaSimulationService
             classroomSimulation.CompletedAt = DateTime.UtcNow;
             await _dbContext.SaveChangesAsync(cancellationToken);
             
+            await _educatorMonitoringService.PublishClassroomSimulationCompletedAsync(classroomSimulation, cancellationToken);
+            
             return simulationResponses;
         }
-        catch (Exception e)
+        catch (Exception exception)
         {
+            _logger.LogError(exception, "Classroom simulation failed");
             classroomSimulation.Status = ClassroomSimulationStatus.Failed;
             classroomSimulation.CompletedAt = DateTime.UtcNow;
             await _dbContext.SaveChangesAsync(CancellationToken.None);

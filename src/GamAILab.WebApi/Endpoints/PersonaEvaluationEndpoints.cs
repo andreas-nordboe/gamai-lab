@@ -96,7 +96,7 @@ public static class PersonaEvaluationEndpoints
     private static async Task<List<AIPersonaSimulationResponse>> RunClassroomSimulationAsync(ClassroomSimulationRequest classroomSimulationRequest, ClaimsPrincipal user, IAIPersonaSimulationService personaSimulationService, CancellationToken cancellationToken)
     {
         
-        return await personaSimulationService.RunClassroomSimulationAsync(classroomSimulationRequest, GetUserId(user), cancellationToken);
+        return await personaSimulationService.RunClassroomSimulationAsync(classroomSimulationRequest, GetUserId(user), CancellationToken.None); // TODO potentially add a queue instead so that it can be cancelled from the frontend
     }   
     
     private static string GetUserId(ClaimsPrincipal user)

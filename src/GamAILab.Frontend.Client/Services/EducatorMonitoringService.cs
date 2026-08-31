@@ -18,6 +18,7 @@ public class EducatorMonitoringService : IAsyncDisposable // not includign this 
 
     public event Action<LearnerEngagementLiveUpdate>? EngagementUpdated;
     public event Action<ClassroomSimulation>? ClassroomSimulationStarted;
+    public event Action<ClassroomSimulation>? ClassroomSimulationCompleted;
     public bool IsConnected => _webSocketConnection?.State == HubConnectionState.Connected;
     
     public async Task StartAsync(string hubUrl)
@@ -48,6 +49,11 @@ public class EducatorMonitoringService : IAsyncDisposable // not includign this 
             _webSocketConnection.On<ClassroomSimulation>("ClassroomSimulationStarted", async simulation =>
             {
                 ClassroomSimulationStarted?.Invoke(simulation);
+            });
+            
+            _webSocketConnection.On<ClassroomSimulation>("ClassroomSimulationCompleted", async simulation =>
+            {
+                ClassroomSimulationCompleted?.Invoke(simulation);
             });
         }
         

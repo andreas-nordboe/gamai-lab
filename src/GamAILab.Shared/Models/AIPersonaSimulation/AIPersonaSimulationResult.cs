@@ -16,4 +16,8 @@ public class AIPersonaSimulationResult
     public List<string> LearningOutcomes { get; set; }
     public int EngagementScore { get; set; }
     public Guid ClassroomSessionId { get; set; }
+    public int PredictedEngagementScore { get; set; }
+    public bool EngagementIsDeclining { get; set; }
+    public EngagementDropRiskLevel EngagementDropRiskLevel { get; set; }
+    public bool PassedLatestCodeTask { get; set; }
 }

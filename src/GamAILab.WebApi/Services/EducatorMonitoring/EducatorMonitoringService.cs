@@ -32,6 +32,11 @@ public class EducatorMonitoringService : IEducatorMonitoringService
         await _hubContext.Clients.All.SendAsync("ClassroomSimulationStarted", classroomSimulation, cancellationToken);
     }
 
+    public async Task PublishClassroomSimulationCompletedAsync(ClassroomSimulation classroomSimulation, CancellationToken cancellationToken = default)
+    {
+        await _hubContext.Clients.All.SendAsync("ClassroomSimulationCompleted", classroomSimulation, cancellationToken);
+    }
+
 
     private static bool DetectEngagementDecline(IReadOnlyList<int> scores)
     {

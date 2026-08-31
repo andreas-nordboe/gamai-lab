@@ -73,7 +73,7 @@ public partial class CodeTaskPage : ComponentBase
 
          _attemptsUsed = progress.Attempts;
          _hintsUsed = progress.HintsUsed;
-         _helpChatLogs = progress.ChatLogs;
+         _helpChatLogs = progress.ChatLogs ?? [];
          StateHasChanged();
             
          // Connect to websocket for real-time status updates 
@@ -102,18 +102,6 @@ public partial class CodeTaskPage : ComponentBase
       finally
       {
          _isLoading = false;
-      }
-
-      try
-      {
-         if (_codeEditorPanel is not null && _codeTask is not null)
-         {
-            await _codeEditorPanel.SetCodeAsync(_codeTask.DefaultCode);
-         }
-      }
-      catch (Exception e)
-      {
-         Console.WriteLine(e);
       }
    }
 

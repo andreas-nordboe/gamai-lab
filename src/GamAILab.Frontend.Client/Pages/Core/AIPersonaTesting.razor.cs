@@ -21,8 +21,8 @@ public partial class AIPersonaTesting : ComponentBase
     public CodeTask? SelectedCodeTask { get; set; } 
     private bool _isLoadingAIPersonas;
     private int _executionCounts = 1;
-    private int _minutesPerClassroomSimulationStep = 5;
-    private int _maxRetriesPerTask = 1;
+    private int _minutesPerClassroomSimulationStep = 10;
+    private int _maxRetriesPerTask = 5;
     private bool _personaSimulationIsRunning;
     private AIPersonaSimulationResponse? _simulationResult;
     private Guid? _classroomSimulationId;
@@ -58,6 +58,7 @@ public partial class AIPersonaTesting : ComponentBase
             CodeTasks = codeTasks;
             // select first one on the UI dropdown
             SelectedCodeTask = codeTasks.FirstOrDefault(); 
+            StateHasChanged();
         }
         
     }
@@ -279,14 +280,10 @@ public partial class AIPersonaTesting : ComponentBase
 
         try
         {
-            var personaIds = SelectedAIPersonas.Where(x => x is not null)
-                .Select(x => x!.Id)
-                .ToList();
+            var personaIds = SelectedAIPersonas.Where(x => x is not null).Select(x => x!.Id).ToList();
             _classroomSimulationId = Guid.NewGuid();
-            
             _personaSimulationIsRunning = true;
             
-            _classroomSimulationId = Guid.NewGuid();
             StateHasChanged(); // forces educator dashboard below to update properly!!
             await Task.Yield();
 

@@ -99,8 +99,8 @@ public static class CodeTasksEndpoint
         // Export verified examples
         group.MapGet("/verified-code-examples/export", async (VerifiedCodeEvaluationsService service) =>
         {
-            var examples = service.ExportVerifiedCodeEvaluationExamples();
-            return Results.Json(examples);
+            var examples = await service.ExportVerifiedCodeEvaluationExamples();
+            return Results.Ok(examples);
         })
         .RequireAuthorization("RequireResearcher");
         

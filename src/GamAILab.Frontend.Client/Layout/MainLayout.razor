@@ -9,41 +9,41 @@
 
 <MudLayout>
     <AuthorizeView>
-        <MudAppBar Color="Color.Primary" Elevation="1">
-            <MudIcon Icon="@Icons.Material.Rounded.Games"></MudIcon>
-            <MudText Class="mx-1">/</MudText>
-            <MudIcon Icon="@Icons.Material.Filled.Code"></MudIcon>
-            <MudText Typo="Typo.h5" Class="ml-2" Style="font-weight: 900">GamAI Lab</MudText>
+        <MudAppBar Elevation="1">
+            <MudIcon Color="Color.Primary" Icon="@Icons.Material.Rounded.Games"></MudIcon>
+            <MudText Color="Color.Primary" Class="mx-1">/</MudText>
+            <MudIcon Color="Color.Primary" Icon="@Icons.Material.Filled.Code"></MudIcon>
+            <MudText Color="Color.Primary" Typo="Typo.h5" Class="ml-2" Style="font-weight: 900">GamAI Lab</MudText>
             <MudSpacer/>
 
-            <MudButton Class="mx-2" StartIcon="@Icons.Material.Rounded.Home" Href="/" Color="Color.Inherit">Home</MudButton>
-            <MudButton Class="mx-2" StartIcon="@Icons.Material.Rounded.School" href="learning-progress" Color="Color.Inherit">Learning Progress</MudButton>
-            <MudButton Class="mx-2" StartIcon="@Icons.Material.Rounded.Code" href="code-tasks" Color="Color.Inherit">Code Tasks</MudButton>
-            <MudButton Class="mx-2" StartIcon="@Icons.Material.Rounded.Cases" href="achievements" Color="Color.Inherit">Achievements</MudButton>
+            <MudButton Color="Color.Primary" Class="mx-2" StartIcon="@Icons.Material.Rounded.Home" Href="/">Home</MudButton>
+            <MudButton Color="Color.Primary" Class="mx-2" StartIcon="@Icons.Material.Rounded.School" href="learning-progress" >Learning Progress</MudButton>
+            <MudButton Color="Color.Primary" Class="mx-2" StartIcon="@Icons.Material.Rounded.Code" href="code-tasks">Code Tasks</MudButton>
+            <MudButton Color="Color.Primary" Class="mx-2" StartIcon="@Icons.Material.Rounded.Cases" href="achievements" >Achievements</MudButton>
 
             @*This is a bit verbose but it works*@
             <AuthorizeView>
                 <ChildContent Context="user">
                     <AuthorizeView Roles="Admin">
                         <ChildContent Context="adminUser">
-                            <MudButton Class="mx-2" StartIcon="@Icons.Material.Rounded.Cases" href="code-task-management" Color="Color.Inherit">Code Task Management</MudButton>
-                            <MudButton Class="mx-2" StartIcon="@Icons.Material.Rounded.Cases" href="ai-persona-testing" Color="Color.Inherit">AI Persona Code Evaluation</MudButton>
-                            <MudButton Class="mx-2" StartIcon="@Icons.Material.Rounded.Cases" href="analysis" Color="Color.Inherit">Analysis & Reporting</MudButton>
+                            <MudButton Color="Color.Primary" Class="mx-2" StartIcon="@Icons.Material.Rounded.Cases" href="code-task-management">Code Task Management</MudButton>
+                            <MudButton Color="Color.Primary" Class="mx-2" StartIcon="@Icons.Material.Rounded.Cases" href="ai-persona-testing" >AI Persona Code Evaluation</MudButton>
+                            <MudButton Color="Color.Primary" Class="mx-2" StartIcon="@Icons.Material.Rounded.Cases" href="analysis" >Analysis & Reporting</MudButton>
                         </ChildContent>
                     </AuthorizeView>
                     <AuthorizeView Roles="Educator,Admin">
                         <ChildContent Context="educatorAdmin">
-                            <MudButton Class="mx-2" StartIcon="@Icons.Material.Rounded.Cases" href="code-task-management" Color="Color.Inherit">Code Task Management</MudButton>
-                            <MudButton Class="mx-2" StartIcon="@Icons.Material.Rounded.Cases" href="ai-persona-testing" Color="Color.Inherit">AI Persona Code Evaluation</MudButton>
-                            <MudButton Class="mx-2" StartIcon="@Icons.Material.Rounded.Cases" href="analysis" Color="Color.Inherit">Analysis & Reporting</MudButton>
-                            <MudButton Class="mx-2" StartIcon="@Icons.Material.Rounded.Monitor" href="educator-monitoring" Color="Color.Inherit">Educator Monitoring</MudButton>
+                            <MudButton Color="Color.Primary" Class="mx-2" StartIcon="@Icons.Material.Rounded.Cases" href="code-task-management">Code Task Management</MudButton>
+                            <MudButton Color="Color.Primary" Class="mx-2" StartIcon="@Icons.Material.Rounded.Cases" href="ai-persona-testing" >AI Persona Code Evaluation</MudButton>
+                            <MudButton Color="Color.Primary" Class="mx-2" StartIcon="@Icons.Material.Rounded.Cases" href="analysis" >Analysis & Reporting</MudButton>
+                            <MudButton Color="Color.Primary" Class="mx-2" StartIcon="@Icons.Material.Rounded.Monitor" href="educator-monitoring" >Educator Monitoring</MudButton>
                         </ChildContent>
                     </AuthorizeView>
                 </ChildContent>
             </AuthorizeView>
 
             <MudSpacer/>
-            <MudIconButton Icon="@Icons.Material.TwoTone.Logout" OnClick="LogoutUserAsync" Color="Color.Inherit" Edge="Edge.End"/>
+            <MudIconButton Color="Color.Primary" Icon="@Icons.Material.TwoTone.Logout" OnClick="LogoutUserAsync"  Edge="Edge.End"/>
         </MudAppBar>
     </AuthorizeView>
 

@@ -11,4 +11,12 @@ public class LearnerEngagementLiveUpdate
     public List<string> Struggles { get; set; } = [];
     public List<string> LearningOutcomes { get; set; } = [];
     public bool EngagementIsDeclining { get; set; } // for showing a warning on the frontend
+    public EngagementDropRiskLevel EngagementDropRiskLevel { get; set; }
+    public int PredictedEngagementScore { get; set; }
+    public bool PassedLatestCodeTask { get; set; }
+    
+    // Status updates UI
+    public int CurrentTaskNumber { get; set; }
+    public int TotalTasks { get; set; }
+    public int CurrentStepIndex { get; set; }
 }

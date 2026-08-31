@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using GamAILab.WebApi.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GamAILab.WebApi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260831085608_ModifiedEducatorDashboardEntities")]
+    partial class ModifiedEducatorDashboardEntities
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.9");
@@ -420,9 +423,6 @@ namespace GamAILab.WebApi.Migrations
                     b.Property<DateTime>("CompletedAt")
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("CurrentTaskNumber")
-                        .HasColumnType("INTEGER");
-
                     b.Property<long>("ExecutionTimeInMilliseconds")
                         .HasColumnType("INTEGER");
 
@@ -441,9 +441,6 @@ namespace GamAILab.WebApi.Migrations
 
                     b.Property<DateTime>("StartedAt")
                         .HasColumnType("TEXT");
-
-                    b.Property<int>("TotalTasks")
-                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 

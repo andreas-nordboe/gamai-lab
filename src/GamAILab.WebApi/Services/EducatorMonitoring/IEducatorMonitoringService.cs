@@ -7,4 +7,5 @@ public interface IEducatorMonitoringService
 {
     Task PublishLearnerEngagementUpdateAsync(LearnerEngagementLiveUpdate update, CancellationToken cancellationToken = default);
     Task PublishClassroomSimulationStartedAsync(ClassroomSimulation classroomSimulation, CancellationToken cancellationToken = default);
+    Task PublishClassroomSimulationCompletedAsync(ClassroomSimulation classroomSimulation, CancellationToken cancellationToken = default);
 }

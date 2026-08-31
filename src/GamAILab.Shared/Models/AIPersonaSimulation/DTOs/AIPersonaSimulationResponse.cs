@@ -28,4 +28,6 @@ public class AIPersonaSimulationResponse
     public int SimulationTimeStepIndex { get; set; }
     public int SimulatedMinute { get; set; }
     public int AttemptNumber { get; set; } = 1;
+    public int CurrentTaskNumber { get; set; }
+    public int TotalTasks { get; set; }
 }

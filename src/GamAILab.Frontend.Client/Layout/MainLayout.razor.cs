@@ -22,7 +22,8 @@ public partial class MainLayout
         },
         PaletteDark = new PaletteDark()
         {
-            Primary = "#435291",
+            Primary = "#52c49c", // 435291 more purple-ish
+            Secondary = "#40ffbc",
             Background = "#1e243b"
         }
     };
