@@ -42,25 +42,40 @@ public class AnalysisService : IAnalysisService
         return true;
     }
 
-    public async Task<List<ClassroomSimulation>> ListClassroomSimulationsAsync(CancellationToken cancellationToken = default)
+    public async Task<List<ClassroomSimulation>> ListClassroomSimulationsAsync(
+        CancellationToken cancellationToken = default)
     {
-        // load everythign basically 
         return await _dbContext.ClassroomSimulations
             .AsNoTracking()
             .Include(x => x.SimulationResponses)
             .ThenInclude(x => x.PersonaResults)
             .ThenInclude(x => x.Persona)
+            
+            .Include(x => x.SimulationResponses)
+            .ThenInclude(x => x.PersonaResults)
+            .ThenInclude(x => x.SubmissionResult)
+            .ThenInclude(x => x.AIFeedback)
+
             .OrderByDescending(x => x.StartedAt)
             .ToListAsync(cancellationToken);
     }
     
-    public async Task<ClassroomSimulation?> GetClassroomSimulationByIdAsync(Guid classroomSimulationId, CancellationToken cancellationToken = default)
+    public async Task<ClassroomSimulation?> GetClassroomSimulationByIdAsync(
+        Guid classroomSimulationId,
+        CancellationToken cancellationToken = default)
     {
         return await _dbContext.ClassroomSimulations
             .AsNoTracking()
+
             .Include(x => x.SimulationResponses)
             .ThenInclude(x => x.PersonaResults)
             .ThenInclude(x => x.Persona)
+
+            .Include(x => x.SimulationResponses)
+            .ThenInclude(x => x.PersonaResults)
+            .ThenInclude(x => x.SubmissionResult)
+            .ThenInclude(x => x.AIFeedback)
+
             .FirstOrDefaultAsync(
                 x => x.Id == classroomSimulationId,
                 cancellationToken);

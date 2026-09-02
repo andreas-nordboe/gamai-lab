@@ -56,11 +56,15 @@ public partial class Analysis : ComponentBase
         await JSRuntime.InvokeVoidAsync("downloadFile", "classroom-simulation-analysis.csv", streamReference);
     }
 
-    private MemoryStream BuildCsvStructure(List<ClassroomSimulation> simulations)
+     private MemoryStream BuildCsvStructure(List<ClassroomSimulation> simulations)
     {
         var csv = new StringBuilder();
 
-        csv.AppendLine("Simulation Id,Persona,Simulated Minute,Attempt,Engagement Score,Struggles,Learning Outcomes,Task Outcome");
+        csv.AppendLine(
+            "Simulation Id,Persona,Simulated Minute,Attempt,Engagement Score," +
+            "Struggles,Learning Outcomes,Task Outcome," +
+            "Submitted Code,AI Explanation,AI Hint,AI Execution Evidence," +
+            "All Tests Passed,Fatal Error,LLM Model,AI Generation Time Ms");
 
         foreach (var simulation in simulations)
         {
@@ -68,15 +72,29 @@ public partial class Analysis : ComponentBase
             {
                 foreach (var result in response.PersonaResults)
                 {
+                    var submission = result.SubmissionResult;
+                    var feedback = submission?.AIFeedback;
+                    var execution = submission?.CodeExecution;
+
                     csv.AppendLine(string.Join(",",
                         Csv(simulation.Id.ToString()),
                         Csv(result.Persona?.Name ?? ""),
-                        response.SimulatedMinute,
-                        response.AttemptNumber,
-                        result.EngagementScore,
+                        Csv(response.SimulatedMinute.ToString(CultureInfo.InvariantCulture)),
+                        Csv(response.AttemptNumber.ToString(CultureInfo.InvariantCulture)),
+                        Csv(result.EngagementScore.ToString(CultureInfo.InvariantCulture)),
                         Csv(string.Join("; ", result.Struggles ?? [])),
                         Csv(string.Join("; ", result.LearningOutcomes ?? [])),
-                        Csv(result.SubmissionResult?.AIFeedback?.TaskOutcome.ToString() ?? "")
+                        Csv(result.PassedLatestCodeTask ? "Correct" : "Incorrect"),
+                        Csv(submission?.SubmittedCode ?? ""),
+                        Csv(feedback?.Explanation ?? ""),
+                        Csv(feedback?.HintMessage ?? ""),
+                        Csv(feedback?.CodeTaskExecutionEvidence ?? ""),
+                        Csv(execution?.EveryTestPassed.ToString() ?? ""),
+                        Csv(execution?.FatalError ?? ""),
+                        Csv(feedback?.LLMModelUsed ?? ""),
+                        Csv(
+                            feedback?.GeneationTimeInMs
+                                .ToString(CultureInfo.InvariantCulture) ?? "")
                     ));
                 }
             }
