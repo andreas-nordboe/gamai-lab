@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using System.Text;
+using System.Threading.RateLimiting;
 using GamAILab.Shared.Models;
 using Scalar.AspNetCore;
 using GamAILab.WebApi;
@@ -132,6 +133,25 @@ builder.Services.AddHttpClient<ILLMService, LLMService>((provider, client) =>
 // SignalR WebSocket
 builder.Services.AddSignalR();
 
+var apiRateLimitPermitLimit = builder.Configuration.GetValue("RateLimiting:PermitLimit", 120);
+var apiRateLimitWindowSeconds = builder.Configuration.GetValue("RateLimiting:WindowSeconds", 60);
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
+    {
+        var partitionKey = context.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+        return RateLimitPartition.GetFixedWindowLimiter(partitionKey, _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = apiRateLimitPermitLimit,
+            Window = TimeSpan.FromSeconds(apiRateLimitWindowSeconds),
+            QueueLimit = 0,
+            AutoReplenishment = true
+        });
+    });
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -239,6 +259,7 @@ app.UseRouting();
 app.UseCors(FrontendClientPolicy);
 
 app.UseAuthentication();
+app.UseRateLimiter();
 app.UseAuthorization();
 
 app.MapHub<EducatorMonitoringHub>("/hubs/educator-monitoring");

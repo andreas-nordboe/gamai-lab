@@ -18,7 +18,7 @@ else if(_codeTask is null)
 else
 {
     <MudContainer Class="pa-4" MaxWidth="MaxWidth.False">
-        <MudText Align="Align.Center" Class="mb-4" Typo="Typo.h3">@_codeTask.Title</MudText>
+        <MudText Align="Align.Left" Class="mb-4" Typo="Typo.h5"><b>@_codeTask.Title</b></MudText>
         
         <MudGrid Spacing="3">
             <MudItem xs="12" md="5">
@@ -31,7 +31,7 @@ else
                     </MudText>
                     
                     <MudText><strong>Examples:</strong></MudText>
-                    <ul style="margin-left: 10px" class="ml-2 mt-1">
+                    <ul style="margin-left: 20px" class="ml-2 mt-1">
                         @foreach (var example in _codeTask.Examples ?? [])
                         {
                             <li>
@@ -47,7 +47,7 @@ else
                         {
                             <MudText Class="my-2"><strong>Requirements:</strong></MudText>
                             
-                            <ul style="margin-left: 5px" class="ml-2 mt-1">
+                            <ul style="margin-left: 20px" class="ml-2 mt-1">
                                 @foreach (var constraint in _codeTask.Constraints ?? [])
                                 {
                                     <li>

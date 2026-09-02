@@ -41,10 +41,10 @@ public partial class Register : ComponentBase
             }
             
             var registerResponse = await AuthenticationService.RegisterAsync(Email, Password);
+            // 
+            //await AuthenticationStateProvider.SetUserLoggedIn(registerResponse.AccessToken);
             
-            await AuthenticationStateProvider.SetUserLoggedIn(registerResponse.AccessToken);
-            
-            Snackbar.Add("Registration Successful. Logging in.", Severity.Success);
+            Snackbar.Add("Registration Successful. Please log in again using your credentials.", Severity.Success);
             NavigationManager.NavigateTo("/", replace: true);
         }
         catch (Exception ex)

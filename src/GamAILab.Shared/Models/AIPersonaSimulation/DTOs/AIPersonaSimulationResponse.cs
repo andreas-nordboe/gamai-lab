@@ -30,4 +30,14 @@ public class AIPersonaSimulationResponse
     public int AttemptNumber { get; set; } = 1;
     public int CurrentTaskNumber { get; set; }
     public int TotalTasks { get; set; }
+    
+    // Deeper analysis
+    public bool? AnalysisEvaluationCorrectness { get; set; }
+    public bool? AnalysisHallucinationDetected { get; set; }
+    // these 3 should probably go  from 1 to 5 or 1 to 10 
+    public int? AnalysisFeedbackCorrectness { get; set; } 
+    public int? AnalysisFeedbackUsefulness { get; set; }  
+    public int? AnalysisFeedbackClarity { get; set; }    
+    
+    public string? AnalysisNotes { get; set; }
 }

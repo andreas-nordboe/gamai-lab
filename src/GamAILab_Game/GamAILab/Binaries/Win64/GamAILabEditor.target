@@ -4870,6 +4870,26 @@
 		{
 			"Path": "$(ProjectDir)/Binaries/Win64/UnrealEditor.modules",
 			"Type": "RequiredResource"
+		},
+		{
+			"Path": "$(ProjectDir)/Plugins/Unreal-SignalR/Binaries/Win64/UnrealEditor-SignalR.dll",
+			"Type": "DynamicLibrary"
+		},
+		{
+			"Path": "$(ProjectDir)/Plugins/Unreal-SignalR/Binaries/Win64/UnrealEditor-SignalR.pdb",
+			"Type": "SymbolFile"
+		},
+		{
+			"Path": "$(ProjectDir)/Plugins/Unreal-SignalR/Binaries/Win64/UnrealEditor-SignalRBlueprint.dll",
+			"Type": "DynamicLibrary"
+		},
+		{
+			"Path": "$(ProjectDir)/Plugins/Unreal-SignalR/Binaries/Win64/UnrealEditor-SignalRBlueprint.pdb",
+			"Type": "SymbolFile"
+		},
+		{
+			"Path": "$(ProjectDir)/Plugins/Unreal-SignalR/Binaries/Win64/UnrealEditor.modules",
+			"Type": "RequiredResource"
 		}
 	],
 	"RuntimeDependencies": [
@@ -29744,6 +29764,10 @@
 		{
 			"Path": "$(ProjectDir)/GamAILab.uproject",
 			"Type": "UFS"
+		},
+		{
+			"Path": "$(ProjectDir)/Plugins/Unreal-SignalR/SignalR.uplugin",
+			"Type": "UFS"
 		}
 	],
 	"BuildPlugins": [
@@ -29955,6 +29979,7 @@
 		"SequenceValidator",
 		"SequencerAnimTools",
 		"SequencerScripting",
+		"SignalR",
 		"SignificanceManager",
 		"SkeletalMerging",
 		"SkeletalMeshModelingTools",

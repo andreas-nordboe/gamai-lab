@@ -28,6 +28,8 @@
           CodeExecutions__MaxConcurrentExecutions: ${CODE_EXECUTIONS_MAX_CONCURRENT_EXECUTIONS}
           CodeEvaluation__UseVerifiedCodeEvaluations: ${HALLUCINATION_USE_VERIFIED_CODE_EVALUATIONS}
           CodeEvaluation__MaxVerifiedCodeEvaluations: ${HALLUCINATION_MAX_VERIFIED_CODE_EVALUATIONS}
+          RateLimiting__PermitLimit: ${RATE_LIMIT_PERMIT_LIMIT:-120}
+          RateLimiting__WindowSeconds: ${RATE_LIMIT_WINDOW_SECONDS:-60}
   
     gamailab.frontend:
       image: gamailab.frontend

@@ -99,9 +99,9 @@ public class AIPersonaSimulationService : IAIPersonaSimulationService
               "type": "string"
             },
             "assignedDifficulty": {
-              "type": "integer",
-              "minimum": 0,
-              "maximum": 2
+             "type": "integer",
+             "enum": [0, 1, 2],
+             "description": "Programming difficulty level: 0 = Beginner, 1 = Intermediate, 2 = Advanced"
             },
             "learningCapabilities": {
               "type": "array",
@@ -302,67 +302,42 @@ public class AIPersonaSimulationService : IAIPersonaSimulationService
     {
         try
         {
-            if (_dbContext.AIPersonas.Any())
-                return
-                    new(); // return empty list even though it's not being used for anything else than seeding any more
+            var json = await File.ReadAllTextAsync("SeedAppData/AIPersonas/ai-personas.json");
 
-            var persona1 = new AIPersona()
+            var options = new JsonSerializerOptions
             {
-                UserId = Guid.NewGuid().ToString(),
-                Name = "John Parker",
-                Background =
-                    "A young student that just started studying at an undergraduate Computer Science programme at the University of Lincoln (UK), that is eager to learn new things",
-                AssignedDifficulty = CodeTaskDifficulty.Beginner,
-                LearningCapabilities = new List<string>
-                {
-                    "Has zero knowledge with programming but is intellectual capable of operating a computer",
-                    "Excels in maths"
-                },
-                LearningDifficulties = [],
-                AccessibilityRequirements = [],
-                UpdatedAt = DateTime.UtcNow,
-                CreatedAt = DateTime.UtcNow
+                PropertyNameCaseInsensitive = true
             };
 
-            var persona2 = new AIPersona()
-            {
-                UserId = Guid.NewGuid().ToString(),
-                Name = "Lucie Graham",
-                Background =
-                    "A 21 year old female student at a UK University that has background in design, with interest in game development",
-                AssignedDifficulty = CodeTaskDifficulty.Beginner,
-                LearningCapabilities = new List<string>
-                {
-                    "Has zero knowledge with programming but is intellectual capable of operating a computer",
-                    "Excels in maths"
-                },
-                LearningDifficulties = new List<string>
-                {
-                    "Struggles to stay motivated",
-                    "Loses focus easily",
-                    "Has difficulties with comprehending longer task descriptions"
-                },
-                AccessibilityRequirements = new List<string>
-                {
-                    "Has surface dyslexia"
-                },
-                UpdatedAt = DateTime.UtcNow,
-                CreatedAt = DateTime.UtcNow
-            };
+            // Allows roles in json
+            options.Converters.Add(new JsonStringEnumConverter());
 
-            _dbContext.AIPersonas.Add(persona1);
-            _dbContext.AIPersonas.Add(persona2);
-            await _dbContext.SaveChangesAsync();
+            var personas = JsonSerializer.Deserialize<List<AIPersona>>(
+                json,
+                options) ?? [];
 
-            return new List<AIPersona>
+            foreach (var persona in personas)
             {
-                persona1,
-                persona2
-            };
+                // Prevent duplicates
+                if (await _dbContext.AIPersonas.AnyAsync(existingPersona => existingPersona.Name == persona.Name))
+                {
+                    continue;
+                }
+                
+                // treat as new entities
+                persona.Id = 0;
+
+                await AddOrUpdatePersona(persona);
+            }
+
+            return personas;
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Failed to seed AI personas");
+            _logger.LogError(
+                e,
+                "Failed to seed AI personas, the JSON file was not found");
+
             return [];
         }
     }
@@ -413,7 +388,11 @@ public class AIPersonaSimulationService : IAIPersonaSimulationService
            Persona output MUST include:
            - name
            - background
-           - assigned difficulty (beginner, intermediate, advanced)
+           - assignedDifficulty MUST be an integer:
+             0 = Beginner
+             1 = Intermediate
+             2 = Advanced
+           - The assignedDifficulty MUST match the learner described by the user.
            - learning capabilities
            - learning difficulties
            - accessibility requirements
@@ -432,7 +411,7 @@ public class AIPersonaSimulationService : IAIPersonaSimulationService
             KeepAlive = "30m",
             Options = new()
             {
-                Temperature = 0.7f // some creativity will be good for these I think, as they require less deterministic responses than task evaluations
+                Temperature = 0.5f // some creativity will be good for these I think, as they require less deterministic responses than task evaluations
                                    // (0.8 is library default, but I think 0.7 is better)
             },
             Messages = new []

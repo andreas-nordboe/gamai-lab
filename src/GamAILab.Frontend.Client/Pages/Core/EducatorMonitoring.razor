@@ -59,8 +59,9 @@
 @*selected simulation*@
 
 @if (SelectedClassroomSimulation is not null)
-    {
-    
+{
+    <MudContainer MaxWidth="MaxWidth.False" Class="px-4 pa-0">
+        
         <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-5">
 
             <div>
@@ -84,10 +85,10 @@
             }
 
         </MudStack>
-        
-        
+
+
         @*summaries*@
-        
+
         <MudGrid Class="mb-5">
 
             <MudItem xs="12" sm="6" md="3">
@@ -115,7 +116,7 @@
 
             <MudItem xs="12" sm="6" md="3">
                 <MudPaper Class="pa-4" Elevation="2">
-                    <MudText Typo="Typo.subtitle2">High Drop Risk</MudText>
+                    <MudText Typo="Typo.subtitle2">High Engagement Drop Risk</MudText>
 
                     <MudText Typo="Typo.h4" Color="Color.Error">@_highRiskCount</MudText>
                 </MudPaper>
@@ -125,7 +126,7 @@
 
         @*highrisk warnings*@
 
-        @if (_learners.Any(x => x.EngagementDropRiskLevel == EngagementDropRiskLevel.High))  @*TODO EngagementDropRisk *@
+        @if (_learners.Any(x => x.EngagementDropRiskLevel == EngagementDropRiskLevel.High)) @*TODO EngagementDropRisk *@
         {
             <MudAlert Severity="Severity.Warning"Variant="Variant.Filled"Class="mb-5">One or more learners have been identified as having a high risk of engagement decline</MudAlert>
         }
@@ -165,7 +166,7 @@
                             <MudText Typo="Typo.body2">
                                 @context.EngagementScore / 100
                             </MudText>
-                            <MudProgressLinear Value="@context.EngagementScore" Color="@GetEngagementColor(context.EngagementScore)" Rounded="true" />
+                            <MudProgressLinear Value="@context.EngagementScore" Color="@GetEngagementColor(context.EngagementScore)" Rounded="true"/>
                         </MudStack>
 
                     </MudTd>
@@ -175,14 +176,14 @@
                         <MudText Typo="Typo.body2">
                             @context.PredictedEngagementScore / 100
                         </MudText>
-                        <MudProgressLinear Value="@context.PredictedEngagementScore" Color="@GetEngagementColor(context.PredictedEngagementScore)" Rounded="true" />
+                        <MudProgressLinear Value="@context.PredictedEngagementScore" Color="@GetEngagementColor(context.PredictedEngagementScore)" Rounded="true"/>
                     </MudTd>
 
                     <MudTd DataLabel="Trend">
 
-                        @if (context.EngagementIsDeclining) 
+                        @if (context.EngagementIsDeclining)
                         {
-                            <MudChip T="string"Size="Size.Small"Color="Color.Warning">
+                            <MudChip T="string" Size="Size.Small"Color="Color.Warning">
                                 Declining
                             </MudChip>
                         }
@@ -196,7 +197,7 @@
                     </MudTd>
 
                     <MudTd DataLabel="Drop Risk">
-                        
+
                         <MudChip T="string" Size="Size.Small" Color="@GetEngagementRiskColor(context.EngagementDropRiskLevel)">
                             @context.EngagementDropRiskLevel
                         </MudChip>
@@ -213,7 +214,7 @@
                             @string.Join(", ", context.Struggles)
                         }
                     </MudTd>
-                    
+
                     <MudTd DataLabel="Latest Learning Outcomes">
 
                         @if (context.LearningOutcomes.Count == 0)
@@ -229,7 +230,7 @@
                 </RowTemplate>
 
                 <PagerContent>
-                    <MudTablePager />
+                    <MudTablePager/>
                 </PagerContent>
 
             </MudTable>
@@ -242,8 +243,8 @@
 
             @if (_engagementHistory.Count > 0)
             {
-               
-                <MudChart T="double" ChartType="ChartType.Line" ChartSeries="@_engagementHistory" ChartLabels="@_timeLabels" ChartOptions="@_chartOptions" Width="100%" Height="300px" />
+
+                <MudChart T="double" ChartType="ChartType.Line" ChartSeries="@_engagementHistory" ChartLabels="@_timeLabels" ChartOptions="@_chartOptions" Width="100%" Height="300px"/>
             }
             else
             {
@@ -251,4 +252,5 @@
             }
 
         </MudPaper>
+    </MudContainer>
 }

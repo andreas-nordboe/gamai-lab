@@ -18,6 +18,10 @@ public partial class MainLayout
     protected override void OnInitialized()
     {
         NavigationManager.LocationChanged += LocationChanged;
+        if (IsUnreal)
+        {
+            _isDarkMode = false;
+        }
     }
 
     private readonly MudTheme _theme = new()
@@ -25,8 +29,10 @@ public partial class MainLayout
         // TODO add dark-mode later
         PaletteLight = new PaletteLight()
         {
-            Primary = "#435291",
-            //Background = "#1e243b"
+            Primary = "#52c49c", // 435291 more purple-ish
+            Secondary = "#40ffbc",
+            Background = "#ffff",
+            TextDisabled = "#ffffff"
         },
         PaletteDark = new PaletteDark()
         {

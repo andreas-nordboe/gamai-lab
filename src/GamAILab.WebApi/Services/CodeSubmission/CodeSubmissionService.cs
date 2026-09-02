@@ -45,7 +45,7 @@ public class CodeSubmissionService : ICodeSubmissionService
     public async Task<CodeSubmissionResult> SubmitCodeAsync(CodeSubmissionRequest codeSubmission, string? userId, bool updateGameProgress = true, CancellationToken cancellationToken = default)
     {
         // 1. Store attempted code submission and request task to database
-        await BroadcastWebSocketStatus(userId, codeSubmission.CodeTaskId, CodeEvaluationStep.SubmissionInitiated, "Executing your code");
+        await BroadcastWebSocketStatus(userId, codeSubmission.CodeTaskId, CodeEvaluationStep.SubmissionInitiated, "Initiating code evaluation...");
 
         // Retrieve previous task submissions to increment attempts/for timestamps
         var previousAttempts = await _dbContext.CodeSubmissions
@@ -74,6 +74,7 @@ public class CodeSubmissionService : ICodeSubmissionService
         _dbContext.CodeSubmissions.Add(submission);
         await _dbContext.SaveChangesAsync();
 
+        // !! Code evaluation plan is instead generated during task creation and is stored nested within the code task in the database
         //var evaluationPlan = await _aiCodeEvaluationService.GenerateEvaluationPlanAsync(codeTask, cancellationToken);
         if (codeTask.AiCodeEvaluationPlan is null)
         {
@@ -81,21 +82,21 @@ public class CodeSubmissionService : ICodeSubmissionService
         }
         
         // 4. Execute code in isolated docker container (Docker code runner)
-        await BroadcastWebSocketStatus(userId, codeSubmission.CodeTaskId, CodeEvaluationStep.ExecutingCode, "Executing your code");
+        await BroadcastWebSocketStatus(userId, codeSubmission.CodeTaskId, CodeEvaluationStep.ExecutingCode, "Executing your code...");
         var codeExecution = await _codeExecutionService.ExecuteCodeAsync(submission.Code, codeTask.AiCodeEvaluationPlan, cancellationToken);
         
         _logger.LogInformation(JsonSerializer.Serialize(codeExecution));
         
         
         // 5. Send code to AIFeedbackService (I need to look into latency here and possibly feed back partial information or notify the learner)
-        await BroadcastWebSocketStatus(userId, codeSubmission.CodeTaskId, CodeEvaluationStep.GeneratingAIFeedback, "An AI is evaluating the code and generating feedback");
+        await BroadcastWebSocketStatus(userId, codeSubmission.CodeTaskId, CodeEvaluationStep.GeneratingAIFeedback, "An AI is evaluating the code and generating feedback...");
         var aiFeedback = await _aiFeedbackService.GenerateCodeTaskFeedbackAsync(codeTask, submission, codeTask.AiCodeEvaluationPlan, codeExecution, cancellationToken);
         
         aiFeedback.CodeSubmissionId = submission.Id;
         aiFeedback.CodeSubmission = submission;
         
         // 6. Verify feedback using AI Hallucination service
-        await BroadcastWebSocketStatus(userId, codeSubmission.CodeTaskId, CodeEvaluationStep.RunningHallucinationChecker, "A hallucination checker is verifying the AI-generated consistency against your code execution results");
+        await BroadcastWebSocketStatus(userId, codeSubmission.CodeTaskId, CodeEvaluationStep.RunningHallucinationChecker, "A hallucination checker is verifying the AI-generated consistency against your code execution results...");
         var hallucinationCheckResult = await _aiHallucinationCheckerService.CheckAIFeedbackConsistencyAsync(codeTask, submission, codeTask.AiCodeEvaluationPlan, codeExecution, aiFeedback, cancellationToken);
         
         _dbContext.AIHallucinationCheckResults.Add(hallucinationCheckResult);
@@ -110,14 +111,14 @@ public class CodeSubmissionService : ICodeSubmissionService
         // checks if feedback was verified by hallucination checker BEFORE granting task completion
         if (didCodeExecutionPassCompletion && aiFeedback.TaskOutcome == CodeTaskOutcome.Correct && hallucinationCheckResult.Status == HallucinationCheckerStatus.IsConsistent)
         {
-            await BroadcastWebSocketStatus(userId, codeSubmission.CodeTaskId, CodeEvaluationStep.UpdatingGameProgress, "Your code passed the test requirements, well done! Updating your game progress.");
+            await BroadcastWebSocketStatus(userId, codeSubmission.CodeTaskId, CodeEvaluationStep.UpdatingGameProgress, "Your code passed the test requirements, well done! Updating your game progress...");
             updatedLearnerGameProgress = await _gameService.GrantCodeTaskCompletionRewardsAsync(userId!, codeTask, cancellationToken);
             _logger.LogInformation($"Updated game progress for learner with id {userId} after completing task {codeTask.Id}");
         }
         
         // TODO Later: Adaptive learning (possibly in a separate service)
         
-        await BroadcastWebSocketStatus(userId, codeSubmission.CodeTaskId, CodeEvaluationStep.Finished, "Your code passed the test requirements, well done! Updating your game progress.");
+        await BroadcastWebSocketStatus(userId, codeSubmission.CodeTaskId, CodeEvaluationStep.Finished, "Your code passed the test requirements, well done! Updating your game progress...");
         
         // 8. Return results to the client
         return new CodeSubmissionResult

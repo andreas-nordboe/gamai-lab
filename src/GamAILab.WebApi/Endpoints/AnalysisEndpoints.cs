@@ -17,7 +17,7 @@ public static class AnalysisEndpoints
             .WithTags("Analysis");
         
         // Get a single analysis summary
-        group.MapGet("/{analysisSummary:int}",
+        group.MapGet("/{analysisId:int}",
             async Task<Results<Ok<AIPersonaSimulationResponse>, NotFound>> (int analysisId, IAnalysisService analysisService) =>
             {
                 var analysisSummary = await analysisService.GetAIPersonaAnalysisSummaryByIdAsync(analysisId);
@@ -37,8 +37,7 @@ public static class AnalysisEndpoints
                 var analysisSummary = await analysisService.GetAIPersonaAnalysisSummaryAsync(cancellationToken);
 
                 return TypedResults.Ok(analysisSummary ?? []);
-            }).WithName("GetAllAnalysisSummaries")
-        .Produces<List<CodeTask>>(StatusCodes.Status200OK)
+            }).WithName("GetAllAnalysisSummaries").Produces<List<AIPersonaSimulationResponse>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound).RequireAuthorization("RequireResearcher");
         
         // Delete analysis summary (TODO this should not allowed in a production environment as it would void ethical considerations)
@@ -51,6 +50,27 @@ public static class AnalysisEndpoints
                 }).WithName("DeleteAnalysisSummary")
             .Produces<bool>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound).RequireAuthorization("RequireResearcher");
+        
+        
+        // Classroom simulations
+        group.MapGet("/classroom-simulations", async Task<Ok<List<ClassroomSimulation>>> (IAnalysisService analysisService, CancellationToken cancellationToken) =>
+        {
+            var simulations = await analysisService.ListClassroomSimulationsAsync(cancellationToken);
+            return TypedResults.Ok(simulations);
+        })
+        .WithName("GetClassroomSimulations")
+        .Produces<List<ClassroomSimulation>>(StatusCodes.Status200OK)
+        .RequireAuthorization("RequireResearcher");
+        
+        // Classroom simulation by Id
+        group.MapGet("/classroom-simulations/{simulationId:guid}",  async Task<Results<Ok<ClassroomSimulation>, NotFound>> (Guid simulationId, IAnalysisService analysisService, CancellationToken cancellationToken) =>
+        {
+            var simulation = await analysisService.GetClassroomSimulationByIdAsync(simulationId, cancellationToken);
+
+            return simulation is null ? TypedResults.NotFound() : TypedResults.Ok(simulation);
+        }).WithName("GetClassroomSimulationById")
+        .Produces<ClassroomSimulation>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound).RequireAuthorization("RequireResearcher");
         
         return app;
     }

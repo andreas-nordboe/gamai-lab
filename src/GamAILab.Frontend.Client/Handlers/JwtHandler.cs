@@ -10,11 +10,14 @@ namespace GamAILab.Frontend.Client.Handlers;
 public sealed class JwtHandler : DelegatingHandler
 {
     private readonly ILocalStorageService _localStorage;
-    private readonly IServiceProvider _serviceProvider;
+    private readonly NavigationManager _navigationManager;
+    private readonly JWTAuthenticationStateProvider _authStateProvider;
 
-    public JwtHandler(ILocalStorageService localStorage)
+    public JwtHandler(ILocalStorageService localStorage, JWTAuthenticationStateProvider authStateProvider, NavigationManager navigationManager)
     {
         _localStorage = localStorage;
+        _authStateProvider = authStateProvider;
+        _navigationManager = navigationManager;
     }
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -30,14 +33,9 @@ public sealed class JwtHandler : DelegatingHandler
         var response = await base.SendAsync(request, cancellationToken);
         if (response.StatusCode == HttpStatusCode.Unauthorized)
         {
-            var navigationManager = _serviceProvider.GetRequiredService<NavigationManager>();
-            var authStateProvider = _serviceProvider.GetService<AuthenticationStateProvider>() as JWTAuthenticationStateProvider;
-            if (authStateProvider is not null)
-            {
-                await authStateProvider.SetUserLoggedOut();
-            }
-            
-            navigationManager.NavigateTo("/login", forceLoad: true);
+          
+            await _authStateProvider.SetUserLoggedOut();
+            _navigationManager.NavigateTo("/login", forceLoad: true);
         }
         
         return response;

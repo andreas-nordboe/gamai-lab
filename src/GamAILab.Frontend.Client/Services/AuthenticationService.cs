@@ -56,7 +56,7 @@ public class AuthenticationService : IAuthenticationService
         };
         
         var response = await _httpClient.PostAsJsonAsync("api/auth/register", request, cancellationToken);
-
+    
         if (!response.IsSuccessStatusCode)
         {
             if(response.StatusCode == System.Net.HttpStatusCode.BadRequest)

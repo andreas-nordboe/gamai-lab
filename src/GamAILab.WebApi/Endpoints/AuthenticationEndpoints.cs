@@ -36,6 +36,11 @@ public static class AuthenticationEndpoints
         UserManager<ApplicationUser> userManager,
         IConfiguration configuration) // TODO replace with options instead
     {
+        if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
+        {
+            return Results.BadRequest("Please provide email and password");
+        }
+        
         var user = await userManager.FindByEmailAsync(request.Email);
 
         if (user is  null || !await userManager.CheckPasswordAsync(user, request.Password))

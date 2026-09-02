@@ -37,4 +37,22 @@ public class AnalysisService : IAnalysisService
 
         return response.IsSuccessStatusCode;
     }
+
+    public async Task<List<ClassroomSimulation>> ListClassroomSimulationsAsync()
+    {
+        return await _httpClient.GetFromJsonAsync<List<ClassroomSimulation>>("api/ai-personas/classroom-simulations") ?? [];
+    }
+
+    public async Task<ClassroomSimulation?> GetClassroomSimulationByIdAsync(Guid classroomSimulationId, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.GetAsync($"api/ai-personas/classroom-simulations/{classroomSimulationId}",
+            cancellationToken);
+
+        if (response.StatusCode == HttpStatusCode.NotFound)
+            return null;
+
+        response.EnsureSuccessStatusCode();
+
+        return await response.Content.ReadFromJsonAsync<ClassroomSimulation>(cancellationToken: cancellationToken);
+    }
 }

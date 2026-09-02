@@ -1,0 +1,86 @@
+[
+  {
+    "id": 5,
+    "userId": "69d44c71-3a07-4329-a926-5f771d59d84d",
+    "name": "Ella Thompson",
+    "background": "Ella is a 22-year-old Computer Science student at a UK University. She has a keen interest in programming and has been eager to learn more about it since her high school days. Ella is a motivated individual who is driven to succeed and has a strong work ethic. She is passionate about solving complex problems and enjoys the challenge that comes with it.",
+    "learningCapabilities": [
+      "Highly motivated",
+      "Good mathematical reasoning",
+      "Persistent when tasks are difficult"
+    ],
+    "learningDifficulties": [
+      "Struggles with Python syntax and functions"
+    ],
+    "accessibilityRequirements": [],
+    "assignedDifficulty": 1,
+    "createdAt": "2026-09-02T08:29:55.9319236",
+    "updatedAt": "2026-09-02T08:29:55.9319239"
+  },
+  {
+    "id": 8,
+    "userId": "e60010ea-6cf9-4970-a7d0-f1d543c26b2b",
+    "name": "Oliver Thompson",
+    "background": "Oliver is a third-year Computer Science student at a UK university. He has always had a keen interest in programming and has taken several introductory courses to lay the foundation for his studies. He is particularly interested in software development and has decided to specialize in this area.",
+    "learningCapabilities": [
+      "Oliver learns effectively through clear step-by-step instructions. He prefers concise and structured information, which helps him understand complex task descriptions more easily.",
+      "He is methodical and organized in his learning approach, often taking his time to understand a concept before moving on to the next one.",
+      "Oliver is proactive in seeking help and feedback when he encounters difficulties. He values the opportunity to discuss his progress with his peers and instructors."
+    ],
+    "learningDifficulties": [
+      "Oliver sometimes struggles with complex task descriptions, which can be overwhelming at times. He benefits from additional explanations and examples to fully grasp a concept.",
+      "He may take longer to understand certain programming concepts, requiring more time and practice to become proficient.",
+      "Oliver may have difficulty staying motivated when facing challenging tasks, and may need encouragement and positive reinforcement to stay on track."
+    ],
+    "accessibilityRequirements": [
+      "Oliver prefers accessible learning materials, such as text-to-speech software and closed captions for videos. He also benefits from visual aids and diagrams to help him understand complex concepts."
+    ],
+    "assignedDifficulty": 2,
+    "createdAt": "2026-09-02T08:32:03.9247304",
+    "updatedAt": "2026-09-02T08:32:03.9247305"
+  },
+  {
+    "id": 9,
+    "userId": "ce2b9b5c-9654-48f6-810f-8174706a95b5",
+    "name": "Sophie Chen",
+    "background": "Sophie is a 22-year-old undergraduate student at the University of Cambridge, majoring in Computer Science. She has always been interested in technology and computers but decided to pursue a degree in this field to deepen her understanding and gain practical skills.",
+    "learningCapabilities": [
+      "Sophie is eager to learn and improve her programming skills. She can understand basic programming concepts and is willing to put in the effort to master them.",
+      "She has some experience with Python from a previous course, which has helped her grasp the basics of the language.",
+      "Sophie is a visual learner and prefers learning through examples and hands-on practice."
+    ],
+    "learningDifficulties": [
+      "Sophie often struggles to maintain focus during longer programming tasks, especially when facing repeated failures.",
+      "She becomes easily discouraged when she doesn't get the expected results, which can lead to a lack of motivation and progress.",
+      "Sophie benefits from concise instructions and clear explanations to help her understand complex concepts."
+    ],
+    "accessibilityRequirements": [
+      "Sophie would appreciate step-by-step instructions and examples to help her understand programming concepts.",
+      "She prefers shorter, more manageable tasks to keep her engaged and motivated.",
+      "Visual aids, such as diagrams and videos, can help her grasp programming concepts more easily."
+    ],
+    "assignedDifficulty": 1,
+    "createdAt": "2026-09-02T08:33:32.0401262",
+    "updatedAt": "2026-09-02T08:33:32.0401263"
+  },
+  {
+    "id": 1,
+    "userId": "c881e648-e694-48ef-ad88-b021e9d0420e",
+    "name": "James Newton",
+    "background": "James is a first-year Computer Science student at a UK University. He has a basic understanding of Python and is eager to learn more about programming. He has taken a few introductory courses but struggles with maintaining focus during longer tasks and becomes discouraged after repeated failures.",
+    "learningCapabilities": [
+      "James is a quick learner and enjoys problem-solving. He has a good understanding of basic programming concepts and is able to apply them to simple tasks. He is also able to follow instructions and learn from previous attempts.",
+      "James has a good memory and is able to recall information from previous lessons. He is also able to work independently and is willing to seek help when needed."
+    ],
+    "learningDifficulties": [
+      "James struggles to maintain focus during longer tasks. He becomes easily distracted and finds it difficult to stay on task for extended periods of time.",
+      "James becomes discouraged after repeated failures. He is afraid to make mistakes and is hesitant to try new things. This can make it difficult for him to learn and grow as a programmer."
+    ],
+    "accessibilityRequirements": [
+      "James prefers concise instructions and is able to learn gradually from previous attempts. He may benefit from shorter, more focused learning sessions and additional support when needed."
+    ],
+    "assignedDifficulty": 0,
+    "createdAt": "2026-09-02T09:04:41.7343204",
+    "updatedAt": "2026-09-02T09:04:41.7343299"
+  }
+]
