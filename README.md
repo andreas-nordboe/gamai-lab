@@ -1,11 +1,12 @@
 # GamAI Lab
 This demonstrates the final software artefact submission for the 'AI-Assistive Gamified Code Training using Simulated AI Persona Evaluation' MSc Applied Computer Science project.
 
-## Software Artefact Key Features
--  Code evaluation pipeline that uses LLM model to generate evaluation plans
+## Software Artefact Key Features Include
+- Code evaluation pipeline that uses LLM model to generate evaluation plans
 - Code management system
-- AI-task generation
-- TODO
+- Automated AI-task generation
+- AI persona evaluation system
+- Small-scale Unreal Engine 5.8 game implementation and game development component framework 
 
 ## High-level system Architecuture Design
 ![System architecture](docs/architecture/system-architecture.png)
@@ -20,7 +21,6 @@ Docker code execution image
 4. Open a console application and cd into the project folder (Terminal on Mac or CMD/Powershell on Windows) 
 5. run 'docker compose up --build' to run a fresh build. It may take a while to start up GamAILab the first time, depending on the system hardware and internet connection speed as it requires downloading the configured LLM using Ollama. 
 6. Once the backend has successfully started, navigate to http://localhost:5123/login and log in using the configured admin superuser credentials.
-7. The frontend enables TODO
 
 Note: Make sure these ports: 5123 for the frontend and 5270 for the Web API are not occupied, which can otherwise be changed by editing the docker compose file.
 
@@ -52,10 +52,6 @@ Note: Make sure these ports: 5123 for the frontend and 5270 for the Web API are 
     - set this to either `true` or `false` to toggle historical code evaluation context for hallucination checker
 - **HALLUCINATION_MAX_VERIFIED_CODE_EVALUATIONS**   
     - set this to the maximum number of histrical verified code evaluations to retrieve at random per  hallucination checker process (if any)
-
-
-## Improving AI Hallucination Checker Accuracy by Veriying Histroical Code Submissions
-To improve TODO
 
 
 ## Backend Service Components
