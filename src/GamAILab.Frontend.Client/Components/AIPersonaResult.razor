@@ -1,0 +1,98 @@
+@page "/analysis/{ClassroomSimulationId:guid}"
+
+@using GamAILab.Shared.Models.Analysis
+
+@if (Simulation == null)
+{
+    <MudProgressCircular Indeterminate="true" />
+}
+else
+{
+    <MudText Typo="Typo.h5" Class="mb-4">
+        Classroom Simulation Analysis
+    </MudText>
+
+    <MudPaper Class="pa-4 mb-4" Elevation="2">
+        <MudText>
+            Simulation ID: @Simulation.Id
+        </MudText>
+
+        <MudText>
+            Status: @Simulation.Status
+        </MudText>
+
+        <MudText>
+            Learners: @Simulation.LearnerCount
+        </MudText>
+
+        <MudText>
+            Started: @Simulation.StartedAt.ToLocalTime()
+        </MudText>
+
+        <MudText>
+            Completed: @Simulation.CompletedAt?.ToLocalTime()
+        </MudText>
+    </MudPaper>
+
+    @foreach (var simulation in Simulation.SimulationResponses)
+    {
+        @foreach (var result in simulation.PersonaResults)
+        {
+            <MudPaper Class="pa-4 mb-4" Elevation="2">
+
+                <MudText Typo="Typo.h6">
+                    @result.Persona.Name
+                </MudText>
+
+                <MudText>
+                    Simulated minute: @simulation.SimulatedMinute
+                </MudText>
+
+                <MudDivider Class="my-3" />
+
+                <MudText Typo="Typo.subtitle2">
+                    Outcome
+                </MudText>
+
+                <MudText>
+                    @result.SubmissionResult?.AIFeedback?.TaskOutcome
+                </MudText>
+
+                <MudText Typo="Typo.subtitle2" Class="mt-3">
+                    AI Feedback
+                </MudText>
+
+                <MudText>
+                    @result.SubmissionResult?.AIFeedback
+                </MudText>
+
+                <MudText Typo="Typo.subtitle2" Class="mt-3">
+                    Engagement
+                </MudText>
+
+                <MudText>
+                    @result.EngagementScore
+                </MudText>
+
+                <MudText Typo="Typo.subtitle2" Class="mt-3">
+                    Struggles
+                </MudText>
+
+                @foreach (var struggle in result.Struggles)
+                {
+                    <MudText>• @struggle</MudText>
+                }
+
+                <MudText Typo="Typo.subtitle2" Class="mt-3">
+                    Learning Outcomes
+                </MudText>
+
+                @foreach (var outcome in result.LearningOutcomes)
+                {
+                    <MudText>• @outcome</MudText>
+                }
+
+            </MudPaper>
+        }
+    }
+}

@@ -1,0 +1,29 @@
+@page "/code-tasks"
+
+<MudTable Class="mx-4 my-4" Items="CodeTasks" Hover="true" Breakpoint="Breakpoint.Sm" Loading="@_isLoadingCodeTasks" LoadingProgressColor="Color.Info">
+    <HeaderContent>
+        <MudTh>Id</MudTh>
+        <MudTh>Title</MudTh>
+        <MudTh>Description</MudTh>
+        <MudTh>Action</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Id">@context.Id</MudTd>
+        <MudTd DataLabel="Title">@context.Title</MudTd>
+        <MudTd DataLabel="Description">@context.Description</MudTd>
+        <MudTd DataLabel="Action">
+            <MudButton Class="mr-2" EndIcon="@Icons.Material.Filled.ArrowRight" Color="Color.Primary" Variant="Variant.Filled" OnClick="@(() => OnTaskClicked(context))">
+                @(CanModifyTasks ? "Test" : "Start" )
+            </MudButton>
+            @if (CanModifyTasks)
+            {
+                <MudButton Class="mr-2" EndIcon="@Icons.Material.Filled.Edit" Color="Color.Info" Variant="Variant.Filled" OnClick="@(() => EditCodeTaskClicked(context))">
+                    Edit
+                </MudButton>
+                <MudButton Class="mr-2" EndIcon="@Icons.Material.Filled.Delete" Color="Color.Error" Variant="Variant.Filled" OnClick="@(() => OnDeleteTaskClicked(context.Id))">
+                    Delete
+                </MudButton>
+            }
+        </MudTd>
+    </RowTemplate>
+</MudTable>

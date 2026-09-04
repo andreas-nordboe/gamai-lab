@@ -1,0 +1,21 @@
+.task-container{
+    min-height:230px;
+    border-radius: 18px;
+}
+
+.progress-container{
+    min-height: 140px;
+    border-radius: 18px;
+}
+
+.editor-container{
+    overflow: hidden;
+    min-height: 250px;
+    border-radius: 18px;
+}
+
+.output-container{
+    overflow: hidden;
+    min-height: 220px;
+    border-radius: 18px;
+}

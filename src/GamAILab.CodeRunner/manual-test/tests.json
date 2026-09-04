@@ -1,0 +1,13 @@
+[
+  {
+    "name": "Multiplying numbers",
+    "testType": "functionReturn",
+    "functionName": "multiply",
+    "arguments": [
+      { "type": "number", "value": "10" },
+      { "type": "number", "value": "10" }
+    ],
+    "expectedResult": "100",
+    "expectedResultType": "number"
+  }
+]

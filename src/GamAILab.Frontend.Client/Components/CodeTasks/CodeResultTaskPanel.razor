@@ -1,0 +1,86 @@
+@using BlazorMonaco.Editor
+@page "/code-output"
+@using GamAILab.Frontend.Client.Components.CodeTasks
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+
+<MudContainer MaxWidth="MaxWidth.False" Class="pa-4">
+
+    <MudText Typo="Typo.h4" Class="mb-4">
+        Code Task Results @* TODO add task title and maybe description*@
+    </MudText>
+
+    <CodeEditorPanel /> @*TODO make readonly or embed component here directly*@
+
+    <MudGrid Spacing="3" Class="mt-2">
+        <MudItem xs="12" md="6">
+            <MudStack Spacing="3">
+
+                <div>
+                    <MudText Typo="Typo.h6" Class="mb-2">
+                        Code Execution
+                    </MudText>
+
+                    <MudPaper Class="pa-4 result-container" Outlined="true">
+                        <MudText>
+                            <b>Status:</b> Correct
+                        </MudText>
+                        <MudText>
+                            <b>Checks passed:</b> 4 / 4
+                        </MudText>
+
+                        <MudText>
+                            <b>Runtime:</b> 10 seconds
+                        </MudText>
+                    </MudPaper>
+                </div>
+                <div>
+                    <MudText Typo="Typo.h6" Class="mb-2">
+                        AI Hallucination Verification
+                    </MudText>
+
+                    <MudPaper Class="pa-4 verification-container" Outlined="true">
+                        <MudText>
+                            <b>Feedback consistency:</b> Passed
+                        </MudText>
+
+                        <MudText Class="mt-3">
+                            Description goes here
+                        </MudText>
+                    </MudPaper>
+                </div>
+                <MudButton Size="Size.Large" Color="Color.Primary" OnClick="GoBack" Variant="Variant.Filled">Go back</MudButton>
+
+            </MudStack>
+        </MudItem>
+
+        <MudItem xs="12" md="6">
+            <MudText Typo="Typo.h6" Class="mb-2">
+                AI Evaluation Output
+            </MudText>
+
+            <MudPaper Class="pa-4 evaluation-container" Outlined="true">
+                <MudText>
+                    <b>Outcome:</b> Incorrect
+                </MudText>
+
+                <MudText Class="mt-3">
+                    <b>Feedback:</b><br />
+                    Some feedback goes here.
+                </MudText>
+
+                <MudText Class="mt-4">
+                    <b>Hint:</b><br />
+                    Hint goes here.
+                </MudText>
+
+                <MudText Class="mt-4">
+                    <b>Explanation:</b><br />
+                    Explanation goes here.
+                </MudText>
+            </MudPaper>
+        </MudItem>
+
+    </MudGrid>
+
+</MudContainer>

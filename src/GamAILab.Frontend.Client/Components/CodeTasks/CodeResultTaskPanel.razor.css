@@ -1,0 +1,13 @@
+.result-container {
+    min-height: 130px;
+    border-radius: 18px;
+}
+
+.evaluation-container {
+    min-height: 200px;
+    border-radius: 18px;
+}
+
+.verification-container {
+    min-height: 190px;
+}

@@ -1,0 +1,165 @@
+@page "/code-task/{TaskId:int}"
+@using BlazorMonaco.Editor
+@using GamAILab.Frontend.Client.Components.CodeTasks
+@using GamAILab.Shared.Models.AICodeEvaluation.Hints
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+
+@if (_isLoading)
+{
+    <MudProgressLinear/> 
+}
+else if(_codeTask is null)
+{
+    <MudAlert Severity="Severity.Error">
+        Code task was not found
+    </MudAlert>
+}
+else
+{
+    <MudContainer Class="pa-4" MaxWidth="MaxWidth.False">
+        <MudText Align="Align.Left" Class="mb-4" Typo="Typo.h5"><b>@_codeTask.Title</b></MudText>
+        
+        <MudGrid Spacing="3">
+            <MudItem xs="12" md="5">
+                <MudText Color="Color.Primary" Typo="Typo.h5" Class="mb-2"> Instructions</MudText>
+                
+                <MudPaper Outlined="true" Class="pa-4 task-container">
+                    
+                    <MudText Typo="Typo.body1" Class="mb-3">
+                        @_codeTask.Description
+                    </MudText>
+                    
+                    <MudText><strong>Examples:</strong></MudText>
+                    <ul style="margin-left: 20px" class="ml-2 mt-1">
+                        @foreach (var example in _codeTask.Examples ?? [])
+                        {
+                            <li>
+                                <MudText Typo="Typo.body2">@example</MudText>
+                            </li>
+                        }
+                    </ul>
+                    
+                    
+                    @if (_codeTask?.Constraints is not null)
+                    {
+                        if (_codeTask.Constraints.Any())
+                        {
+                            <MudText Class="my-2"><strong>Requirements:</strong></MudText>
+                            
+                            <ul style="margin-left: 20px" class="ml-2 mt-1">
+                                @foreach (var constraint in _codeTask.Constraints ?? [])
+                                {
+                                    <li>
+                                        <MudText Typo="Typo.body2">@constraint</MudText>
+                                    </li>
+                                }
+                            </ul>
+                        }
+                    }
+                </MudPaper>
+                
+                <MudText Color="Color.Primary" Typo="Typo.h5" Class="my-2">Progress</MudText>
+
+                <MudPaper Outlined="true" Class="pa-4 progress-container">
+                    <MudText Typo="Typo.body1" Class="my-2"><b>Code evaluation status: </b>@(_codeEvaluationStatus is null ? "Waiting" : GetCodeEvaluationStepTitle(_codeEvaluationStatus.CodeEvaluationStep))</MudText>
+                    <MudText Typo="Typo.body1" Class="my-2"><b>Attempts used: </b>@_attemptsUsed</MudText>
+                    <MudText Typo="Typo.body1" Class="mb-2"><b>Hints used: </b>@_hintsUsed</MudText>
+                    
+                    <MudStack Spacing="2" Class="mt-4"  Row="true" Justify="Justify.Center">
+                        <MudButton FullWidth="true" Size="Size.Large" Color="Color.Primary" Variant="Variant.Filled" OnClick="ToggleGetCodeAssistance">Get Hint</MudButton>
+                        <MudButton FullWidth="true" Size="Size.Large" Color="Color.Primary" Variant="Variant.Filled" OnClick="ResetCode">Reset Code</MudButton>
+                    </MudStack>
+                    
+                    
+                    @if (_showCodeAssistant)
+                    {
+                        <MudPaper Outlined="true" Class="pa-3 mt-3">
+                            <MudText Typo="Typo.h6">Virtual AI Code Assistant</MudText>
+
+                            <MudText Typo="Typo.body2" Class="mb-3">
+                                Ask the AI assistant for guidance
+                            </MudText>
+
+                            @if (_helpChatLogs.Any())
+                            {
+                                @foreach (var message in _helpChatLogs)
+                                {
+                                    <MudAlert Variant="Variant.Outlined" Severity="@(message.ChatLogRole == AICodeHintChatLogRole.AIAssistant ? Severity.Success : Severity.Info)" Class="mb-2">
+                                        @message.Content
+                                    </MudAlert>
+                                }
+                            }
+
+                            <MudTextField @bind-Value="_helpInput" Placeholder="What do you need help with?" Variant="Variant.Outlined" Lines="2" />
+
+                            <MudButton Class="mt-2" FullWidth="true" Variant="Variant.Filled" Color="Color.Primary" Disabled="_isLoadingHint" OnClick="OnSendHelpMessageClicked">
+                                @if (_isLoadingHint)
+                                {
+                                     <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                                }
+                                Ask AI Assistant
+                            </MudButton>
+
+                        </MudPaper>
+                    }
+
+                </MudPaper>
+            </MudItem>
+            
+            
+            <MudItem xs="12" md="7">
+                <MudText Color="Color.Primary" Typo="Typo.h5" Class="mb-2">Code Editor</MudText>
+                <MudPaper Outlined="true" Class="editor-container">
+                    <CodeEditorPanel @ref="_codeEditorPanel" EditorId="code-editor" DefaultCode="@_codeTask.DefaultCode" />
+                </MudPaper>
+                
+                @if (_codeIsSubmitting)
+                {
+                    <MudProgressLinear Color="Color.Primary" Rounded="true" Indeterminate="@(_codeIsExecuting || _codeIsSubmitting)"></MudProgressLinear>
+                }
+                
+                <MudStack Spacing="2" Row="true" Justify="Justify.Center" Class="mt-3">
+                    
+                    
+                    <MudButton FullWidth="true" Size="Size.Large" Disabled="_codeIsSubmitting" Variant="Variant.Filled" Color="Color.Primary" OnClick="SubmitCodeAsync">
+                        @if (_codeIsSubmitting)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                            <MudText>Submitting Code</MudText>
+                        }
+                        else
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="false" Class="mr-2" />
+                            <MudText>Submit Code</MudText>
+                        }
+                    </MudButton>
+                    <MudButton FullWidth="true" Size="Size.Large" Disabled="_codeIsExecuting" Variant="Variant.Filled" Color="Color.Primary" OnClick="RunCodeAsync">
+                        @if (_codeIsExecuting)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                            <MudText>Running Code</MudText>
+                        }
+                        else
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="false" Class="mr-2" />
+                            <MudText>Run Code</MudText>
+                        }
+                    </MudButton>
+                    
+                    
+                </MudStack>
+                
+                <MudText Color="Color.Primary" Class="mt-4 mb-2" Typo="Typo.h5">Code Execution</MudText>
+                
+                <MudPaper Outlined="true" Class="output-container">
+                    <CodeEditorPanel @ref="_codeOutputPanel" EditorId="code-output" ReadOnly="true" />
+                </MudPaper>
+                
+                
+            </MudItem>
+            
+        </MudGrid>
+
+    </MudContainer>
+}

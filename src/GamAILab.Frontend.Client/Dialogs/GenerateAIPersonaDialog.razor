@@ -1,0 +1,123 @@
+@using GamAILab.Shared.Models
+@inject IDialogService DialogService
+
+<MudDialog>
+    <DialogContent>
+        
+        <MudText Typo="Typo.body1" Class="mb-3">
+            Enter persona description here or leave empty to generate a generic AI learner persona.
+        </MudText>
+
+        <MudTextField T="string"@bind-Value="_aiPersonaDescription"Label="AI Persona Description" Placeholder="For example: Beginner programmer student that struggle to focus" Variant="Variant.Outlined" Lines="4" FullWidth="true"  Class="mb-3" />
+        
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.AutoAwesome" OnClick="OnGenerateAIPersonaClicked" Disabled="_isGeneratingPersona">
+            @if (_isGeneratingPersona)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                <MudText>Generating AI Persona</MudText>
+            }
+            else if (_generatedPersona is not null)
+            {
+                <MudText>Regenerate AI Persona</MudText>
+            }
+            else
+            {
+                <MudText>Generate AI Persona</MudText>
+            }
+        </MudButton>
+        
+        @if (_generatedPersona is not null)
+        {
+            <MudDivider Class="my-4" />
+
+            <MudText Typo="Typo.h6" Class="mb-3">
+                 Generated Persona
+            </MudText>
+
+            <MudPaper Outlined="true" Class="pa-4">
+                <MudText Typo="Typo.h6">
+                    @_generatedPersona.Name
+                </MudText>
+                <MudText>
+                    <b>Assigned Learner Difficulty: </b>@_generatedPersona.AssignedDifficulty
+                </MudText>
+                
+                <MudText Typo="Typo.subtitle2" Class="mt-3">
+                    Background
+                </MudText>
+
+                <MudText Typo="Typo.body2">
+                    @_generatedPersona.Background
+                </MudText>
+                
+                <MudText Typo="Typo.subtitle2" Class="mt-4">
+                    Learning Capabilities
+                </MudText>
+
+                @if (_generatedPersona.LearningCapabilities.Any())
+                {
+                    @foreach (var capability in _generatedPersona.LearningCapabilities)
+                    {
+                        <MudText Typo="Typo.body2">
+                            • @capability
+                        </MudText>
+                    }
+                }
+                else
+                {
+                    <MudText Typo="Typo.body2">
+                        None
+                    </MudText>
+                }
+
+
+                <MudText Typo="Typo.subtitle2" Class="mt-4">
+                    Learning Difficulties
+                </MudText>
+
+                @if (_generatedPersona.LearningDifficulties.Any())
+                {
+                    @foreach (var difficulty in _generatedPersona.LearningDifficulties)
+                    {
+                        <MudText Typo="Typo.body2">
+                            * @difficulty
+                        </MudText>
+                    }
+                }
+                else
+                {
+                    <MudText Typo="Typo.body2">
+                        None
+                    </MudText>
+                }
+
+
+                <MudText Typo="Typo.subtitle2" Class="mt-4">
+                    Accessibility Requirements
+                </MudText>
+
+                @if (_generatedPersona.AccessibilityRequirements.Any())
+                {
+                    @foreach (var requirement in _generatedPersona.AccessibilityRequirements)
+                    {
+                        <MudText Typo="Typo.body2">
+                            * @requirement
+                        </MudText>
+                    }
+                }
+                else
+                {
+                    <MudText Typo="Typo.body2">
+                        None
+                    </MudText>
+                }
+
+            </MudPaper>
+        }
+
+    </DialogContent>
+    <DialogActions>
+        <MudButton EndIcon="@Icons.Material.Filled.Save" Color="@Color.Primary" Disabled="@(_generatedPersona is null)" Variant="Variant.Filled" OnClick="OnSaveGeneratedPersonaClicked">Save Generated AI Persona</MudButton>
+        <MudButton EndIcon="@Icons.Material.Filled.Close" Color="@Color.Primary" Variant="Variant.Outlined" OnClick="Cancel">Cancel</MudButton>
+    </DialogActions>
+</MudDialog>

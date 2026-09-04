@@ -1,0 +1,79 @@
+﻿  version: '3.8'
+  
+  services:
+    gamai-lab-webapi:
+      image: gamai-lab-webapi
+      build:
+        context: .
+        dockerfile: GamAILab.WebApi/Dockerfile
+      ports: 
+      - "5270:8080"
+      volumes:
+        - gamai_lab_data:/app/data
+        - code_runner_workspaces:/code-runner-workspaces
+        - /var/run/docker.sock:/var/run/docker.sock
+      depends_on:
+        ollama-startup:
+          condition: service_completed_successfully
+      environment:
+          ASPNETCORE_URLS: http://+:8080
+          ASPNETCORE_ENVIRONMENT: Development
+          
+          RootAdminUser__Email: ${ROOT_ADMIN_EMAIL}
+          RootAdminUser__Password: ${ROOT_ADMIN_PASSWORD}
+          Jwt__SecretKey: ${JWT_SECRET_KEY}
+          Jwt__ExpirationTimeInMins: ${JWT_EXPIRY_TIME_IN_MINS}
+          Ollama__BaseUrl: http://ollama_service_provider:11434
+          Ollama__Model: ${OLLAMA_MODEL}
+          CodeExecutions__MaxConcurrentExecutions: ${CODE_EXECUTIONS_MAX_CONCURRENT_EXECUTIONS}
+          CodeEvaluation__UseVerifiedCodeEvaluations: ${HALLUCINATION_USE_VERIFIED_CODE_EVALUATIONS}
+          CodeEvaluation__MaxVerifiedCodeEvaluations: ${HALLUCINATION_MAX_VERIFIED_CODE_EVALUATIONS}
+          RateLimiting__PermitLimit: ${RATE_LIMIT_PERMIT_LIMIT:-120}
+          RateLimiting__WindowSeconds: ${RATE_LIMIT_WINDOW_SECONDS:-60}
+  
+    gamailab.frontend:
+      image: gamailab.frontend
+      build:
+        context: .
+        dockerfile: GamAILab.Frontend.Client/Dockerfile
+      ports: 
+      - "5123:80"
+          
+    gamailab.code-runner:
+      image: gamai-lab-code-runner:0.1
+      build:
+        context: ./GamAILab.CodeRunner
+        dockerfile: Dockerfile
+      profiles:
+        - code-runner
+        
+    ollama_service_provider:
+      image: ollama/ollama:latest
+      container_name: ollama_service_provider
+      volumes:
+        - ollama_service_provider_data:/root/.ollama
+      healthcheck: # retry logic so that model is ready first as this was causing issues with the web api not finding it
+        test: [ "CMD", "ollama", "list" ]
+        interval: 3s
+        timeout: 3s
+        retries: 20
+        
+        
+    ollama-startup:
+      image: ollama/ollama:latest
+      depends_on:
+        ollama_service_provider:
+          condition: service_healthy
+      environment:
+        OLLAMA_HOST: http://ollama_service_provider:11434
+      entrypoint: [ "ollama" ]
+      command: [ "pull", "${OLLAMA_MODEL}" ]
+        
+          
+  volumes:
+    gamai_lab_data:
+    ollama_service_provider_data:
+      
+    code_runner_workspaces:
+      name: gamai_lab_code_runner_workspaces
+  

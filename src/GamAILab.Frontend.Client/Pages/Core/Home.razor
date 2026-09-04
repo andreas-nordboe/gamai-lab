@@ -1,0 +1,7 @@
+@page "/"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+
+<MudText Align="Align.Center" Class="mt-2" Typo="Typo.h6">
+    Welcome, @Username
+</MudText>

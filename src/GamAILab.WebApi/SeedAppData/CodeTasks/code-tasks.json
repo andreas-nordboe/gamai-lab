@@ -1,0 +1,1055 @@
+[
+  {
+    "Id": 1,
+    "Title": "Unlock the door to GamAI Lab!",
+    "Description": "Write the following in so it prints to the Python output console: Open GamAI Lab!",
+    "DefaultCode": "# write python code here",
+    "Examples": [
+      "Output: Open GamAI Lab!"
+    ],
+    "Constraints": [
+      "Output must match the following exactly: Hello GamAI Lab!",
+      "Do not use input()",
+      "The Python code must not include a function",
+      "Do not only print any additional text"
+    ],
+    "Version": 1,
+    "Difficulty": 0,
+    "CurrencyReward": 10,
+    "CreatedAt": "2026-08-28T21:43:02.8775901",
+    "UpdatedAt": null,
+    "AiCodeEvaluationPlan": {
+      "Id": "3b12641630464eae8e0afa2cce6d9b72",
+      "CodeTaskId": 1,
+      "CodeTaskVersion": 1,
+      "Criteria": [
+        "The code must print the exact string \"Open GamAI Lab!\" to standard output."
+      ],
+      "CommonMistakes": [
+        "Printing incorrect text (e.g., \"Hello GamAI Lab!\" or missing exclamation mark).",
+        "Including extra characters or newlines before or after the required output."
+      ],
+      "FeedbackInstructions": "Check if the standard output exactly matches \"Open GamAI Lab!\".",
+      "ModelUsed": "gemma4",
+      "Language": "Python",
+      "PromptVersion": "1.0",
+      "SchemaVersion": "1.0",
+      "Tests": [
+        {
+          "name": "Test correct output",
+          "testType": 0,
+          "arguments": [],
+          "standardInput": [],
+          "expectedResult": "Open GamAI Lab!",
+          "expectedResultType": 1,
+          "functionName": null,
+          "exception": null
+        }
+      ],
+      "InitiatedAt": "2026-08-28T21:42:37.6275314+00:00",
+      "PlanningDuration": "00:00:25.2513745"
+    }
+  },
+  {
+    "Id": 2,
+    "Title": "Calculate the robot's battery level",
+    "Description": "Create two variables called current_battery and battery_added. Add them together and print the robot's new battery level.",
+    "DefaultCode": "current_battery = 40\r\nbattery_added = 20\r\n\r\n# Write your python code below this line",
+    "Examples": [
+      "Output: 60"
+    ],
+    "Constraints": [
+      "The current_battery variable must be used",
+      "The battery_added variable must be used",
+      "Print the new battery level",
+      "Do not use input()",
+      "Do not print any additional text"
+    ],
+    "Version": 1,
+    "Difficulty": 0,
+    "CurrencyReward": 10,
+    "CreatedAt": "2026-08-28T21:43:17.688049",
+    "UpdatedAt": null,
+    "AiCodeEvaluationPlan": {
+      "Id": "fb32a585a5cf4b0ab1e63441b9694585",
+      "CodeTaskId": 2,
+      "CodeTaskVersion": 1,
+      "Criteria": [
+        "The code must correctly calculate the sum of `current_battery` and `battery_added`.",
+        "The code must print the resulting sum to standard output.",
+        "The code must use both the `current_battery` and `battery_added` variables."
+      ],
+      "CommonMistakes": [
+        "Forgetting to print the result.",
+        "Not using one or both required variables.",
+        "Printing extra text besides the result."
+      ],
+      "FeedbackInstructions": "Check if the final calculated sum is printed correctly and if both initial variables were utilized.",
+      "ModelUsed": "gemma4",
+      "Language": "Python",
+      "PromptVersion": "1.0",
+      "SchemaVersion": "1.0",
+      "Tests": [
+        {
+          "name": "Test with example values",
+          "testType": 0,
+          "arguments": [],
+          "standardInput": [],
+          "expectedResult": "60",
+          "expectedResultType": 1,
+          "functionName": null,
+          "exception": null
+        }
+      ],
+      "InitiatedAt": "2026-08-28T21:43:03.0251475+00:00",
+      "PlanningDuration": "00:00:14.6648019"
+    }
+  },
+  {
+    "Id": 3,
+    "Title": "Calculate the robot's energy use",
+    "Description": "Create a Python function that accepts the robot's power use and number of hours, then return the total energy used.",
+    "DefaultCode": "def calculate_energy(power, hours):\r\n    # Write your python code below this line",
+    "Examples": [
+      "calculate_energy(50,2) should return 100",
+      "calculate_energy(25,4) should return 100",
+      "calculate_energy(10,5) should return 50"
+    ],
+    "Constraints": [
+      "The function must be called calculate_energy",
+      "The function must return a numbered answer",
+      "The function must only accept 2 arguments",
+      "Do not use input()",
+      "Do not only print the output/result"
+    ],
+    "Version": 1,
+    "Difficulty": 0,
+    "CurrencyReward": 10,
+    "CreatedAt": "2026-08-28T21:43:44.5599867",
+    "UpdatedAt": null,
+    "AiCodeEvaluationPlan": {
+      "Id": "8c3d9e0660fb4c15be591b77004f4067",
+      "CodeTaskId": 3,
+      "CodeTaskVersion": 1,
+      "Criteria": [
+        "The function must accept two arguments: power use and number of hours.",
+        "The function must correctly calculate the total energy used by multiplying power by hours.",
+        "The function must return the calculated total energy."
+      ],
+      "CommonMistakes": [
+        "Incorrectly calculating the product (e.g., adding instead of multiplying).",
+        "Returning a string representation of the result instead of a number.",
+        "Not accepting the correct number of arguments."
+      ],
+      "FeedbackInstructions": "Check if the function signature is correct and if the return value accurately reflects the product of the two input arguments.",
+      "ModelUsed": "gemma4",
+      "Language": "Python",
+      "PromptVersion": "1.0",
+      "SchemaVersion": "1.0",
+      "Tests": [
+        {
+          "name": "Example 1",
+          "testType": 2,
+          "arguments": [
+            {
+              "Type": 3,
+              "Value": "50"
+            },
+            {
+              "Type": 3,
+              "Value": "2"
+            }
+          ],
+          "standardInput": [],
+          "expectedResult": "100",
+          "expectedResultType": 3,
+          "functionName": "calculate_energy",
+          "exception": null
+        },
+        {
+          "name": "Example 2",
+          "testType": 2,
+          "arguments": [
+            {
+              "Type": 3,
+              "Value": "25"
+            },
+            {
+              "Type": 3,
+              "Value": "4"
+            }
+          ],
+          "standardInput": [],
+          "expectedResult": "100",
+          "expectedResultType": 3,
+          "functionName": "calculate_energy",
+          "exception": null
+        },
+        {
+          "name": "Example 3",
+          "testType": 2,
+          "arguments": [
+            {
+              "Type": 3,
+              "Value": "10"
+            },
+            {
+              "Type": 3,
+              "Value": "5"
+            }
+          ],
+          "standardInput": [],
+          "expectedResult": "50",
+          "expectedResultType": 3,
+          "functionName": "calculate_energy",
+          "exception": null
+        }
+      ],
+      "InitiatedAt": "2026-08-28T21:43:17.6970121+00:00",
+      "PlanningDuration": "00:00:26.8642376"
+    }
+  },
+  {
+    "Id": 4,
+    "Title": "Check if the robot can start",
+    "Description": "Create a Python function that checks the robot's battery level. Return True if the battery level is 20 or higher, otherwise return False.",
+    "DefaultCode": "def can_robot_start(battery_level):\r\n    # Write your python code below this line",
+    "Examples": [
+      "can_robot_start(80) should return True",
+      "can_robot_start(20) should return True",
+      "can_robot_start(10) should return False"
+    ],
+    "Constraints": [
+      "The function must be called can_robot_start",
+      "The function must return either True or False",
+      "The robot can start when its battery level is 20 or higher",
+      "The function must only accept 1 argument",
+      "Do not use input()",
+      "Do not only print the output/result"
+    ],
+    "Version": 1,
+    "Difficulty": 0,
+    "CurrencyReward": 10,
+    "CreatedAt": "2026-08-28T21:44:22.8632157",
+    "UpdatedAt": null,
+    "AiCodeEvaluationPlan": {
+      "Id": "11f87be64f2b44c2873b18d6ce74da91",
+      "CodeTaskId": 4,
+      "CodeTaskVersion": 1,
+      "Criteria": [
+        "The function must be named `can_robot_start`.",
+        "The function must accept exactly one argument representing the battery level.",
+        "The function must return `True` if the battery level is 20 or greater.",
+        "The function must return `False` if the battery level is less than 20."
+      ],
+      "CommonMistakes": [
+        "Returning a string ('True'/'False') instead of boolean values.",
+        "Using print statements instead of returning the boolean value.",
+        "Incorrectly implementing the comparison logic (e.g., using > 20 instead of >= 20)."
+      ],
+      "FeedbackInstructions": "Check if the function correctly returns a boolean value based on the provided battery level according to the specified threshold (20).",
+      "ModelUsed": "gemma4",
+      "Language": "Python",
+      "PromptVersion": "1.0",
+      "SchemaVersion": "1.0",
+      "Tests": [
+        {
+          "name": "Test with high battery level",
+          "testType": 2,
+          "arguments": [
+            {
+              "Type": 3,
+              "Value": "80"
+            }
+          ],
+          "standardInput": [],
+          "expectedResult": "True",
+          "expectedResultType": 2,
+          "functionName": "can_robot_start",
+          "exception": null
+        },
+        {
+          "name": "Test with minimum required battery level",
+          "testType": 2,
+          "arguments": [
+            {
+              "Type": 3,
+              "Value": "20"
+            }
+          ],
+          "standardInput": [],
+          "expectedResult": "True",
+          "expectedResultType": 2,
+          "functionName": "can_robot_start",
+          "exception": null
+        },
+        {
+          "name": "Test with low battery level",
+          "testType": 2,
+          "arguments": [
+            {
+              "Type": 3,
+              "Value": "19"
+            }
+          ],
+          "standardInput": [],
+          "expectedResult": "False",
+          "expectedResultType": 2,
+          "functionName": "can_robot_start",
+          "exception": null
+        },
+        {
+          "name": "Test with zero battery level",
+          "testType": 2,
+          "arguments": [
+            {
+              "Type": 3,
+              "Value": "0"
+            }
+          ],
+          "standardInput": [],
+          "expectedResult": "False",
+          "expectedResultType": 2,
+          "functionName": "can_robot_start",
+          "exception": null
+        }
+      ],
+      "InitiatedAt": "2026-08-28T21:43:44.5904982+00:00",
+      "PlanningDuration": "00:00:38.2746892"
+    }
+  },
+  {
+    "Id": 5,
+    "Title": "Select the robot's operating mode",
+    "Description": "Create a Python function that returns the robot's operating mode based on its battery level.",
+    "DefaultCode": "def get_robot_mode(battery_level):\r\n    # Write your python code below this line",
+    "Examples": [
+      "get_robot_mode(80) should return Exploration",
+      "get_robot_mode(50) should return Power Saving",
+      "get_robot_mode(10) should return Recharge"
+    ],
+    "Constraints": [
+      "The function must be called get_robot_mode",
+      "Return Exploration when the battery level is 70 or higher",
+      "Return Power Saving when the battery level is between 30 and 69",
+      "Return Recharge when the battery level is below 30",
+      "The function must only accept 1 argument",
+      "Do not use input()",
+      "Do not only print the output/result"
+    ],
+    "Version": 1,
+    "Difficulty": 0,
+    "CurrencyReward": 10,
+    "CreatedAt": "2026-08-28T21:45:12.6604949",
+    "UpdatedAt": null,
+    "AiCodeEvaluationPlan": {
+      "Id": "2b1519447f304315b81b69902fcd8050",
+      "CodeTaskId": 5,
+      "CodeTaskVersion": 1,
+      "Criteria": [
+        "The function must be named `get_robot_mode`.",
+        "The function must accept exactly one argument: `battery_level`.",
+        "It must return 'Exploration' if `battery_level` is 70 or higher.",
+        "It must return 'Power Saving' if `battery_level` is between 30 and 69 (inclusive of 30, exclusive of 70).",
+        "It must return 'Recharge' if `battery_level` is below 30."
+      ],
+      "CommonMistakes": [
+        "Incorrectly handling the boundary conditions (e.g., 70, 30).",
+        "Using print statements instead of return values.",
+        "Not handling all specified ranges."
+      ],
+      "FeedbackInstructions": "Check if the function returns the correct string ('Exploration', 'Power Saving', or 'Recharge') for the given battery level according to the specified ranges.",
+      "ModelUsed": "gemma4",
+      "Language": "Python",
+      "PromptVersion": "1.0",
+      "SchemaVersion": "1.0",
+      "Tests": [
+        {
+          "name": "Test high battery level",
+          "testType": 2,
+          "arguments": [
+            {
+              "Type": 3,
+              "Value": "80"
+            }
+          ],
+          "standardInput": [],
+          "expectedResult": "Exploration",
+          "expectedResultType": 1,
+          "functionName": "get_robot_mode",
+          "exception": null
+        },
+        {
+          "name": "Test mid-range battery level",
+          "testType": 2,
+          "arguments": [
+            {
+              "Type": 3,
+              "Value": "50"
+            }
+          ],
+          "standardInput": [],
+          "expectedResult": "Power Saving",
+          "expectedResultType": 1,
+          "functionName": "get_robot_mode",
+          "exception": null
+        },
+        {
+          "name": "Test low battery level",
+          "testType": 2,
+          "arguments": [
+            {
+              "Type": 3,
+              "Value": "10"
+            }
+          ],
+          "standardInput": [],
+          "expectedResult": "Recharge",
+          "expectedResultType": 1,
+          "functionName": "get_robot_mode",
+          "exception": null
+        },
+        {
+          "name": "Test boundary: 70 (Exploration)",
+          "testType": 2,
+          "arguments": [
+            {
+              "Type": 3,
+              "Value": "70"
+            }
+          ],
+          "standardInput": [],
+          "expectedResult": "Exploration",
+          "expectedResultType": 1,
+          "functionName": "get_robot_mode",
+          "exception": null
+        },
+        {
+          "name": "Test boundary: 30 (Power Saving)",
+          "testType": 2,
+          "arguments": [
+            {
+              "Type": 3,
+              "Value": "30"
+            }
+          ],
+          "standardInput": [],
+          "expectedResult": "Power Saving",
+          "expectedResultType": 1,
+          "functionName": "get_robot_mode",
+          "exception": null
+        },
+        {
+          "name": "Test boundary: 29 (Recharge)",
+          "testType": 2,
+          "arguments": [
+            {
+              "Type": 3,
+              "Value": "29"
+            }
+          ],
+          "standardInput": [],
+          "expectedResult": "Recharge",
+          "expectedResultType": 1,
+          "functionName": "get_robot_mode",
+          "exception": null
+        }
+      ],
+      "InitiatedAt": "2026-08-28T21:44:22.8699615+00:00",
+      "PlanningDuration": "00:00:49.7936215"
+    }
+  },
+  {
+    "Id": 6,
+    "Title": "Count the robot's completed experiments",
+    "Description": "Create a Python function that accepts the number of experiments and uses a loop to count how many experiments have been completed.",
+    "DefaultCode": "def count_experiments(number_of_experiments):\r\n    completed = 0\r\n\r\n    # Write your python code below this line",
+    "Examples": [
+      "count_experiments(5) should return 5",
+      "count_experiments(10) should return 10",
+      "count_experiments(0) should return 0"
+    ],
+    "Constraints": [
+      "The function must be called count_experiments",
+      "Use a loop to count the experiments",
+      "The function must return a numbered answer",
+      "The function must only accept 1 argument",
+      "Do not use input()",
+      "Do not only print the output/result"
+    ],
+    "Version": 1,
+    "Difficulty": 0,
+    "CurrencyReward": 10,
+    "CreatedAt": "2026-08-28T21:45:37.8246629",
+    "UpdatedAt": null,
+    "AiCodeEvaluationPlan": {
+      "Id": "07e20e1645a3425aa680e8d00692dd89",
+      "CodeTaskId": 6,
+      "CodeTaskVersion": 1,
+      "Criteria": [
+        "The function must be named `count_experiments`.",
+        "The function must accept exactly one argument representing the number of experiments.",
+        "The function must use a loop to count the experiments.",
+        "The function must return the correct count (equal to the input number).",
+        "The function must not use `input()` or print the result directly."
+      ],
+      "CommonMistakes": [
+        "Not using a loop.",
+        "Returning a hardcoded value instead of the input number.",
+        "Modifying the function signature or name.",
+        "Printing the result instead of returning it."
+      ],
+      "FeedbackInstructions": "Check if the function correctly calculates and returns the number of experiments using a loop, adhering to all constraints.",
+      "ModelUsed": "gemma4",
+      "Language": "Python",
+      "PromptVersion": "1.0",
+      "SchemaVersion": "1.0",
+      "Tests": [
+        {
+          "name": "Test with 5 experiments",
+          "testType": 2,
+          "arguments": [
+            {
+              "Type": 3,
+              "Value": "5"
+            }
+          ],
+          "standardInput": [],
+          "expectedResult": "5",
+          "expectedResultType": 3,
+          "functionName": "count_experiments",
+          "exception": null
+        },
+        {
+          "name": "Test with 10 experiments",
+          "testType": 2,
+          "arguments": [
+            {
+              "Type": 3,
+              "Value": "10"
+            }
+          ],
+          "standardInput": [],
+          "expectedResult": "10",
+          "expectedResultType": 3,
+          "functionName": "count_experiments",
+          "exception": null
+        },
+        {
+          "name": "Test with 0 experiments",
+          "testType": 2,
+          "arguments": [
+            {
+              "Type": 3,
+              "Value": "0"
+            }
+          ],
+          "standardInput": [],
+          "expectedResult": "0",
+          "expectedResultType": 3,
+          "functionName": "count_experiments",
+          "exception": null
+        }
+      ],
+      "InitiatedAt": "2026-08-28T21:45:12.6665744+00:00",
+      "PlanningDuration": "00:00:25.1580834"
+    }
+  },
+  {
+    "Id": 7,
+    "Title": "Find the robot's highest sensor reading",
+    "Description": "Create a Python function that accepts a list of sensor readings and returns the highest sensor reading.",
+    "DefaultCode": "def highest_sensor_reading(sensor_readings):\r\n    # Write your python code below this line",
+    "Examples": [
+      "highest_sensor_reading([12,18,7,25,14]) should return 25",
+      "highest_sensor_reading([5,10,3]) should return 10",
+      "highest_sensor_reading([100,50,75]) should return 100"
+    ],
+    "Constraints": [
+      "The function must be called highest_sensor_reading",
+      "The function must accept a list of sensor readings",
+      "The function must return a numbered answer",
+      "The function must only accept 1 argument",
+      "Do not use input()",
+      "Do not only print the output/result"
+    ],
+    "Version": 1,
+    "Difficulty": 0,
+    "CurrencyReward": 10,
+    "CreatedAt": "2026-08-28T21:46:15.7560818",
+    "UpdatedAt": null,
+    "AiCodeEvaluationPlan": {
+      "Id": "b671ae0a28f24f62a12ce6c8447e58aa",
+      "CodeTaskId": 7,
+      "CodeTaskVersion": 1,
+      "Criteria": [
+        "The function must correctly identify and return the maximum value from the input list of sensor readings.",
+        "The function must handle various list sizes, including lists with multiple elements, single elements, and potentially empty lists (though constraints don't specify empty list handling, robust code should consider it)."
+      ],
+      "CommonMistakes": [
+        "Incorrectly implementing the logic to find the maximum value (e.g., using summation instead of max).",
+        "Returning a string or a different data type instead of the actual maximum number.",
+        "Failing to handle edge cases like an empty input list (if applicable)."
+      ],
+      "FeedbackInstructions": "Check if the function returns the highest numerical value from the provided list. Ensure the return type is a number.",
+      "ModelUsed": "gemma4",
+      "Language": "Python",
+      "PromptVersion": "1.0",
+      "SchemaVersion": "1.0",
+      "Tests": [
+        {
+          "name": "Test case 1: Standard positive integers",
+          "testType": 2,
+          "arguments": [
+            {
+              "Type": 4,
+              "Value": "[12,18,7,25,14]"
+            }
+          ],
+          "standardInput": [],
+          "expectedResult": "25",
+          "expectedResultType": 3,
+          "functionName": "highest_sensor_reading",
+          "exception": null
+        },
+        {
+          "name": "Test case 2: Small positive integers",
+          "testType": 2,
+          "arguments": [
+            {
+              "Type": 4,
+              "Value": "[5,10,3]"
+            }
+          ],
+          "standardInput": [],
+          "expectedResult": "10",
+          "expectedResultType": 3,
+          "functionName": "highest_sensor_reading",
+          "exception": null
+        },
+        {
+          "name": "Test case 3: Largest element first",
+          "testType": 2,
+          "arguments": [
+            {
+              "Type": 4,
+              "Value": "[100,50,75]"
+            }
+          ],
+          "standardInput": [],
+          "expectedResult": "100",
+          "expectedResultType": 3,
+          "functionName": "highest_sensor_reading",
+          "exception": null
+        },
+        {
+          "name": "Test case 4: Single element list",
+          "testType": 2,
+          "arguments": [
+            {
+              "Type": 4,
+              "Value": "[42]"
+            }
+          ],
+          "standardInput": [],
+          "expectedResult": "42",
+          "expectedResultType": 3,
+          "functionName": "highest_sensor_reading",
+          "exception": null
+        },
+        {
+          "name": "Test case 5: Empty list (Edge Case)",
+          "testType": 2,
+          "arguments": [
+            {
+              "Type": 4,
+              "Value": "[]"
+            }
+          ],
+          "standardInput": [],
+          "expectedResult": "Error or specific value (e.g., None)",
+          "expectedResultType": 1,
+          "functionName": "highest_sensor_reading",
+          "exception": null
+        }
+      ],
+      "InitiatedAt": "2026-08-28T21:45:37.8314422+00:00",
+      "PlanningDuration": "00:00:37.9280628"
+    }
+  },
+  {
+    "Id": 8,
+    "Title": "Check a robot component's status",
+    "Description": "Create a Python function that uses the components dictionary and returns the status of the requested robot component.",
+    "DefaultCode": "def get_component_status(component_name):\r\n    components = {\r\n        \"camera\": \"online\",\r\n        \"motor\": \"online\",\r\n        \"lidar\": \"offline\"\r\n    }\r\n\r\n    # Write your python code below this line",
+    "Examples": [
+      "get_component_status(\"camera\") should return online",
+      "get_component_status(\"motor\") should return online",
+      "get_component_status(\"lidar\") should return offline"
+    ],
+    "Constraints": [
+      "The function must be called get_component_status",
+      "Use the components dictionary to find the component",
+      "The function must return the component status",
+      "The function must only accept 1 argument",
+      "Do not use input()",
+      "Do not only print the output/result"
+    ],
+    "Version": 1,
+    "Difficulty": 0,
+    "CurrencyReward": 10,
+    "CreatedAt": "2026-08-28T21:46:48.9842358",
+    "UpdatedAt": null,
+    "AiCodeEvaluationPlan": {
+      "Id": "c52c3c72f0a74d11b98e20ad33bd8553",
+      "CodeTaskId": 8,
+      "CodeTaskVersion": 1,
+      "Criteria": [
+        "The function must correctly return the status of a component that exists in the components dictionary.",
+        "The function must handle cases where the requested component name does not exist in the components dictionary (though the prompt examples don't specify this, robust code should consider it).",
+        "The function must adhere to the specified signature: `get_component_status(component_name)`."
+      ],
+      "CommonMistakes": [
+        "Returning a hardcoded value instead of looking up the status in the dictionary.",
+        "Not handling the case where the component name is misspelled or missing from the dictionary.",
+        "Printing the status instead of returning it."
+      ],
+      "FeedbackInstructions": "Check if the function correctly retrieves and returns the status string for the given component name. Ensure it handles missing keys gracefully if necessary.",
+      "ModelUsed": "gemma4",
+      "Language": "Python",
+      "PromptVersion": "1.0",
+      "SchemaVersion": "1.0",
+      "Tests": [
+        {
+          "name": "Test online component",
+          "testType": 2,
+          "arguments": [
+            {
+              "Type": 1,
+              "Value": "camera"
+            }
+          ],
+          "standardInput": [],
+          "expectedResult": "online",
+          "expectedResultType": 1,
+          "functionName": "get_component_status",
+          "exception": null
+        },
+        {
+          "name": "Test online component 2",
+          "testType": 2,
+          "arguments": [
+            {
+              "Type": 1,
+              "Value": "motor"
+            }
+          ],
+          "standardInput": [],
+          "expectedResult": "online",
+          "expectedResultType": 1,
+          "functionName": "get_component_status",
+          "exception": null
+        },
+        {
+          "name": "Test offline component",
+          "testType": 2,
+          "arguments": [
+            {
+              "Type": 1,
+              "Value": "lidar"
+            }
+          ],
+          "standardInput": [],
+          "expectedResult": "offline",
+          "expectedResultType": 1,
+          "functionName": "get_component_status",
+          "exception": null
+        },
+        {
+          "name": "Test non-existent component (optional)",
+          "testType": 2,
+          "arguments": [
+            {
+              "Type": 1,
+              "Value": "unknown_component"
+            }
+          ],
+          "standardInput": [],
+          "expectedResult": "Component not found",
+          "expectedResultType": 1,
+          "functionName": "get_component_status",
+          "exception": null
+        }
+      ],
+      "InitiatedAt": "2026-08-28T21:46:15.7614367+00:00",
+      "PlanningDuration": "00:00:33.2243267"
+    }
+  },
+  {
+    "Id": 9,
+    "Title": "Connect to a robot",
+    "Description": "Read the robot's name from the Python input console and print a message saying that GamAI Lab is connecting to that robot.",
+    "DefaultCode": "robot_name = input()\r\n\r\n# Write your python code below this line",
+    "Examples": [
+      "Input: Atlas",
+      "Output: Connecting to Atlas..."
+    ],
+    "Constraints": [
+      "Read the robot name using input()",
+      "Output must follow the format: Connecting to NAME...",
+      "Do not print an additional input prompt",
+      "Do not use a function",
+      "Do not print any additional text"
+    ],
+    "Version": 1,
+    "Difficulty": 0,
+    "CurrencyReward": 10,
+    "CreatedAt": "2026-08-28T21:47:01.7249925",
+    "UpdatedAt": null,
+    "AiCodeEvaluationPlan": {
+      "Id": "cd472714df314c608f65ff5be37f7eef",
+      "CodeTaskId": 9,
+      "CodeTaskVersion": 1,
+      "Criteria": [
+        "Reads the robot's name from standard input.",
+        "Prints the message in the exact format: \"Connecting to NAME...\"."
+      ],
+      "CommonMistakes": [
+        "Using print() statements that include extra text or prompts.",
+        "Not reading the input correctly.",
+        "Incorrect formatting of the output string."
+      ],
+      "FeedbackInstructions": "Check if the code reads the input correctly and if the output string matches the required format exactly.",
+      "ModelUsed": "gemma4",
+      "Language": "Python",
+      "PromptVersion": "1.0",
+      "SchemaVersion": "1.0",
+      "Tests": [
+        {
+          "name": "Test with Atlas",
+          "testType": 1,
+          "arguments": [],
+          "standardInput": [
+            "Atlas"
+          ],
+          "expectedResult": "Connecting to Atlas...",
+          "expectedResultType": 1,
+          "functionName": null,
+          "exception": null
+        }
+      ],
+      "InitiatedAt": "2026-08-28T21:46:48.9895562+00:00",
+      "PlanningDuration": "00:00:12.7354330"
+    }
+  },
+  {
+    "Id": 10,
+    "Title": "Detect an invalid sensor reading",
+    "Description": "Create a Python function that returns a sensor reading when it is valid. If the sensor reading is below 0, raise a ValueError.",
+    "DefaultCode": "def validate_sensor_reading(sensor_reading):\r\n    # Write your python code below this line",
+    "Examples": [
+      "validate_sensor_reading(50) should return 50",
+      "validate_sensor_reading(0) should return 0",
+      "validate_sensor_reading(-1) should raise ValueError"
+    ],
+    "Constraints": [
+      "The function must be called validate_sensor_reading",
+      "Return the sensor reading when it is 0 or higher",
+      "Raise ValueError when the sensor reading is below 0",
+      "The function must only accept 1 argument",
+      "Do not use input()",
+      "Do not only print the output/result"
+    ],
+    "Version": 1,
+    "Difficulty": 0,
+    "CurrencyReward": 10,
+    "CreatedAt": "2026-08-28T21:47:26.5636015",
+    "UpdatedAt": null,
+    "AiCodeEvaluationPlan": {
+      "Id": "dc6fcf4516ae4f1aab71c67d3f366c57",
+      "CodeTaskId": 10,
+      "CodeTaskVersion": 1,
+      "Criteria": [
+        "The function must be named `validate_sensor_reading`.",
+        "The function must accept exactly one argument (the sensor reading).",
+        "If the sensor reading is 0 or greater, the function must return the sensor reading.",
+        "If the sensor reading is less than 0, the function must raise a `ValueError`."
+      ],
+      "CommonMistakes": [
+        "Returning a string instead of the number for valid readings.",
+        "Raising a different exception type instead of `ValueError`.",
+        "Not handling the case where the reading is negative."
+      ],
+      "FeedbackInstructions": "Check if the function correctly returns the value for non-negative inputs and raises a `ValueError` for negative inputs.",
+      "ModelUsed": "gemma4",
+      "Language": "Python",
+      "PromptVersion": "1.0",
+      "SchemaVersion": "1.0",
+      "Tests": [
+        {
+          "name": "Test valid positive reading",
+          "testType": 2,
+          "arguments": [
+            {
+              "Type": 3,
+              "Value": "50"
+            }
+          ],
+          "standardInput": [],
+          "expectedResult": "50",
+          "expectedResultType": 3,
+          "functionName": "validate_sensor_reading",
+          "exception": null
+        },
+        {
+          "name": "Test zero reading",
+          "testType": 2,
+          "arguments": [
+            {
+              "Type": 3,
+              "Value": "0"
+            }
+          ],
+          "standardInput": [],
+          "expectedResult": "0",
+          "expectedResultType": 3,
+          "functionName": "validate_sensor_reading",
+          "exception": null
+        },
+        {
+          "name": "Test negative reading",
+          "testType": 3,
+          "arguments": [
+            {
+              "Type": 3,
+              "Value": "-1"
+            }
+          ],
+          "standardInput": [],
+          "expectedResult": null,
+          "expectedResultType": 0,
+          "functionName": "validate_sensor_reading",
+          "exception": "ValueError"
+        }
+      ],
+      "InitiatedAt": "2026-08-28T21:47:01.7298731+00:00",
+      "PlanningDuration": "00:00:24.8354164"
+    }
+  },
+  {
+    "Id": 11,
+    "Title": "Using a function to subtract three numbers in Python",
+    "Description": "Create a Python function that accepts three numbers, subtracts and return the sum of those numbers.",
+    "DefaultCode": "def subtract(a, b, c):\r\n    # write python code here",
+    "Examples": [
+      "subtract(10,5,1) should return 4",
+      "subtract(8,3,2) should return 3",
+      "subtract(-2,5,1) should return -8"
+    ],
+    "Constraints": [
+      "The function must be called subtract",
+      "The function must return a numbered answer (for example 10)",
+      "Do not use input()",
+      "Do not only print the output/result",
+      "The function must only accept 3 arguments"
+    ],
+    "Version": 1,
+    "Difficulty": 0,
+    "CurrencyReward": 10,
+    "CreatedAt": "2026-08-28T21:47:53.2294834",
+    "UpdatedAt": null,
+    "AiCodeEvaluationPlan": {
+      "Id": "4e26a6192a6240c28c45f865042cff82",
+      "CodeTaskId": 11,
+      "CodeTaskVersion": 1,
+      "Criteria": [
+        "The function must accept exactly three arguments.",
+        "The function must correctly calculate the subtraction of the three provided numbers (a - b - c).",
+        "The function must return the calculated result, not print it."
+      ],
+      "CommonMistakes": [
+        "Incorrectly calculating the result (e.g., adding instead of subtracting).",
+        "Printing the result instead of returning it.",
+        "Accepting the wrong number of arguments."
+      ],
+      "FeedbackInstructions": "Check if the function signature is correct, if the calculation logic is accurate, and if the function returns the value as required.",
+      "ModelUsed": "gemma4",
+      "Language": "Python",
+      "PromptVersion": "1.0",
+      "SchemaVersion": "1.0",
+      "Tests": [
+        {
+          "name": "Example 1",
+          "testType": 2,
+          "arguments": [
+            {
+              "Type": 3,
+              "Value": "10"
+            },
+            {
+              "Type": 3,
+              "Value": "5"
+            },
+            {
+              "Type": 3,
+              "Value": "1"
+            }
+          ],
+          "standardInput": [],
+          "expectedResult": "4",
+          "expectedResultType": 3,
+          "functionName": "subtract",
+          "exception": null
+        },
+        {
+          "name": "Example 2",
+          "testType": 2,
+          "arguments": [
+            {
+              "Type": 3,
+              "Value": "8"
+            },
+            {
+              "Type": 3,
+              "Value": "3"
+            },
+            {
+              "Type": 3,
+              "Value": "2"
+            }
+          ],
+          "standardInput": [],
+          "expectedResult": "3",
+          "expectedResultType": 3,
+          "functionName": "subtract",
+          "exception": null
+        },
+        {
+          "name": "Example 3 (Negative Numbers)",
+          "testType": 2,
+          "arguments": [
+            {
+              "Type": 3,
+              "Value": "-2"
+            },
+            {
+              "Type": 3,
+              "Value": "5"
+            },
+            {
+              "Type": 3,
+              "Value": "1"
+            }
+          ],
+          "standardInput": [],
+          "expectedResult": "-8",
+          "expectedResultType": 3,
+          "functionName": "subtract",
+          "exception": null
+        }
+      ],
+      "InitiatedAt": "2026-08-28T21:47:26.5684731+00:00",
+      "PlanningDuration": "00:00:26.6622632"
+    }
+  }
+]

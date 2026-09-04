@@ -1,0 +1,13 @@
+@using GamAILab.Frontend.Client.Components.CodeTasks
+@using GamAILab.Shared.Models
+@inject IDialogService DialogService
+
+<MudDialog>
+    <DialogContent>
+        <CodeTaskForm CodeTask="@CodeTask" IsEditing="@IsEditing"></CodeTaskForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton EndIcon="@Icons.Material.Filled.Save" Color="@Color.Success" Variant="Variant.Filled" OnClick="SaveCodeTask">Save</MudButton>
+        <MudButton EndIcon="@Icons.Material.Filled.Close" Color="@Color.Error" Variant="Variant.Filled" OnClick="Cancel">Cancel</MudButton>
+    </DialogActions>
+</MudDialog>

@@ -1,0 +1,256 @@
+@page "/educator-monitoring"
+@using GamAILab.Shared.Models.AIPersonaSimulation
+
+        
+@*currently running*@
+<MudText Color="Color.Primary" Typo="Typo.h6" Class="mb-3 mx-4">
+    Classroom Simulations
+</MudText>
+<MudPaper Class="pa-4 mb-5 mx-4" Elevation="2">
+    <MudTable Items="ClassroomSimulations"
+              Hover="true"
+              Dense="true"
+              Striped="true">
+
+        <HeaderContent>
+            <MudTh>Simulation Id</MudTh>
+            <MudTh>Started At</MudTh>
+            <MudTh>Completed At</MudTh>
+            <MudTh>Status</MudTh>
+            <MudTh>Actions</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Simulation">
+                @context.Id
+            </MudTd>
+            <MudTd DataLabel="Started">
+                @context.StartedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")
+            </MudTd>
+            <MudTd DataLabel="Completed">
+                @if (context.CompletedAt.HasValue)
+                {
+                    @context.CompletedAt.Value.ToLocalTime().ToString("dd/MM/yyyy HH:mm")
+                }
+                else
+                {
+                    <MudText Typo="Typo.caption">
+                        -
+                    </MudText>
+                }
+            </MudTd>
+            <MudTd DataLabel="Status">
+                <MudText Color="@GetSimulationStatusColor(context.Status)">
+                    <b>@context.Status</b>
+                </MudText>
+            </MudTd>
+            <MudTd DataLabel="Action">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" Disabled="@(SelectedClassroomSimulation?.Id == context.Id)" OnClick="@(() => SelectClassroomSimulationAsync(context))">
+                    @GetSimulationButtonTitle(context)
+                </MudButton>
+            </MudTd>
+        </RowTemplate>
+        <PagerContent>
+            <MudTablePager/>
+        </PagerContent>
+    </MudTable>
+</MudPaper>
+
+
+@*selected simulation*@
+
+@if (SelectedClassroomSimulation is not null)
+{
+    <MudContainer MaxWidth="MaxWidth.False" Class="px-4 pa-0">
+        
+        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-5">
+
+            <div>
+                <MudText Color="Color.Primary" Typo="Typo.h6">
+                    <b>@(SelectedClassroomSimulation.Status == ClassroomSimulationStatus.Running ? "Educator Monitoring Dashboard" : "Classroom Simulation Review")</b>
+                </MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">
+                    Task @(_learners.Count > 0 ? _learners.Max(x => x.CurrentTaskNumber) : 0)/ @(_learners.Count > 0 ? _learners.Max(x => x.TotalTasks) : 0)·
+                    Step @(_learners.Count > 0 ? _learners.Max(x => x.CurrentStepIndex) : 0)·
+                    @(_learners.Count > 0 ? _learners.Max(x => x.SimulatedMinute) : 0) min
+                </MudText>
+            </div>
+
+            @if (SelectedClassroomSimulation.Status == ClassroomSimulationStatus.Running)
+            {
+                <MudChip T="string" Color="@(_isConnected ? Color.Success : Color.Error)" Variant="Variant.Filled">@(_isConnected ? "Connected" : "Disconnected")</MudChip>
+            }
+            else
+            {
+                <MudChip T="string" Color="Color.Dark">Not monitoring</MudChip>
+            }
+
+        </MudStack>
+
+
+        @*summaries*@
+
+        <MudGrid Class="mb-5">
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudPaper Class="pa-4" Elevation="2">
+                    <MudText Typo="Typo.subtitle2">Passed Latest Code Task</MudText>
+                    <MudText Typo="Typo.h4">@(_learners.Count == 0 ? "-" : $"{_passedLatestTaskCount} / {_learners.Count}")</MudText>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudPaper Class="pa-4" Elevation="2">
+                    <MudText Typo="Typo.subtitle2">Average Engagement</MudText>
+
+                    <MudText Typo="Typo.h4">@_averageEngagement.ToString("0")%</MudText>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudPaper Class="pa-4" Elevation="2">
+                    <MudText Typo="Typo.subtitle2">Learners Declining</MudText>
+
+                    <MudText Typo="Typo.h4"Color="Color.Warning">@_totalLearnersDeclining</MudText>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudPaper Class="pa-4" Elevation="2">
+                    <MudText Typo="Typo.subtitle2">High Engagement Drop Risk</MudText>
+
+                    <MudText Typo="Typo.h4" Color="Color.Error">@_highRiskCount</MudText>
+                </MudPaper>
+            </MudItem>
+
+        </MudGrid>
+
+        @*highrisk warnings*@
+
+        @if (_learners.Any(x => x.EngagementDropRiskLevel == EngagementDropRiskLevel.High)) @*TODO EngagementDropRisk *@
+        {
+            <MudAlert Severity="Severity.Warning"Variant="Variant.Filled"Class="mb-5">One or more learners have been identified as having a high risk of engagement decline</MudAlert>
+        }
+
+        <MudPaper Class="pa-4 mb-5" Elevation="2">
+
+            <MudText Typo="Typo.h5" Class="mb-3">
+                Learner Engagement
+            </MudText>
+
+            <MudTable Items="_learners"Hover="true"Dense="true"Striped="true">
+                <HeaderContent>
+                    <MudTh>Learner</MudTh>
+                    <MudTh>Latest Task Status</MudTh>
+                    <MudTh>Current Engagement</MudTh>
+                    <MudTh>Predicted Engagement</MudTh>
+                    <MudTh>Trend</MudTh>
+                    <MudTh>Drop Risk</MudTh>
+                    <MudTh>Latest Struggles</MudTh>
+                    <MudTh>Latest Learning Outcomes</MudTh>
+                </HeaderContent>
+
+                <RowTemplate>
+
+                    <MudTd DataLabel="Learner">
+                        <MudText Typo="Typo.body1"><b>@context.PersonaName</b></MudText>
+                    </MudTd>
+                    <MudTd DataLabel="Latest Task">
+                        <MudChip T="string" Size="Size.Small" Color="@(context.PassedLatestCodeTask ? Color.Success : Color.Error)">
+                            @(context.PassedLatestCodeTask ? "Passed" : "Failed")
+                        </MudChip>
+                    </MudTd>
+
+                    <MudTd DataLabel="Current Engagement" Style="min-width: 180px;">
+
+                        <MudStack Spacing="1">
+                            <MudText Typo="Typo.body2">
+                                @context.EngagementScore / 100
+                            </MudText>
+                            <MudProgressLinear Value="@context.EngagementScore" Color="@GetEngagementColor(context.EngagementScore)" Rounded="true"/>
+                        </MudStack>
+
+                    </MudTd>
+
+                    @*TODO PredictedEngagementScore *@
+                    <MudTd DataLabel="Predicted Engagement">
+                        <MudText Typo="Typo.body2">
+                            @context.PredictedEngagementScore / 100
+                        </MudText>
+                        <MudProgressLinear Value="@context.PredictedEngagementScore" Color="@GetEngagementColor(context.PredictedEngagementScore)" Rounded="true"/>
+                    </MudTd>
+
+                    <MudTd DataLabel="Trend">
+
+                        @if (context.EngagementIsDeclining)
+                        {
+                            <MudChip T="string" Size="Size.Small"Color="Color.Warning">
+                                Declining
+                            </MudChip>
+                        }
+                        else
+                        {
+                            <MudChip T="string" Size="Size.Small" Color="Color.Success">
+                                Stable
+                            </MudChip>
+                        }
+
+                    </MudTd>
+
+                    <MudTd DataLabel="Drop Risk">
+
+                        <MudChip T="string" Size="Size.Small" Color="@GetEngagementRiskColor(context.EngagementDropRiskLevel)">
+                            @context.EngagementDropRiskLevel
+                        </MudChip>
+                    </MudTd>
+
+                    <MudTd DataLabel="Latest Struggles">
+
+                        @if (context.Struggles.Count == 0)
+                        {
+                            <MudText Typo="Typo.caption">No learning struggles reported yet</MudText>
+                        }
+                        else
+                        {
+                            @string.Join(", ", context.Struggles)
+                        }
+                    </MudTd>
+
+                    <MudTd DataLabel="Latest Learning Outcomes">
+
+                        @if (context.LearningOutcomes.Count == 0)
+                        {
+                            <MudText Typo="Typo.caption">No learning outcomes reported yet</MudText>
+                        }
+                        else
+                        {
+                            @string.Join(", ", context.LearningOutcomes)
+                        }
+                    </MudTd>
+
+                </RowTemplate>
+
+                <PagerContent>
+                    <MudTablePager/>
+                </PagerContent>
+
+            </MudTable>
+
+        </MudPaper>
+
+        <MudPaper Class="pa-4" Elevation="2">
+
+            <MudText Color="Color.Primary" Typo="Typo.h6" Class="mb-3">Classroom Engagement</MudText>
+
+            @if (_engagementHistory.Count > 0)
+            {
+
+                <MudChart T="double" ChartType="ChartType.Line" ChartSeries="@_engagementHistory" ChartLabels="@_timeLabels" ChartOptions="@_chartOptions" Width="100%" Height="300px"/>
+            }
+            else
+            {
+                <MudText Typo="Typo.body2"Color="Color.Secondary">Engagement history not found</MudText>
+            }
+
+        </MudPaper>
+    </MudContainer>
+}

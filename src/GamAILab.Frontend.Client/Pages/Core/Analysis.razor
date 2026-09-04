@@ -1,0 +1,14 @@
+@page "/analysis"
+
+<MudButton Class="mt-4 ml-4" OnClick="@OnExportAnalysisReportClicked" Disabled="@(_isLoadingSummaries || !ClassroomSimulations.Any())" Variant="Variant.Filled" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Download">Export Classroom Analysis</MudButton>
+
+@if (_isLoadingSummaries)
+{
+    <MudProgressCircular Class="ma-4" Indeterminate="true" />
+}
+else
+{
+    <MudText Class="ma-4">
+        @ClassroomSimulations.Count classroom simulations are ready to be exported
+    </MudText>
+}

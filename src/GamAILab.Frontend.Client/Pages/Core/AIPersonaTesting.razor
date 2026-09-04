@@ -1,0 +1,134 @@
+@page "/ai-persona-testing"
+@using GamAILab.Frontend.Client.Components.CodeTasks
+@using GamAILab.Shared.Models
+@using GamAILab.Shared.Models.AIPersonaSimulation
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Admin")]
+
+<MudText Color="Color.Primary" Typo="Typo.h6" Class="mx-4 my-2">
+    <b>AI Persona Management</b>
+</MudText>
+
+
+<MudStack Row="true" Spacing="2" Class="my-2 mx-4">
+    <MudButton OnClick="@OnAddAIPersonaClicked" Variant="Variant.Filled" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Add">Add AI Persona</MudButton>
+    <MudButton OnClick="@OnGenerateAIPersonaClicked" Variant="Variant.Filled" Color="Color.Primary" EndIcon="@Icons.Material.Filled.AutoAwesome">Generate AI Persona</MudButton>
+</MudStack>
+
+<MudText Color="Color.Primary" Typo="Typo.h6" Class="mx-4 my-2">
+    <b>AI Persona Simulations</b>
+</MudText>
+
+@*persona and task*@
+<MudPaper Class="mx-4 my-4 py-2">
+    <MudText Typo="Typo.h6" Class="mx-4 mb-2">
+        <b>Single Code Task Testing using selected AI personas</b>
+    </MudText>
+    <MudText Typo="Typo.body2" Class="mx-4 mb-2">
+        <b>Test code task using one or multiple personas</b>
+    </MudText>
+
+    <MudStack Class="mt-2" Row="true" Spacing="2">
+        <MudSelect Class="my-2 mx-4 mt-4" T="CodeTask" Label="Selected Code Task" @bind-Value="@SelectedCodeTask" Variant="Variant.Outlined">
+            @if (CodeTasks is not null)
+            {
+                @foreach (var codeTask in CodeTasks)
+                {
+                    if (codeTask is not null)
+                    {
+                        <MudSelectItem T="CodeTask" Value="codeTask">
+                            @codeTask.Id. @codeTask.Title
+                        </MudSelectItem>
+                    }
+                }
+            }
+        </MudSelect>
+        <MudNumericField Class="my-2 mx-4" @bind-Value="_executionCounts" Min="0" Max="10" Label="Number of Simulations to Run" Variant="Variant.Outlined" />
+    </MudStack>
+
+    <MudButton Class="mt-4 ml-4 mr-2" Disabled="_personaSimulationIsRunning" OnClick="@OnRunAIPersonaSimulationClicked" Variant="Variant.Filled" Color="Color.Primary" EndIcon="@Icons.Material.Filled.PlayArrow">Run AI Persona Simulation</MudButton>
+</MudPaper>
+
+@*classroom*@
+
+<MudPaper Class="mx-4 my-4 py-2">
+    
+    <MudText Typo="Typo.h6" Class="mx-4 mb-2">
+        <b>AI Persona Classroom Simulation</b>
+    </MudText>
+    <MudText Typo="Typo.body2" Class="mx-4 mb-2">
+        <b>Simulate a classroom lab setting where personas solve code tasks in sequence</b>
+    </MudText>
+
+    <MudStack Class="mt-2" Row="true" Spacing="2">
+        <MudNumericField Class="my-2 mx-4" @bind-Value="_minutesPerClassroomSimulationStep" Min="0" Max="10" Label="Minutes per classroom simulation step (visual only)" Variant="Variant.Outlined" />
+        <MudNumericField Class="my-2 mx-4" @bind-Value="_maxRetriesPerTask" Min="0" Max="10" Label="Max retries per task for each individual learner" Variant="Variant.Outlined" />
+        <MudSelect T="CodeTask" Label="Classroom Simulation Code Tasks" HelperText="Select one or multiple code tasks to run in order during classroom simulation" MultiSelection="true" @bind-SelectedValues="SelectedCodeTasks" ToStringFunc="@(codeTask => codeTask?.Title ?? string.Empty)" Variant="Variant.Outlined">
+            @foreach (var codeTask in CodeTasks)
+            {
+                if (codeTask is not null)
+                {
+                    <MudSelectItem T="CodeTask" Value="codeTask">@codeTask.Id. @codeTask.Title</MudSelectItem>
+                }
+            }
+        </MudSelect>
+    </MudStack>
+    <MudButton Class="my-4 ml-4 mr-2" Disabled="_personaSimulationIsRunning" OnClick="@OnRunClassroomSimulationClicked" Variant="Variant.Filled" Color="Color.Primary" EndIcon="@Icons.Material.Filled.School">Run AI Persona Classroom Simulation</MudButton>
+</MudPaper>
+
+@*persona list*@
+<MudText Color="Color.Primary" Typo="Typo.h6" Class="mx-4 mb-2">
+    <b>Selected Personas</b>
+</MudText>
+<MudText Typo="Typo.body2" Class="mx-4 mb-2">
+    <i>Select Personas below for both simulation types or run single task simulations by pressing the run code simulation button.</i>
+</MudText>
+
+<MudTable Class="mx-4 my-4" T="AIPersona" MultiSelection="true" @bind-SelectedItems="SelectedAIPersonas" Items="AIPersonas" Hover="true" Breakpoint="Breakpoint.Sm" Loading="@_isLoadingAIPersonas" LoadingProgressColor="Color.Info">
+    <HeaderContent>
+        <MudTh>Persona Id</MudTh>
+        <MudTh>Description</MudTh>
+        <MudTh>Background</MudTh>
+        <MudTh>Action</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Persona Id">@context.Id</MudTd>
+        <MudTd DataLabel="Name">@context.Name</MudTd>
+        <MudTd DataLabel="Background">@context.Background</MudTd>
+        <MudTd DataLabel="Action">
+            <MudButton Class="mr-2" Disabled="_personaSimulationIsRunning" EndIcon="@Icons.Material.Filled.ArrowRight" Color="Color.Primary" Variant="Variant.Filled" OnClick="@(() => OnAIPersonaClicked(context))">
+                Run Code Simulation
+            </MudButton>
+            <MudButton Class="mr-2" EndIcon="@Icons.Material.Filled.Edit" Color="Color.Info" Variant="Variant.Filled" OnClick="@(() => EditAIPersonaClicked(context))">
+                Edit
+            </MudButton>
+            <MudButton Class="mr-2" EndIcon="@Icons.Material.Filled.Delete" Color="Color.Error" Variant="Variant.Filled" OnClick="@(() => OnDeleteAIPersonaClicked(context.Id))">
+                Delete
+            </MudButton>
+        </MudTd>
+    </RowTemplate>
+</MudTable>
+
+@*result*@
+
+@if (_simulationResult?.PersonaResults?.Any() == true)
+{
+    @if (_simulationResult is not null)
+    {
+        <MudExpansionPanels Class="mx-4 my-4">
+
+            @foreach (var personaResult in _simulationResult.PersonaResults)
+            {
+                <MudExpansionPanel Expanded="true" Text="AI Persona Feedback">
+
+                    <CodeTaskFeedback CodeSubmissionFeedback="@personaResult.SubmissionResult" />
+
+                </MudExpansionPanel>
+            }   
+
+        </MudExpansionPanels>
+    }
+}
+
+<EducatorMonitoring _classroomSimulationId="@_classroomSimulationId" />
+    
